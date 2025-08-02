@@ -1,0 +1,64 @@
+﻿@page "/register"
+@rendermode InteractiveServer
+
+<h3>Регистрация</h3>
+
+<EditForm Model="@formModel" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Име:</label>
+        <InputText class="form-control" @bind-Value="formModel.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label>Фамилия:</label>
+        <InputText class="form-control" @bind-Value="formModel.SecName" />
+    </div>
+
+    <div class="mb-3">
+        <label>Възраст:</label>
+        <InputNumber class="form-control" @bind-Value="formModel.Age" />
+    </div>
+
+    <div class="mb-3">
+        <label>Клас:</label>
+        <InputNumber class="form-control" @bind-Value="formModel.Grade" />
+    </div>
+
+    <div class="mb-3">
+        <label>Телефон:</label>
+        <InputText class="form-control" @bind-Value="formModel.PhoneNumber" />
+    </div>
+
+    <div class="mb-3">
+        <label>Потребителско име:</label>
+        <InputText class="form-control" @bind-Value="formModel.Username" />
+    </div>
+
+    <div class="mb-3">
+        <label>Парола:</label>
+        <InputText class="form-control" @bind-Value="formModel.Password" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Регистрирай се</button>
+</EditForm>
+
+@if (registeredStudent is not null)
+{
+    <div class="alert alert-success mt-3">
+        Добре дошъл, @registeredStudent.Name! Възраст: @registeredStudent.Age, Клас: @registeredStudent.Grade.
+    </div>
+}
+
+@code {
+    private StudentFormModel formModel = new();
+    private Student? registeredStudent;
+
+    private void Submit()
+    {
+        registeredStudent = formModel.ToStudent();
+        Console.WriteLine("Регистрация успешна: " + registeredStudent.Name);
+    }
+}

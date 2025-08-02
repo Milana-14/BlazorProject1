@@ -1,0 +1,20 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<h1>EduSwaps</h1>
+
+<button class="btn btn-primary" @onclick="GoToLogin">Вход</button>
+<button class="btn btn-secondary" @onclick="GoToRegister">Регистрация</button>
+
+@code {
+    public void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+    public void GoToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+}
