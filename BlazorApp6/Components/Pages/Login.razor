@@ -20,7 +20,7 @@
     <button type="submit" class="btn btn-primary">Вход</button>
 </EditForm>
 
-@if (loginFailed && !string.IsNullOrEmpty(errorMessage))
+@if (loginFailed && string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger mt-3">
         Невалидно потребителско име или парола.
