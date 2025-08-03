@@ -81,11 +81,14 @@
             if (alreadyExistingStudent != null)
             {
                 alreadyExists = true;
+                registeredStudent = null;
+                return;
             }
 
             registeredStudent = formModel.ToStudent();
             StudentManager.AddStudent(registeredStudent, AppConstants.StudentsFilePath);
             errorMessage = string.Empty;
+            alreadyExists = false;
         }
         catch (ApplicationException ex)
         {
