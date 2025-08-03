@@ -1,4 +1,5 @@
 ﻿@page "/login"
+@using BlazorApp6.Components.Models
 @rendermode InteractiveServer
 
 <h3>Влезте в профила си</h3>
@@ -27,7 +28,7 @@
 }
 
 @code {
-    private LoginFormModel loginModel = new LoginFormModel();
+    private LoginStudentFormModel loginModel = new LoginStudentFormModel();
     private bool loginFailed = false;
 
     List<Student> allStudents = new List<Student>

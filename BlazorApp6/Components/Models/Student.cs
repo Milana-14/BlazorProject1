@@ -1,29 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-namespace BlazorApp6.Models;
-
-public enum Subject
-{
-    НеУказан,
-    Математика,
-    Биология,
-    Химия,
-    Физика,
-    История,
-    География,
-    Английский,
-    Информатика
-}
-public abstract class User
-{
-    public abstract string Name { get; }
-    public abstract string SecName { get; }
-    public abstract int Age { get; }
-    public abstract string PhoneNumber { get; }
-    public abstract string Username { get; }
-    public abstract string Password { get; }
-
-    public abstract void PrintInfo();
-}
+﻿namespace BlazorApp6.Components.Models;
 
 public class Student : User
 {
@@ -51,8 +26,8 @@ public class Student : User
 
     public void AddSubjects(Subject canHelpWith = Subject.НеУказан, Subject needsHelpWith = Subject.НеУказан)
     {
-        if (canHelpWith != Subject.НеУказан) this.CanHelpWith.Add(canHelpWith);
-        if (needsHelpWith != Subject.НеУказан) this.NeedsHelpWith.Add(needsHelpWith);
+        if (canHelpWith != Subject.НеУказан) CanHelpWith.Add(canHelpWith);
+        if (needsHelpWith != Subject.НеУказан) NeedsHelpWith.Add(needsHelpWith);
     }
 
     public bool HasValidSubjects()
@@ -64,8 +39,8 @@ public class Student : User
     {
         if (Grade == otherStudent.Grade && (HasValidSubjects() || otherStudent.HasValidSubjects()))
         {
-            return this.CanHelpWith.Any(subject => otherStudent.NeedsHelpWith.Contains(subject)) &&
-           this.NeedsHelpWith.Any(subject => otherStudent.CanHelpWith.Contains(subject));
+            return CanHelpWith.Any(subject => otherStudent.NeedsHelpWith.Contains(subject)) &&
+           NeedsHelpWith.Any(subject => otherStudent.CanHelpWith.Contains(subject));
         }
         return false;
     }

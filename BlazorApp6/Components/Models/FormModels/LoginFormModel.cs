@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BlazorApp6.Components
+namespace BlazorApp6.Components.Models.FormModels
 {
-    public class LoginFormModel
+    public class LoginStudentFormModel // this one is for the login page
     {
         [Required(ErrorMessage = "Потребителското име е задължително")]
         public string Username { get; set; }
