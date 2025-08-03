@@ -26,7 +26,7 @@ namespace BlazorApp6.Services
             catch (Exception ex)
             {
                 // Можно логировать ошибку (если есть логгер), а пользователю показать:
-                throw new ApplicationException("Не удалось загрузить данные. Попробуйте позже.");
+                throw new ApplicationException("Зареждането на данните не бе успешно. Опитайте отново по-късно.");
             }
         }
     }

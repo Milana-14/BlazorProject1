@@ -16,7 +16,7 @@ namespace BlazorApp6.Services
             catch(ApplicationException ex)
             {
                 string errorMessage = ex.Message;
-                throw new ApplicationException("Не удалось добавить ученика. Попробуйте позже.", ex);
+                throw new ApplicationException("Добавянето на ученик не бе успешно. Опитайте отново по-късно.", ex);
             }
         }
         public static Student? FindStudent(string Username, string filePath)
@@ -28,7 +28,7 @@ namespace BlazorApp6.Services
             }
             catch (ApplicationException ex)
             {
-                throw new ApplicationException("Не удалось загрузить данные. Попробуйте позже.", ex);
+                throw new ApplicationException("Зареждането на данните не бе успешно. Опитайте отново по-късно.", ex);
             }
         }
     }
