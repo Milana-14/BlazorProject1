@@ -52,7 +52,8 @@
         Добре дошъл, @registeredStudent.Name! Възраст: @registeredStudent.Age, Клас: @registeredStudent.Grade.
     </div>
 }
-else if (registeredStudent is null)
+
+@if (alreadyExists)
 {
     <div class="alert alert-danger mt-3">
         Ученик с това потребителско име вече съществува.
@@ -69,6 +70,7 @@ else if (registeredStudent is null)
     private RegisterStudentFormModel formModel = new();
     private Student? registeredStudent;
 
+    private bool alreadyExists = false;
     private string errorMessage = string.Empty;
 
     private void Submit()
@@ -78,7 +80,7 @@ else if (registeredStudent is null)
             Student? alreadyExistingStudent = StudentManager.FindStudent(formModel.Username, AppConstants.StudentsFilePath);
             if (alreadyExistingStudent != null)
             {
-                registeredStudent = null;
+                alreadyExists = true;
             }
 
             registeredStudent = formModel.ToStudent();
