@@ -2,14 +2,14 @@
 
 public class Student : User
 {
-    public override string Name { get; }
-    public override string SecName { get; }
-    public override int Age { get; }
-    public override string PhoneNumber { get; }
+    public override string Name { get; set; }
+    public override string SecName { get; set; }
+    public override int Age { get; set; }
+    public override string PhoneNumber { get; set; }
     public override string Username { get; }
     public override string Password { get; }
 
-    public int Grade { get; private set; }
+    public int Grade { get; set; }
 
     public List<Subject> CanHelpWith { get; set; } = new();
     public List<Subject> NeedsHelpWith { get; set; } = new();

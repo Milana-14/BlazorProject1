@@ -77,7 +77,7 @@
     {
         try
         {
-            Student? alreadyExistingStudent = StudentManager.FindStudent(formModel.Username, AppConstants.StudentsFilePath);
+            Student? alreadyExistingStudent = StudentManager.FindStudent(formModel.Username);
             if (alreadyExistingStudent != null)
             {
                 alreadyExists = true;
@@ -86,7 +86,7 @@
             }
 
             registeredStudent = formModel.ToStudent();
-            StudentManager.AddStudent(registeredStudent, AppConstants.StudentsFilePath);
+            StudentManager.AddStudent(registeredStudent);
             errorMessage = string.Empty;
             alreadyExists = false;
         }
@@ -96,4 +96,4 @@
             registeredStudent = null;
         }
     }
-}
+}  

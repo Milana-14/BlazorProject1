@@ -5,21 +5,21 @@ namespace BlazorApp6.Services
 {
     class StudentFileManager
     {
-        public static void SaveToFile(List<Student> students, string filePath)
+        public static void SaveToFile(List<Student> students)
         {
             string line = JsonSerializer.Serialize(students);
-            File.WriteAllText(filePath, line);
+            File.WriteAllText(AppConstants.StudentsFilePath, line);
         }
-        public static List<Student> LoadFromFile(string filePath)
+        public static List<Student> LoadFromFile()
         {
-            if (!File.Exists(filePath))
+            if (!File.Exists(AppConstants.StudentsFilePath))
             {
                 return new List<Student>();
             }
 
             try
             {
-                string lines = File.ReadAllText(filePath);
+                string lines = File.ReadAllText(AppConstants.StudentsFilePath);
                 List<Student> students = JsonSerializer.Deserialize<List<Student>>(lines) ?? new List<Student>();
                 return students;
             }

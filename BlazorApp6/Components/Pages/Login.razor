@@ -1,5 +1,8 @@
-﻿@page "/login"
-@using BlazorApp6.Components.Models
+﻿@* @page "/login"@using BlazorApp6.Components.Models
+@using BlazorApp6.Services
+
+@using BlazorApp6.Components.Models.FormModels
+@using BlazorApp6.Services
 @rendermode InteractiveServer
 
 <h3>Влезте в профила си</h3>
@@ -20,7 +23,62 @@
     <button type="submit" class="btn btn-primary">Вход</button>
 </EditForm>
 
-@if (loginFailed && string.IsNullOrEmpty(errorMessage))
+@if (loginFailed)
+{
+    <div class="alert alert-danger mt-3">
+        Невалидно потребителско име или парола.
+    </div>
+}
+
+@code {
+    private LoginFormModel loginModel = new LoginFormModel();
+    private bool loginFailed = false;
+
+    List<Student> allStudents = new List<Student>
+    {
+        new Student("Милана", 15, 9, "milana123", "pass123"),
+        new Student("Алекс", 14, 8, "alex14", "qwerty"),
+    };
+
+    private void LoginUser()
+    {
+        Student? foundStudent = allStudents.FirstOrDefault(s => s.Username == loginModel.Username && s.Password == loginModel.Password);
+
+        if (foundStudent != null)
+        {
+            loginFailed = false;
+            Console.WriteLine($"Успешен вход: {foundStudent.Name}");
+            Navigation.NavigateTo("/userPage");
+        }
+        else
+        {
+            loginFailed = true;
+        }
+    }
+} *@
+
+@page "/login"
+@using BlazorApp6.Components.Models@inject AppState AppState@rendermode InteractiveServer
+
+<h3>Влезте в профила си</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="LoginUser">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div>
+        <label>Потребителско име:</label>
+        <InputText class="form-control" @bind-Value="loginModel.Username"></InputText>
+    </div>
+
+    <div>
+        <label>Парола:</label>
+        <InputText type="password" class="form-control" @bind-Value="loginModel.Password"></InputText>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Вход</button>
+</EditForm>
+
+@if (loginFailed)
 {
     <div class="alert alert-danger mt-3">
         Невалидно потребителско име или парола.
@@ -43,13 +101,14 @@
     {
         try
         {
-            Student foundStudent = StudentManager.FindStudent(loginModel.Username, AppConstants.StudentsFilePath);
+            Student foundStudent = StudentManager.FindStudent(loginModel.Username);
 
             if (foundStudent != null && foundStudent.Password == loginModel.Password)
             {
                 loginFailed = false;
                 errorMessage = string.Empty;
-                Navigation.NavigateTo("/userPage");
+
+                AppState.CurrentUser = foundStudent;                Navigation.NavigateTo("/userPage");
             }
             else
             {
@@ -62,4 +121,4 @@
             loginFailed = true;
         }
     }
-}
+}  

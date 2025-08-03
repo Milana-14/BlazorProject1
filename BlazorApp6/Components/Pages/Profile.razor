@@ -1,0 +1,71 @@
+﻿@page "/profile"
+@using BlazorApp6.Components.Models
+@using BlazorApp6.Services
+@inject NavigationManager Navigation
+@inject AppState AppState
+@rendermode InteractiveServer
+
+<h3>Мой профил</h3>
+
+@if (student is null)
+{
+    <p>Загрузка...</p>
+}
+else if (student is not null)
+{
+    <EditForm Model="@student" OnValidSubmit="SaveChanges">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Имя:</label>
+            <InputText class="form-control" @bind-Value="student.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label>Фамилия:</label>
+            <InputText class="form-control" @bind-Value="student.SecName" />
+        </div>
+
+        <div class="mb-3">
+            <label>Возраст:</label>
+            <InputNumber class="form-control" @bind-Value="student.Age" />
+        </div>
+
+        <div class="mb-3">
+            <label>Класс:</label>
+            <InputNumber class="form-control" @bind-Value="student.Grade" />
+        </div>
+
+        <div class="mb-3">
+            <label>Телефон:</label>
+            <InputText class="form-control" @bind-Value="student.PhoneNumber" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Сохранить изменения</button>
+    </EditForm>
+
+    @if (successMessageShown)
+    {
+        <div class="alert alert-success mt-3">Изменения сохранены!</div>
+    }
+}
+
+
+@code {
+    private Student? student;
+    private bool successMessageShown = false;
+
+    protected override void OnInitialized()
+    {
+        student = AppState.CurrentUser;
+    }
+    private void SaveChanges()
+    {
+        if (student is not null)
+        {
+            StudentManager.UpdateStudent(student);
+            successMessageShown = true;
+        }
+    }
+}
