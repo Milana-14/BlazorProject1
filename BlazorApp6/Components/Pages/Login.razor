@@ -1,7 +1,5 @@
 ﻿@page "/login"
 @using BlazorApp6.Components.Models
-@using BlazorApp6.Components.Models.FormModels
-@using BlazorApp6.Services
 @rendermode InteractiveServer
 
 <h3>Влезте в профила си</h3>
@@ -29,28 +27,38 @@
     </div>
 }
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+
 @code {
     private LoginStudentFormModel loginModel = new LoginStudentFormModel();
     private bool loginFailed = false;
 
-    List<Student> allStudents = new List<Student>
-    {
-        new Student("Милана", 15, 9, "milana123", "pass123"),
-        new Student("Алекс", 14, 8, "alex14", "qwerty"),
-    };
+    public string errorMessage = string.Empty;
 
     private void LoginUser()
     {
-        Student? foundStudent = allStudents.FirstOrDefault(s => s.Username == loginModel.Username && s.Password == loginModel.Password);
+        try
+        {
+            Student foundStudent = StudentManager.FindStudent(loginModel.Username, AppConstants.StudentsFilePath);
 
-        if (foundStudent != null)
-        {
-            loginFailed = false;
-            Console.WriteLine($"Успешен вход: {foundStudent.Name}");
-            Navigation.NavigateTo("/userPage");
+            if (foundStudent != null && foundStudent.Password == loginModel.Password)
+            {
+                loginFailed = false;
+                errorMessage = string.Empty;
+                Navigation.NavigateTo("/userPage");
+            }
+            else
+            {
+                loginFailed = true;
+            }
         }
-        else
+        catch (ApplicationException ex)
         {
+            errorMessage = ex.Message;
             loginFailed = true;
         }
     }

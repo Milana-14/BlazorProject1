@@ -26,7 +26,7 @@ namespace BlazorApp6.Services
                 List<Student> students = StudentFileManager.LoadFromFile(filePath);
                 return students.FirstOrDefault(s => s.Username == Username);
             }
-            catch(ApplicationException ex)
+            catch (ApplicationException ex)
             {
                 throw new ApplicationException("Не удалось загрузить данные. Попробуйте позже.", ex);
             }

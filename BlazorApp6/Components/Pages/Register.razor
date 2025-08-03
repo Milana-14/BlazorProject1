@@ -1,7 +1,5 @@
 ﻿@page "/register"
 @using BlazorApp6.Components.Models
-@using BlazorApp6.Components.Models.FormModels
-@using BlazorApp6.Services
 @rendermode InteractiveServer
 
 <h3>Регистрация</h3>
@@ -55,13 +53,29 @@
     </div>
 }
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
 @code {
     private RegisterStudentFormModel formModel = new();
     private Student? registeredStudent;
 
+    private string errorMessage = string.Empty;
+
     private void Submit()
     {
-        registeredStudent = formModel.ToStudent();
-        Console.WriteLine("Регистрация успешна: " + registeredStudent.Name);
+        try
+        {
+            registeredStudent = formModel.ToStudent();
+            StudentManager.AddStudent(registeredStudent, AppConstants.StudentsFilePath);
+            errorMessage = string.Empty;
+        }
+        catch (ApplicationException ex)
+        {
+            errorMessage = ex.Message;
+            registeredStudent = null;
+        }
     }
 }
