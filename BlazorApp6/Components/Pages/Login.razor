@@ -1,7 +1,5 @@
 ﻿@page "/login"
-@using BlazorApp6.Components.Models
-@inject AppState AppState
-@rendermode InteractiveServer
+@using BlazorApp6.Components.Models@inject AppState AppState@rendermode InteractiveServer
 
 <h3>Влезте в профила си</h3>
 
@@ -51,8 +49,7 @@
                 loginFailed = false;
                 errorMessage = string.Empty;
 
-                AppState.CurrentUser = foundStudent;
-                Navigation.NavigateTo("/profile");
+                AppState.CurrentUser = foundStudent;                Navigation.NavigateTo("/profile");
             }
             else
             {
