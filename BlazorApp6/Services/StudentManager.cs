@@ -4,7 +4,7 @@ namespace BlazorApp6.Services
 {
     public class StudentManager
     {
-        public static List<Student> AddStudent(Student student, string filePath)
+        public static List<Student> AddStudent(Student student, string filePath) // Добавить проверку на повторения юзернейма
         {
             try
             {
@@ -19,12 +19,12 @@ namespace BlazorApp6.Services
                 throw new ApplicationException("Не удалось добавить ученика. Попробуйте позже.", ex);
             }
         }
-        public static Student? FindStudent(string name, string filePath)
+        public static Student? FindStudent(string Username, string filePath)
         {
             try
             {
                 List<Student> students = StudentFileManager.LoadFromFile(filePath);
-                return students.FirstOrDefault(s => s.Name == name);
+                return students.FirstOrDefault(s => s.Username == Username);
             }
             catch(ApplicationException ex)
             {
