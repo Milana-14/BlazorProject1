@@ -14,9 +14,10 @@ public class Student : User
     public List<Subject> CanHelpWith { get; set; } = new();
     public List<Subject> NeedsHelpWith { get; set; } = new();
 
-    public Student(string name, int age, int grade, string username, string password, string phoneNumber = "Не указан")
+    public Student(string name, string secName, int age, int grade, string username, string password, string phoneNumber = "Не указан")
     {
         Name = name;
+        SecName = secName;
         Age = age;
         Grade = grade;
         Username = username;

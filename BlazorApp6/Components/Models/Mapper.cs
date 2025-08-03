@@ -8,6 +8,7 @@ public static class FormMapper // convert the user from RegisterStudentFormModel
     {
         return new Student(
             form.Name,
+            form.SecName,
             form.Age,
             form.Grade,
             form.Username,
