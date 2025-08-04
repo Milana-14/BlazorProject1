@@ -22,18 +22,18 @@ public class Student : User
         Grade = grade;
         Username = username;
         Password = password;
-        PhoneNumber = !string.IsNullOrWhiteSpace(phoneNumber) ? phoneNumber : "Не указан";
+        PhoneNumber = !string.IsNullOrWhiteSpace(phoneNumber) ? phoneNumber : "Не посочен";
     }
 
-    public void AddSubjects(Subject canHelpWith = Subject.НеУказан, Subject needsHelpWith = Subject.НеУказан)
+    public void AddSubjects(Subject canHelpWith = Subject.НеПосочено, Subject needsHelpWith = Subject.НеПосочено)
     {
-        if (canHelpWith != Subject.НеУказан) CanHelpWith.Add(canHelpWith);
-        if (needsHelpWith != Subject.НеУказан) NeedsHelpWith.Add(needsHelpWith);
+        if (canHelpWith != Subject.НеПосочено) CanHelpWith.Add(canHelpWith);
+        if (needsHelpWith != Subject.НеПосочено) NeedsHelpWith.Add(needsHelpWith);
     }
 
     public bool HasValidSubjects()
     {
-        return CanHelpWith.Any(s => s != Subject.НеУказан) && NeedsHelpWith.Any(s => s != Subject.НеУказан);
+        return CanHelpWith.Any(s => s != Subject.НеПосочено) && NeedsHelpWith.Any(s => s != Subject.НеПосочено);
     }
 
     public bool IsMatching(Student otherStudent)
