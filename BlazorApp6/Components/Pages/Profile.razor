@@ -87,6 +87,8 @@ else if (student is not null)
     protected override void OnInitialized()
     {
         student = AppState.CurrentUser;
+        
+        allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.НеПосочено).ToList();
     }
 
     private void ToggleSubject(Subject subject, bool isChecked, List<Subject> targetList)
