@@ -2,7 +2,7 @@
   {
     "Name": "\u041C\u0438\u043B\u0430\u043D\u0430",
     "SecName": "\u0414\u0430\u043C\u0438\u043D\u043E\u0432\u0430",
-    "Age": 15,
+    "Age": 14,
     "PhoneNumber": "\u002B359899102322",
     "Username": "MilSeraf",
     "Password": "110375",
@@ -20,5 +20,16 @@
     "Grade": 9,
     "CanHelpWith": [ 1, 8 ],
     "NeedsHelpWith": [ 7 ]
+  },
+  {
+    "Name": "\u041D\u0438\u043A\u043E\u043B\u0430\u0439",
+    "SecName": "\u0413\u044E\u0440\u043E\u0432",
+    "Age": 15,
+    "PhoneNumber": "\u002B359814141414",
+    "Username": "NikiG",
+    "Password": "110375",
+    "Grade": 10,
+    "CanHelpWith": [ 10, 9, 7, 8 ],
+    "NeedsHelpWith": [ 1 ]
   }
 ]
