@@ -42,6 +42,33 @@ else if (student is not null)
             <InputText class="form-control" @bind-Value="student.PhoneNumber" />
         </div>
 
+        <div class="subject-section">
+            <h5>Мога да помогна с:</h5>
+            @foreach (var subject in allSubjects)
+            {
+                <label>
+                    <input type="checkbox"
+                           checked="@student.CanHelpWith.Contains(subject)"
+                           @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith)" />
+                    @subject
+                </label>
+            }
+        </div>
+
+        <div class="subject-section">
+            <h5>Нуждая се от помощ по:</h5>
+            @foreach (var subject in allSubjects)
+            {
+                <label>
+                    <input type="checkbox"
+                           checked="@student.NeedsHelpWith.Contains(subject)"
+                           @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith)" />
+                    @subject
+                </label>
+            }
+        </div>
+
+
         <button type="submit" class="btn btn-success">Запазване на промените</button>
     </EditForm>
 
@@ -54,12 +81,29 @@ else if (student is not null)
 
 @code {
     private Student? student;
+    private List<Subject> allSubjects = new List<Subject>();
     private bool successMessageShown = false;
 
     protected override void OnInitialized()
     {
         student = AppState.CurrentUser;
     }
+
+    private void ToggleSubject(Subject subject, bool isChecked, List<Subject> targetList)
+    {
+        if (isChecked)
+        {
+            if (!targetList.Contains(subject))
+                targetList.Add(subject);
+        }
+        else
+        {
+            if (targetList.Contains(subject))
+                targetList.Remove(subject);
+        }
+    }
+
+
     private void SaveChanges()
     {
         if (student is not null)
