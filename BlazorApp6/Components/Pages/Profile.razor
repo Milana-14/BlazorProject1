@@ -13,64 +13,81 @@
 }
 else if (student is not null)
 {
-    <EditForm Model="@student" OnValidSubmit="SaveChanges">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    @if (isEditing)
+    {
+        <EditForm Model="@student" OnValidSubmit="SaveChanges">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="mb-3">
-            <label>Име:</label>
-            <InputText class="form-control" @bind-Value="student.Name" />
-        </div>
+            <div class="mb-3">
+                <label>Име:</label>
+                <InputText class="form-control" @bind-Value="student.Name" />
+            </div>
 
-        <div class="mb-3">
-            <label>Фамилия:</label>
-            <InputText class="form-control" @bind-Value="student.SecName" />
-        </div>
+            <div class="mb-3">
+                <label>Фамилия:</label>
+                <InputText class="form-control" @bind-Value="student.SecName" />
+            </div>
 
-        <div class="mb-3">
-            <label>Възраст:</label>
-            <InputNumber class="form-control" @bind-Value="student.Age" />
-        </div>
+            <div class="mb-3">
+                <label>Възраст:</label>
+                <InputNumber class="form-control" @bind-Value="student.Age" />
+            </div>
 
-        <div class="mb-3">
-            <label>Клас:</label>
-            <InputNumber class="form-control" @bind-Value="student.Grade" />
-        </div>
+            <div class="mb-3">
+                <label>Клас:</label>
+                <InputNumber class="form-control" @bind-Value="student.Grade" />
+            </div>
 
-        <div class="mb-3">
-            <label>Телефон:</label>
-            <InputText class="form-control" @bind-Value="student.PhoneNumber" />
-        </div>
+            <div class="mb-3">
+                <label>Телефон:</label>
+                <InputText class="form-control" @bind-Value="student.PhoneNumber" />
+            </div>
 
-        <div class="subject-section">
-            <h5>Мога да помогна с:</h5>
-            @foreach (var subject in allSubjects)
-            {
-                <label>
-                    <input type="checkbox"
-                           checked="@student.CanHelpWith.Contains(subject)"
-                           @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith)" />
-                    @subject.GetDisplayName()
-                </label>
-            }
-        </div>
+            <div class="subject-section">
+                <h5>Мога да помогна с:</h5>
+                @foreach (var subject in allSubjects)
+                {
+                    <label>
+                        <input type="checkbox"
+                               checked="@student.CanHelpWith.Contains(subject)"
+                               @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith)" />
+                        @subject.GetDisplayName()
+                    </label>
+                }
+            </div>
 
-        <div class="subject-section">
-            <h5>Нуждая се от помощ по:</h5>
-            @foreach (var subject in allSubjects)
-            {
-                <label>
-                    <input type="checkbox"
-                           checked="@student.NeedsHelpWith.Contains(subject)"
-                           @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith)" />
-                    @subject.GetDisplayName()
-                </label>
-            }
-        </div>
+            <div class="subject-section">
+                <h5>Нуждая се от помощ по:</h5>
+                @foreach (var subject in allSubjects)
+                {
+                    <label>
+                        <input type="checkbox"
+                               checked="@student.NeedsHelpWith.Contains(subject)"
+                               @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith)" />
+                        @subject.GetDisplayName()
+                    </label>
+                }
+            </div>
 
+            <button type="button" class="btn btn-success" @onclick="CancelEdit">Отказ</button>
+            <button type="submit" class="btn btn-success">Запазване на промените</button>
+        </EditForm>
+    }
+    else
+    {
+        <p><strong>Име:</strong> @student.Name</p>
+        <p><strong>Фамилия:</strong> @student.SecName</p>
+        <p><strong>Възраст:</strong> @student.Age</p>
+        <p><strong>Клас:</strong> @student.Grade</p>
+        <p><strong>Телефон:</strong> @student.PhoneNumber</p>
 
-        <button type="submit" class="btn btn-success">Запазване на промените</button>
-    </EditForm>
+        <p><strong>Може да помогне с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
+        <p><strong>Нуждае се от помощ по:</strong> @string.Join(", ", student.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
+
+        <button class="btn btn-primary" @onclick="() => isEditing = true">Редактиране</button>
+        <button class="btn btn-secondary" @onclick="ExitProfile">Изход</button>
+    }
 
     @if (successMessageShown)
     {
@@ -83,11 +100,12 @@ else if (student is not null)
     private Student? student;
     private List<Subject> allSubjects = new List<Subject>();
     private bool successMessageShown = false;
+    private bool isEditing = false;
 
     protected override void OnInitialized()
     {
         student = AppState.CurrentUser;
-        
+
         allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToList();
     }
 
@@ -105,13 +123,25 @@ else if (student is not null)
         }
     }
 
-
     private void SaveChanges()
     {
         if (student is not null)
         {
             StudentManager.UpdateStudent(student);
+            isEditing = false;
             successMessageShown = true;
         }
+    }
+    private void CancelEdit()
+    {
+        student = AppState.CurrentUser;
+        isEditing = false;
+        successMessageShown = false;
+    }
+
+    private void ExitProfile()
+    {
+        AppState.CurrentUser = null;
+        Navigation.NavigateTo("/login");
     }
 }
