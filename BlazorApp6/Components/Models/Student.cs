@@ -25,15 +25,15 @@ public class Student : User
         PhoneNumber = !string.IsNullOrWhiteSpace(phoneNumber) ? phoneNumber : "Не посочен";
     }
 
-    public void AddSubjects(Subject canHelpWith = Subject.НеПосочено, Subject needsHelpWith = Subject.НеПосочено)
+    public void AddSubjects(Subject canHelpWith = Subject.NotSpecified, Subject needsHelpWith = Subject.NotSpecified)
     {
-        if (canHelpWith != Subject.НеПосочено) CanHelpWith.Add(canHelpWith);
-        if (needsHelpWith != Subject.НеПосочено) NeedsHelpWith.Add(needsHelpWith);
+        if (canHelpWith != Subject.NotSpecified) CanHelpWith.Add(canHelpWith);
+        if (needsHelpWith != Subject.NotSpecified) NeedsHelpWith.Add(needsHelpWith);
     }
 
     public bool HasValidSubjects()
     {
-        return CanHelpWith.Any(s => s != Subject.НеПосочено) && NeedsHelpWith.Any(s => s != Subject.НеПосочено);
+        return CanHelpWith.Any(s => s != Subject.NotSpecified) && NeedsHelpWith.Any(s => s != Subject.NotSpecified);
     }
 
     public bool IsMatching(Student otherStudent)

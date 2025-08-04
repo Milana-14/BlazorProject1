@@ -50,7 +50,7 @@ else if (student is not null)
                     <input type="checkbox"
                            checked="@student.CanHelpWith.Contains(subject)"
                            @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith)" />
-                    @subject
+                    @subject.GetDisplayName()
                 </label>
             }
         </div>
@@ -63,7 +63,7 @@ else if (student is not null)
                     <input type="checkbox"
                            checked="@student.NeedsHelpWith.Contains(subject)"
                            @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith)" />
-                    @subject
+                    @subject.GetDisplayName()
                 </label>
             }
         </div>
@@ -88,7 +88,7 @@ else if (student is not null)
     {
         student = AppState.CurrentUser;
         
-        allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.НеПосочено).ToList();
+        allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToList();
     }
 
     private void ToggleSubject(Subject subject, bool isChecked, List<Subject> targetList)
