@@ -27,7 +27,8 @@ public class Student : User
 
     public void ChangePassword(string password)
     {
-        this.Password = password;
+        if (password.Length > 5)
+            this.Password = password;
     }
 
     public void AddSubjects(Subject canHelpWith = Subject.NotSpecified, Subject needsHelpWith = Subject.NotSpecified)
