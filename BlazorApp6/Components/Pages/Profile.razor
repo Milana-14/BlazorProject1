@@ -83,6 +83,7 @@ else if (student is not null)
                     </label>
                 }
             </div>
+            <button type="button" class="btn btn-success" @onclick="GoToChangePassword">Променри паролата</button>
 
             <button type="button" class="btn btn-success" @onclick="CancelEdit">Отказ</button>
             <button type="submit" class="btn btn-success">Запазване на промените</button>
@@ -126,6 +127,11 @@ else if (student is not null)
             if (targetList.Contains(subject))
                 targetList.Remove(subject);
         }
+    }
+
+    private void GoToChangePassword()
+    {
+        Navigation.NavigateTo("/change-password");
     }
 
     private void SaveChanges()
