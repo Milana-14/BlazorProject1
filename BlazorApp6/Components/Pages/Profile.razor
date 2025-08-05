@@ -51,7 +51,7 @@ else if (student is not null)
                     <label>
                         <input type="checkbox"
                                checked="@student.CanHelpWith.Contains(subject)"
-                               @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith)" />
+                               @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith, student.NeedsHelpWith)" />
                         @subject.GetDisplayName()
                     </label>
                 }
@@ -64,7 +64,7 @@ else if (student is not null)
                     <label>
                         <input type="checkbox"
                                checked="@student.NeedsHelpWith.Contains(subject)"
-                               @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith)" />
+                               @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith, student.CanHelpWith)" />
                         @subject.GetDisplayName()
                     </label>
                 }
@@ -109,10 +109,13 @@ else if (student is not null)
         allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToList();
     }
 
-    private void ToggleSubject(Subject subject, bool isChecked, List<Subject> targetList)
+    private void ToggleSubject(Subject subject, bool isChecked, List<Subject> targetList, List<Subject> otherList)
     {
         if (isChecked)
         {
+            if (otherList.Contains(subject))
+                otherList.Remove(subject);
+
             if (!targetList.Contains(subject))
                 targetList.Add(subject);
         }
