@@ -7,7 +7,7 @@ public class Student : User
     public override int Age { get; set; }
     public override string PhoneNumber { get; set; }
     public override string Username { get; }
-    public override string Password { get; }
+    public override string Password { get; protected set; }
 
     public int Grade { get; set; }
 
@@ -23,6 +23,11 @@ public class Student : User
         Username = username;
         Password = password;
         PhoneNumber = !string.IsNullOrWhiteSpace(phoneNumber) ? phoneNumber : "Не посочен";
+    }
+
+    public void ChangePassword(string password)
+    {
+        this.Password = password;
     }
 
     public void AddSubjects(Subject canHelpWith = Subject.NotSpecified, Subject needsHelpWith = Subject.NotSpecified)

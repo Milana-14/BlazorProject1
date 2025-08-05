@@ -8,7 +8,7 @@ public abstract class User
     public abstract int Age { get; set; }
     public abstract string PhoneNumber { get; set; }
     public abstract string Username { get; }
-    public abstract string Password { get; }
+    public abstract string Password { get; protected set; }
 
     public abstract void PrintInfo();
 }

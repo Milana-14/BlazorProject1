@@ -13,7 +13,21 @@
 }
 else if (student is not null)
 {
-    @if (isEditing)
+    @if (!isEditing)
+    {
+        <p><strong>Име:</strong> @student.Name</p>
+        <p><strong>Фамилия:</strong> @student.SecName</p>
+        <p><strong>Възраст:</strong> @student.Age</p>
+        <p><strong>Клас:</strong> @student.Grade</p>
+        <p><strong>Телефон:</strong> @student.PhoneNumber</p>
+
+        <p><strong>Може да помогне с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
+        <p><strong>Нуждае се от помощ по:</strong> @string.Join(", ", student.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
+
+        <button class="btn btn-primary" @onclick="() => isEditing = true">Редактиране</button>
+        <button class="btn btn-secondary" @onclick="ExitProfile">Изход</button>
+    }
+    else
     {
         <EditForm Model="@student" OnValidSubmit="SaveChanges">
             <DataAnnotationsValidator />
@@ -74,20 +88,6 @@ else if (student is not null)
             <button type="submit" class="btn btn-success">Запазване на промените</button>
         </EditForm>
     }
-    else
-    {
-        <p><strong>Име:</strong> @student.Name</p>
-        <p><strong>Фамилия:</strong> @student.SecName</p>
-        <p><strong>Възраст:</strong> @student.Age</p>
-        <p><strong>Клас:</strong> @student.Grade</p>
-        <p><strong>Телефон:</strong> @student.PhoneNumber</p>
-
-        <p><strong>Може да помогне с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
-        <p><strong>Нуждае се от помощ по:</strong> @string.Join(", ", student.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
-
-        <button class="btn btn-primary" @onclick="() => isEditing = true">Редактиране</button>
-        <button class="btn btn-secondary" @onclick="ExitProfile">Изход</button>
-    }
 
     @if (successMessageShown)
     {
@@ -105,6 +105,8 @@ else if (student is not null)
     protected override void OnInitialized()
     {
         student = AppState.CurrentUser;
+
+        isEditing = false;
 
         allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToList();
     }
