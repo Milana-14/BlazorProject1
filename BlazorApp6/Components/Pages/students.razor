@@ -1,0 +1,65 @@
+﻿@page "/students"
+@inject AppState AppState
+@rendermode InteractiveServer
+
+<h3>students</h3>
+
+<EditForm>
+        <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <p><strong>Клас: </strong></p>
+
+    <p><strong>Може да помогне с: </strong></p>
+    @foreach (var subject in allSubjects)
+    {
+        <label>
+            <input type="checkbox"
+                checked="selectedCanHelpWith.Contains(subject)"
+                @onchange="e => ToggleSubject(subject, e.Value is true, selectedCanHelpWith)"
+                />
+        </label>
+    }
+
+    <p><strong>Търси помощ по: </strong></p>
+    @foreach (var subject in allSubjects)
+    {
+        <label>
+            <input type="checkbox"
+                   checked="selectedNeedsHelpWith.Contains(subject)"
+                   @onchange="e => ToggleSubject(subject, e.Value is true, selectedNeedsHelpWith)" />
+        </label>
+    }
+</EditForm>
+
+<hr />
+
+@code {
+    private int? selectedGrade = null;
+    private List<Subject> selectedCanHelpWith = new();
+    private List<Subject> selectedNeedsHelpWith = new();
+
+    private List<Subject> allSubjects = new();
+    private List<Student> allStudents = new();
+
+    private List<Student> filteredStudents = new();
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    private void ToggleSubject(Subject subject, bool isChecked, List<Subject> targetList)
+    {
+        if (isChecked)
+        {
+            if (!targetList.Contains(subject))
+                targetList.Add(subject);
+        }
+        else
+        {
+            if (targetList.Contains(subject))
+                targetList.Remove(subject);
+        }
+    }
+}
