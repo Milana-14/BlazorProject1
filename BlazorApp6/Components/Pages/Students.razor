@@ -4,43 +4,38 @@
 
 <h3>students</h3>
 
-<EditForm>
-        <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <p><strong>Клас: </strong></p>
-    <select @bind="selectedGrade" class="form-select" @bind:after="FilterStudents">
-        <option value="">Всички класове</option>
-        @foreach (var grade in allGrades)
-        {
-            <option value="@grade">@grade</option>
-        }
-    </select>
-
-    <p><strong>Може да помогне с: </strong></p>
-    @foreach (var subject in allSubjects)
+<p><strong>Клас: </strong></p>
+<select @bind="selectedGrade" class="form-select" @bind:after="FilterStudents">
+    <option value="">Всички класове </option>
+    @foreach (var grade in allGrades)
     {
-        <label>
-            <input type="checkbox"
-                checked="selectedCanHelpWith.Contains(subject)"
-                @onchange="e => ToggleSubject(subject, e.Value is true, selectedCanHelpWith)"/>
-                @subject
-        </label>
+        <option value="@grade">@grade</option>
     }
+</select>
 
-    <p><strong>Търси помощ по: </strong></p>
-    @foreach (var subject in allSubjects)
-    {
-        <label>
-            <input type="checkbox"
-                   checked="selectedNeedsHelpWith.Contains(subject)"
-                   @onchange="e => ToggleSubject(subject, e.Value is true, selectedNeedsHelpWith)" />
-                   @subject
-        </label>
-    }
+<p><strong>Може да помогне с: </strong></p>
+@foreach (var subject in allSubjects)
+{
+    <label>
+        <input type="checkbox"
+               checked="selectedCanHelpWith.Contains(subject)"
+               @onchange="e => ToggleSubject(subject, e.Value is true, selectedCanHelpWith)" />
+        @subject
+    </label>
+}
 
-    <button type="button" class="btn btn-secondary" @onclick="ResetFilters">Махни филтрите</button>
-</EditForm>
+<p><strong>Търси помощ по: </strong></p>
+@foreach (var subject in allSubjects)
+{
+    <label>
+        <input type="checkbox"
+               checked="selectedNeedsHelpWith.Contains(subject)"
+               @onchange="e => ToggleSubject(subject, e.Value is true, selectedNeedsHelpWith)" />
+        @subject
+    </label>
+}
+
+<button type="button" class="btn btn-secondary" @onclick="ResetFilters">Махни филтрите</button>
 
 <hr />
 
