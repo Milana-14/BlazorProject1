@@ -1,0 +1,120 @@
+﻿@page "/students"
+@inject AppState AppState
+@rendermode InteractiveServer
+
+<h3>students</h3>
+
+<EditForm>
+        <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <p><strong>Клас: </strong></p>
+    <select @bind="selectedGrade" class="form-select" @bind:after="FilterStudents">
+        <option value="">Всички класове</option>
+        @foreach (var grade in allGrades)
+        {
+            <option value="@grade">@grade</option>
+        }
+    </select>
+
+    <p><strong>Може да помогне с: </strong></p>
+    @foreach (var subject in allSubjects)
+    {
+        <label>
+            <input type="checkbox"
+                checked="selectedCanHelpWith.Contains(subject)"
+                @onchange="e => ToggleSubject(subject, e.Value is true, selectedCanHelpWith)"/>
+                @subject
+        </label>
+    }
+
+    <p><strong>Търси помощ по: </strong></p>
+    @foreach (var subject in allSubjects)
+    {
+        <label>
+            <input type="checkbox"
+                   checked="selectedNeedsHelpWith.Contains(subject)"
+                   @onchange="e => ToggleSubject(subject, e.Value is true, selectedNeedsHelpWith)" />
+                   @subject
+        </label>
+    }
+
+    <button type="button" class="btn btn-secondary" @onclick="ResetFilters">Махни филтрите</button>
+</EditForm>
+
+<hr />
+
+@if (filteredStudents.Count == 0)
+{
+    <p>Няма намерени ученици.</p>
+}
+else
+{
+    <ul>
+        <p>Намерени ученици: @filteredStudents.Count</p>
+        @foreach (var student in filteredStudents)
+        {
+            <li>@student.Name @student.SecName (Клас: @student.Grade)</li>
+        }
+    </ul>
+}
+
+@code {
+    private Student? currentStudent;
+
+    private int? selectedGrade = null;
+    private List<Subject> selectedCanHelpWith = new();
+    private List<Subject> selectedNeedsHelpWith = new();
+
+    private List<Subject> allSubjects = new();
+    private List<int> allGrades = new();
+    private List<Student> allStudents = new();
+
+    private List<Student> filteredStudents = new();
+
+    protected override void OnInitialized()
+    {
+        currentStudent = AppState.CurrentUser;
+
+        if (currentStudent != null)
+        {
+            allStudents = StudentManager.GetAllStudents().Where(s => s.Username != currentStudent.Username).ToList();
+        }
+
+        allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToList();
+        allGrades = allStudents.Select(s => s.Grade).Distinct().OrderBy(g => g).ToList();
+
+        FilterStudents();
+    }
+
+    private void ToggleSubject(Subject subject, bool isChecked, List<Subject> targetList)
+    {
+        if (isChecked)
+        {
+            if (!targetList.Contains(subject))
+                targetList.Add(subject);
+        }
+        else
+        {
+            if (targetList.Contains(subject))
+                targetList.Remove(subject);
+        }
+
+        FilterStudents();
+    }
+
+    private void FilterStudents()
+    {
+        filteredStudents = allStudents.Where(s => 
+            (selectedCanHelpWith.Count() == 0 || selectedCanHelpWith.All(subject => s.CanHelpWith.Contains(subject))) &&
+            (selectedNeedsHelpWith.Count() == 0 || selectedNeedsHelpWith.All(subject => s.NeedsHelpWith.Contains(subject))) &&
+            (selectedGrade == null || selectedGrade == s.Grade)).ToList();
+    }
+    private void ResetFilters()
+    {
+        selectedGrade = null;
+        selectedCanHelpWith.Clear();
+        selectedNeedsHelpWith.Clear();
+        FilterStudents();
+    }
+}
