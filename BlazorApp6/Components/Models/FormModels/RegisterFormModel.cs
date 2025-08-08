@@ -22,7 +22,7 @@ namespace BlazorApp6.Components.Models.FormModels
         public string Username { get; set; }
 
         [Required(ErrorMessage = "Паролата е задължителна")]
-        [MinLength(6, ErrorMessage = "Паролата не може да е по-кратка от 6 символа")]
+        [MinLength(6, ErrorMessage = "Паролата трябва да е поне 6 символа")]
         public string Password { get; set; }
 
         [MinLength(13, ErrorMessage = "Телефонният номер е невалиден")]
