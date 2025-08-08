@@ -5,8 +5,13 @@
 
 <h1>EduSwaps</h1>
 
-<button class="btn btn-primary" @onclick="GoToLogin">Вход</button>
-<button class="btn btn-secondary" @onclick="GoToRegister">Регистрация</button>
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="GoToLogin">Вход</button>
+</div>
+
+<div class="mb-3">
+    <button class="btn btn-secondary" @onclick="GoToRegister">Регистрация</button>
+</div>
 
 @code {
     public void GoToLogin()
