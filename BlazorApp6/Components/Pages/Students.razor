@@ -4,112 +4,213 @@
 
 <h3>students</h3>
 
-<p><strong>Клас: </strong></p>
-<select @bind="selectedGrade" class="form-select" @bind:after="FilterStudents">
-    <option value="">Всички класове </option>
-    @foreach (var grade in allGrades)
-    {
-        <option value="@grade">@grade</option>
-    }
-</select>
-
-<p><strong>Може да помогне с: </strong></p>
-@foreach (var subject in allSubjects)
+@if (currentStudent == null)
 {
-    <label>
-        <input type="checkbox"
-               checked="selectedCanHelpWith.Contains(subject)"
-               @onchange="e => ToggleSubject(subject, e.Value is true, selectedCanHelpWith)" />
-        @subject
-    </label>
-}
-
-<p><strong>Търси помощ по: </strong></p>
-@foreach (var subject in allSubjects)
-{
-    <label>
-        <input type="checkbox"
-               checked="selectedNeedsHelpWith.Contains(subject)"
-               @onchange="e => ToggleSubject(subject, e.Value is true, selectedNeedsHelpWith)" />
-        @subject
-    </label>
-}
-
-<button type="button" class="btn btn-secondary" @onclick="ResetFilters">Махни филтрите</button>
-
-<hr />
-
-@if (filteredStudents.Count == 0)
-{
-    <p>Няма намерени ученици.</p>
+    <p>Зареждане...</p>
 }
 else
 {
-    <ul>
-        <p>Намерени ученици: @filteredStudents.Count</p>
-        @foreach (var student in filteredStudents)
+    <div class="mb-3">
+        <label class="form-label"><strong>Клас:</strong></label>
+        @foreach (var grade in allGrades.OrderBy(g => g))
         {
-            <li>@student.Name @student.SecName (Клас: @student.Grade)</li>
+            <label>
+                <input type="checkbox"
+                       checked="@selectedGrades.Contains(grade)"
+                       @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))" />
+                @grade
+            </label>
         }
-    </ul>
+    </div>
+
+
+    <div class="mb-3">
+        <label class="form-label"><strong>Може да помогне с:</strong></label>
+        <div class="d-flex flex-wrap">
+            <button class="btn btn-sm btn-link me-2" @onclick="() => SelectAllSubjects(selectedCanHelpWith)">Выбрать все</button>
+            <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedCanHelpWith)">Очистить</button>
+        </div>
+        <div class="row">
+            @foreach (var subject in allSubjects)
+            {
+                <div class="col-auto form-check" @key="subject">
+                    <input class="form-check-input"
+                           id="@($"can_{subject}")"
+                           type="checkbox"
+                           checked="@selectedCanHelpWith.Contains(subject)"
+                           @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedCanHelpWith)" />
+                    @* Посмотреть подробнее как это работает *@
+
+                    <label class="form-check-label" for="@($"can_{subject}")">@subject</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label"><strong>Търси помощ по:</strong></label>
+        <div class="d-flex flex-wrap">
+            <button class="btn btn-sm btn-link me-2" @onclick="() => SelectAllSubjects(selectedNeedsHelpWith)">Выбрать все</button>
+            <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedNeedsHelpWith)">Очистить</button>
+        </div>
+        <div class="row">
+            @foreach (var subject in allSubjects)
+            {
+                <div class="col-auto form-check" @key="subject">
+                    <input class="form-check-input"
+                           id="@($"need_{subject}")"
+                           type="checkbox"
+                           checked="@selectedNeedsHelpWith.Contains(subject)"
+                           @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedNeedsHelpWith)" />
+                    <label class="form-check-label" for="@($"need_{subject}")">@subject</label>
+                </div>
+            }
+        </div>
+    </div>
+
+<div class="mb-3">
+    <label class="form-label"><strong>Режим съвпадение:</strong></label>
+    <div>
+        <input type="radio" id="mode_any" name="mode" checked="@(!matchAll)" @onchange="() => { matchAll = false; FilterStudents(); }" />
+        <label for="mode_any">Съвпадение по поне 1 предмет (ANY)</label>
+        <input type="radio" id="mode_all" name="mode" checked="@(matchAll)" class="ms-2" @onchange="() => { matchAll = true; FilterStudents(); }" />
+        <label for="mode_all">Съвпадение по всички (ALL)</label>
+    </div>
+</div>
+
+    <button class="btn btn-secondary mb-3" @onclick="ResetFilters">Махни филтрите</button>
+
+    <hr />
+
+    @if (filteredStudents == null || filteredStudents.Count == 0)
+    {
+        <p>Няма намерени ученици.</p>
+    }
+    else
+    {
+        <p>Намерени ученици: @filteredStudents.Count</p>
+        <ul class="list-group">
+            @foreach (var student in filteredStudents)
+            {
+                <li class="list-group-item" @key="student.Username">
+                    <strong>@student.Name @student.SecName</strong> (Клас: @student.Grade)
+                    <div class="small text-muted">
+                        @{
+                            var commonCan = student.CanHelpWith?.Intersect(selectedCanHelpWith ?? Enumerable.Empty<Subject>()).ToList() ?? new List<Subject>();
+                            var commonNeeds = student.NeedsHelpWith?.Intersect(selectedNeedsHelpWith ?? Enumerable.Empty<Subject>()).ToList() ?? new List<Subject>();
+                        }
+                        @if (commonCan.Any())
+                        {
+                            <span>Може да помогне: @string.Join(", ", commonCan) (@commonCan.Count/@selectedCanHelpWith.Count съвпадения)</span>
+                        }
+                        @if (commonNeeds.Any())
+                        {
+                            <span class="ms-2">Търси помощ: @string.Join(", ", commonNeeds) (@commonNeeds.Count/@selectedNeedsHelpWith.Count съвпадения)</span>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+    }
 }
 
 @code {
     private Student? currentStudent;
 
-    private int? selectedGrade = null;
-    private List<Subject> selectedCanHelpWith = new();
-    private List<Subject> selectedNeedsHelpWith = new();
+    private HashSet<int> selectedGrades = new();
+    private HashSet<Subject> selectedCanHelpWith = new();
+    private HashSet<Subject> selectedNeedsHelpWith = new();
 
-    private List<Subject> allSubjects = new();
-    private List<int> allGrades = new();
+    private HashSet<Subject> allSubjects = new();
+    private HashSet<int> allGrades = new();
     private List<Student> allStudents = new();
 
     private List<Student> filteredStudents = new();
+
+    private bool matchAll = false; // false = ANY ("мягкий" фильтр), true = ALL ("жесткий" фильтр)
 
     protected override void OnInitialized()
     {
         currentStudent = AppState.CurrentUser;
 
+        allStudents = StudentManager.GetAllStudents();
         if (currentStudent != null)
-        {
-            allStudents = StudentManager.GetAllStudents().Where(s => s.Username != currentStudent.Username).ToList();
-        }
+            allStudents = allStudents.Where(s => s.Username != currentStudent.Username).ToList();
 
-        allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToList();
-        allGrades = allStudents.Select(s => s.Grade).Distinct().OrderBy(g => g).ToList();
+
+        allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToHashSet();
+        allGrades = allStudents.Select(s => s.Grade).ToHashSet();
 
         FilterStudents();
     }
 
-    private void ToggleSubject(Subject subject, bool isChecked, List<Subject> targetList)
+    private void ToggleGrade(int grade, bool isChecked)
     {
-        if (isChecked)
-        {
-            if (!targetList.Contains(subject))
-                targetList.Add(subject);
-        }
-        else
-        {
-            if (targetList.Contains(subject))
-                targetList.Remove(subject);
-        }
+        if (isChecked) selectedGrades.Add(grade);
+        else selectedGrades.Remove(grade);
+        FilterStudents();
+    }
 
+    private void ToggleSubject(Subject subject, bool isChecked, HashSet<Subject> targetList)
+    {
+        if (isChecked) targetList.Add(subject);
+        else targetList.Remove(subject);
+        FilterStudents();
+    }
+
+    private void SelectAllSubjects(HashSet<Subject> targetList)
+    {
+        targetList.Clear();
+        foreach (var subject in allSubjects)
+            targetList.Add(subject);
+
+        FilterStudents();
+    }
+
+    private void ClearAllSubjects(HashSet<Subject> targetList)
+    {
+        targetList.Clear();
         FilterStudents();
     }
 
     private void FilterStudents()
     {
-        filteredStudents = allStudents.Where(s => 
-            (selectedCanHelpWith.Count() == 0 || selectedCanHelpWith.All(subject => s.CanHelpWith.Contains(subject))) &&
-            (selectedNeedsHelpWith.Count() == 0 || selectedNeedsHelpWith.All(subject => s.NeedsHelpWith.Contains(subject))) &&
-            (selectedGrade == null || selectedGrade == s.Grade)).ToList();
+        if (matchAll)
+        {
+            filteredStudents = allStudents.Where(s =>
+                (selectedCanHelpWith.Count == 0 || selectedCanHelpWith.All(subject => s.CanHelpWith != null && s.CanHelpWith.Contains(subject))) &&
+                (selectedNeedsHelpWith.Count == 0 || selectedNeedsHelpWith.All(subject => s.NeedsHelpWith != null && s.NeedsHelpWith.Contains(subject))) &&
+                (selectedGrades.Count == 0 || selectedGrades.Contains(s.Grade))
+                ).ToList();
+        }
+        else
+        {
+            filteredStudents = allStudents.Where(s =>
+                (selectedCanHelpWith.Count == 0 || selectedCanHelpWith.Any(subject => s.CanHelpWith != null && s.CanHelpWith.Contains(subject))) &&
+                (selectedNeedsHelpWith.Count == 0 || selectedNeedsHelpWith.Any(subject => s.NeedsHelpWith != null && s.NeedsHelpWith.Contains(subject))) &&
+                (selectedGrades.Count == 0 || selectedGrades.Contains(s.Grade))
+                ).ToList();
+        }
+
     }
     private void ResetFilters()
     {
-        selectedGrade = null;
+        selectedGrades.Clear();
         selectedCanHelpWith.Clear();
         selectedNeedsHelpWith.Clear();
+
         FilterStudents();
     }
+
+
+    private static bool ValueToBool(object? value)
+    {
+        if (value is bool b) return b;
+        var s = value?.ToString();
+        if (string.IsNullOrEmpty(s)) return false;
+        return s.Equals("true", StringComparison.OrdinalIgnoreCase)
+            || s.Equals("on", StringComparison.OrdinalIgnoreCase)
+            || s.Equals("1");
+    }
+
 }
