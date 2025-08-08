@@ -72,9 +72,9 @@ else
     <label class="form-label"><strong>Режим съвпадение:</strong></label>
     <div>
         <input type="radio" id="mode_any" name="mode" checked="@(!matchAll)" @onchange="() => { matchAll = false; FilterStudents(); }" />
-        <label for="mode_any">Съвпадение по поне 1 предмет (ANY)</label>
+        <label for="mode_any">Съвпадение по поне 1 предмет</label>
         <input type="radio" id="mode_all" name="mode" checked="@(matchAll)" class="ms-2" @onchange="() => { matchAll = true; FilterStudents(); }" />
-        <label for="mode_all">Съвпадение по всички (ALL)</label>
+        <label for="mode_all">Съвпадение по всички предмети</label>
     </div>
 </div>
 
