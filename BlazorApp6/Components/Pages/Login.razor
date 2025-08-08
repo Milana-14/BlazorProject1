@@ -7,17 +7,19 @@
 <EditForm Model="@loginModel" OnValidSubmit="LoginUser">
     <DataAnnotationsValidator />
     <ValidationSummary />
-    <div>
+    <div class="mb-3">
         <label>Потребителско име:</label>
         <InputText class="form-control" @bind-Value="loginModel.Username"></InputText>
     </div>
 
-    <div>
+    <div class="mb-3">
         <label>Парола:</label>
         <InputText type="password" class="form-control" @bind-Value="loginModel.Password"></InputText>
     </div>
 
-    <button type="submit" class="btn btn-primary">Вход</button>
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Вход</button>
+    </div>
 </EditForm>
 
 @if (loginFailed)
