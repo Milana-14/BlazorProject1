@@ -27,8 +27,8 @@ else
     <div class="mb-3">
         <label class="form-label"><strong>Може да помогне с:</strong></label>
         <div class="d-flex flex-wrap">
-            <button class="btn btn-sm btn-link me-2" @onclick="() => SelectAllSubjects(selectedCanHelpWith)">Выбрать все</button>
-            <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedCanHelpWith)">Очистить</button>
+            <button class="btn btn-sm btn-link me-2" @onclick="() => SelectAllSubjects(selectedCanHelpWith)">Избери всички</button>
+            <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedCanHelpWith)">Изтрий</button>
         </div>
         <div class="row">
             @foreach (var subject in allSubjects)
@@ -50,8 +50,8 @@ else
     <div class="mb-3">
         <label class="form-label"><strong>Търси помощ по:</strong></label>
         <div class="d-flex flex-wrap">
-            <button class="btn btn-sm btn-link me-2" @onclick="() => SelectAllSubjects(selectedNeedsHelpWith)">Выбрать все</button>
-            <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedNeedsHelpWith)">Очистить</button>
+            <button class="btn btn-sm btn-link me-2" @onclick="() => SelectAllSubjects(selectedNeedsHelpWith)">Избери всички</button>
+            <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedNeedsHelpWith)">Изтрий</button>
         </div>
         <div class="row">
             @foreach (var subject in allSubjects)
@@ -72,9 +72,9 @@ else
     <label class="form-label"><strong>Режим съвпадение:</strong></label>
     <div>
         <input type="radio" id="mode_any" name="mode" checked="@(!matchAll)" @onchange="() => { matchAll = false; FilterStudents(); }" />
-        <label for="mode_any">Съвпадение по поне 1 предмет (ANY)</label>
+        <label for="mode_any">Съвпадение по поне 1 предмет</label>
         <input type="radio" id="mode_all" name="mode" checked="@(matchAll)" class="ms-2" @onchange="() => { matchAll = true; FilterStudents(); }" />
-        <label for="mode_all">Съвпадение по всички (ALL)</label>
+        <label for="mode_all">Съвпадение по всички предмети</label>
     </div>
 </div>
 
