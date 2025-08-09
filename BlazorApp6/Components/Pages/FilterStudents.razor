@@ -2,7 +2,7 @@
 @inject AppState AppState
 @rendermode InteractiveServer
 
-<h3>students</h3>
+<h3>Филтър</h3>
 
 @if (currentStudent == null)
 {
@@ -10,74 +10,146 @@
 }
 else
 {
-    <div class="mb-3">
-        <label class="form-label"><strong>Клас:</strong></label>
-        @foreach (var grade in allGrades.OrderBy(g => g))
-        {
-            <label>
-                <input type="checkbox"
-                       checked="@selectedGrades.Contains(grade)"
-                       @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))" />
-                @grade
-            </label>
+    <style>
+        fieldset {
+            border: none;
+            padding: 0;
+            margin-bottom: 0.3rem;
         }
-    </div>
 
+        .filter-row {
+            display: flex;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
 
-    <div class="mb-3">
-        <label class="form-label"><strong>Може да помогне с:</strong></label>
-        <div class="d-flex flex-wrap">
-            <button class="btn btn-sm btn-link me-2" @onclick="() => SelectAllSubjects(selectedCanHelpWith)">Избери всички</button>
+        .filter-label {
+            flex: 0 0 130px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #333;
+            user-select: none;
+            padding-top: 0.25rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            flex: 1 1 auto;
+        }
+
+            .checkbox-group > div {
+                flex: 0 0 auto;
+                min-width: 45px;
+            }
+
+        .form-check-label {
+            user-select: none;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .btn-link {
+            font-size: 0.85rem;
+            padding: 0 0.4rem;
+            margin-right: 0.5rem;
+        }
+
+        .buttons-row {
+            margin-bottom: 0.5rem;
+        }
+        /* Радиокнопки в линию */
+        .match-mode {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+            .match-mode label {
+                user-select: none;
+                font-size: 0.9rem;
+            }
+    </style>
+
+    <fieldset>
+        <div class="buttons-row d-flex flex-wrap mb-1 gap-2">
+            <button class="btn btn-sm btn-link" @onclick="() => SelectAllGrades(selectedGrades)">Избери всички</button>
+            <button class="btn btn-sm btn-link" @onclick="() => ClearAllGrades(selectedGrades)">Изтрий</button>
+        </div>
+        <div class="filter-row">
+            <div class="filter-label">Клас:</div>
+            <div class="checkbox-group">
+                @foreach (var grade in allGrades.OrderBy(g => g))
+                {
+                    <div class="form-check">
+                        <input id=@($"grade_{grade}") type="checkbox"
+                               checked="@selectedGrades.Contains(grade)"
+                               @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))" />
+                        <label class="form-check-label" for=@($"grade_{grade}")>@grade</label>
+                    </div>
+                }
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <div class="buttons-row d-flex flex-wrap mb-1 gap-2">
+            <button class="btn btn-sm btn-link" @onclick="() => SelectAllSubjects(selectedCanHelpWith)">Избери всички</button>
             <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedCanHelpWith)">Изтрий</button>
         </div>
-        <div class="row">
-            @foreach (var subject in allSubjects)
-            {
-                <div class="col-auto form-check" @key="subject">
-                    <input class="form-check-input"
-                           id="@($"can_{subject}")"
-                           type="checkbox"
-                           checked="@selectedCanHelpWith.Contains(subject)"
-                           @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedCanHelpWith)" />
-                    @* Посмотреть подробнее как это работает *@
-
-                    <label class="form-check-label" for="@($"can_{subject}")">@subject</label>
-                </div>
-            }
+        <div class="filter-row">
+            <div class="filter-label">Може да помогне с:</div>
+            <div class="checkbox-group">
+                @foreach (var subject in allSubjects)
+                {
+                    <div class="form-check" @key="subject">
+                        <input class="form-check-input" id="@($"can_{subject}")" type="checkbox"
+                               checked="@selectedCanHelpWith.Contains(subject)"
+                               @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedCanHelpWith)" />
+                        <label class="form-check-label" for="@($"can_{subject}")">@subject</label>
+                    </div>
+                }
+            </div>
         </div>
-    </div>
+    </fieldset>
 
-    <div class="mb-3">
-        <label class="form-label"><strong>Търси помощ по:</strong></label>
-        <div class="d-flex flex-wrap">
-            <button class="btn btn-sm btn-link me-2" @onclick="() => SelectAllSubjects(selectedNeedsHelpWith)">Избери всички</button>
+    <fieldset>
+        <div class="buttons-row d-flex flex-wrap mb-1 gap-2">
+            <button class="btn btn-sm btn-link" @onclick="() => SelectAllSubjects(selectedNeedsHelpWith)">Избери всички</button>
             <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedNeedsHelpWith)">Изтрий</button>
         </div>
-        <div class="row">
-            @foreach (var subject in allSubjects)
-            {
-                <div class="col-auto form-check" @key="subject">
-                    <input class="form-check-input"
-                           id="@($"need_{subject}")"
-                           type="checkbox"
-                           checked="@selectedNeedsHelpWith.Contains(subject)"
-                           @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedNeedsHelpWith)" />
-                    <label class="form-check-label" for="@($"need_{subject}")">@subject</label>
-                </div>
-            }
+        <div class="filter-row">
+            <div class="filter-label">Търси помощ по:</div>
+            <div class="checkbox-group">
+                @foreach (var subject in allSubjects)
+                {
+                    <div class="form-check" @key="subject">
+                        <input class="form-check-input" id="@($"need_{subject}")" type="checkbox"
+                               checked="@selectedNeedsHelpWith.Contains(subject)"
+                               @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedNeedsHelpWith)" />
+                        <label class="form-check-label" for="@($"need_{subject}")">@subject</label>
+                    </div>
+                }
+            </div>
         </div>
+    </fieldset>
+
+    <div class="match-mode">
+        <label>
+            <input type="radio" id="mode_any" name="mode" checked="@(!matchAll)"
+                   @onchange="() => { matchAll = false; ApplyFilter(); }" /> Съвпадение по поне 1 предмет
+        </label>
+        <label>
+            <input type="radio" id="mode_all" name="mode" checked="@(matchAll)" class="ms-2"
+                   @onchange="() => { matchAll = true; ApplyFilter(); }" /> Съвпадение по всички предмети
+        </label>
     </div>
 
-<div class="mb-3">
-    <label class="form-label"><strong>Режим съвпадение:</strong></label>
-    <div>
-        <input type="radio" id="mode_any" name="mode" checked="@(!matchAll)" @onchange="() => { matchAll = false; FilterStudents(); }" />
-        <label for="mode_any">Съвпадение по поне 1 предмет</label>
-        <input type="radio" id="mode_all" name="mode" checked="@(matchAll)" class="ms-2" @onchange="() => { matchAll = true; FilterStudents(); }" />
-        <label for="mode_all">Съвпадение по всички предмети</label>
-    </div>
-</div>
-
+    <button class="btn btn-primary me-2 mb-3" @onclick="AutoFilter">Автоматичен избор</button>
     <button class="btn btn-secondary mb-3" @onclick="ResetFilters">Махни филтрите</button>
 
     <hr />
@@ -89,28 +161,69 @@ else
     else
     {
         <p>Намерени ученици: @filteredStudents.Count</p>
-        <ul class="list-group">
-            @foreach (var student in filteredStudents)
+        <div class="row g-3">
+            @foreach (var student in filteredStudentsCompatib)
             {
-                <li class="list-group-item" @key="student.Username">
-                    <strong>@student.Name @student.SecName</strong> (Клас: @student.Grade)
-                    <div class="small text-muted">
-                        @{
-                            var commonCan = student.CanHelpWith?.Intersect(selectedCanHelpWith ?? Enumerable.Empty<Subject>()).ToList() ?? new List<Subject>();
-                            var commonNeeds = student.NeedsHelpWith?.Intersect(selectedNeedsHelpWith ?? Enumerable.Empty<Subject>()).ToList() ?? new List<Subject>();
-                        }
-                        @if (commonCan.Any())
-                        {
-                            <span>Може да помогне: @string.Join(", ", commonCan) (@commonCan.Count/@selectedCanHelpWith.Count съвпадения)</span>
-                        }
-                        @if (commonNeeds.Any())
-                        {
-                            <span class="ms-2">Търси помощ: @string.Join(", ", commonNeeds) (@commonNeeds.Count/@selectedNeedsHelpWith.Count съвпадения)</span>
-                        }
+                <div class="col-12 col-md-6">
+                    <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-row align-items-start gap-3">
+
+                        <!-- Аватарка слева, меньше размером -->
+                        <img src="@GetAvatarUrl(student.student)" alt="Avatar" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;" />
+
+                        <!-- Контейнер с текстом справа -->
+                        <div class="flex-grow-1 d-flex flex-column">
+
+                            <!-- Имя и класс слева -->
+                            <div>
+                                <h5 class="fw-semibold mb-1">@student.student.Name @student.student.SecName</h5>
+                                <p class="text-muted small mb-2">Клас: @student.student.Grade</p>
+                            </div>
+
+                            <hr />
+
+                            <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
+                            <div class="match-subjects-scroll">
+                                @foreach (var subj in student.student.CanHelpWith.Where(s => s != Subject.NotSpecified))
+                                {
+                                    var isMatch = selectedCanHelpWith.Contains(subj);
+                                    <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
+                                        @subj
+                                    </span>
+                                }
+                            </div>
+
+                            <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
+                            <div class="match-subjects-scroll">
+                                @foreach (var subj in student.student.NeedsHelpWith.Where(s => s != Subject.NotSpecified))
+                                {
+                                    var isMatch = selectedNeedsHelpWith.Contains(subj);
+                                    <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
+                                        @subj
+                                    </span>
+                                }
+                            </div>
+
+                            <hr />
+
+                            <!-- Кнопки -->
+                            <div class="d-flex gap-2">
+                                @if (student.student.Grade == currentStudent?.Grade)
+                                {
+                                    <button class="btn btn-primary flex-fill" @onclick="() => RequestMatch(student.student)">Матч</button>
+                                    <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student.student)">Виж профила</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-outline-secondary flex-fill w-100" @onclick="() => ViewProfile(student.student)">Виж профила</button>
+                                }
+                            </div>
+
+                        </div>
                     </div>
-                </li>
+                </div>
             }
-        </ul>
+        </div>
+
     }
 }
 
@@ -126,6 +239,7 @@ else
     private List<Student> allStudents = new();
 
     private List<Student> filteredStudents = new();
+    private List<(Student student, double compatibility, List<Subject> commonCan, List<Subject> commonNeeds)> filteredStudentsCompatib = new();
 
     private bool matchAll = false; // false = ANY ("мягкий" фильтр), true = ALL ("жесткий" фильтр)
 
@@ -141,21 +255,31 @@ else
         allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToHashSet();
         allGrades = allStudents.Select(s => s.Grade).ToHashSet();
 
-        FilterStudents();
+        AutoFilter();
+        ApplyFilter();
+    }
+
+    private void AutoFilter()
+    {
+        selectedCanHelpWith = currentStudent.NeedsHelpWith.ToHashSet();
+        selectedNeedsHelpWith = currentStudent.CanHelpWith.ToHashSet();
+        selectedGrades.Clear();
+        selectedGrades.Add(currentStudent.Grade);
+        ApplyFilter();
     }
 
     private void ToggleGrade(int grade, bool isChecked)
     {
         if (isChecked) selectedGrades.Add(grade);
         else selectedGrades.Remove(grade);
-        FilterStudents();
+        ApplyFilter();
     }
 
     private void ToggleSubject(Subject subject, bool isChecked, HashSet<Subject> targetList)
     {
         if (isChecked) targetList.Add(subject);
         else targetList.Remove(subject);
-        FilterStudents();
+        ApplyFilter();
     }
 
     private void SelectAllSubjects(HashSet<Subject> targetList)
@@ -164,34 +288,50 @@ else
         foreach (var subject in allSubjects)
             targetList.Add(subject);
 
-        FilterStudents();
+        ApplyFilter();
     }
 
     private void ClearAllSubjects(HashSet<Subject> targetList)
     {
         targetList.Clear();
-        FilterStudents();
+        ApplyFilter();
     }
 
-    private void FilterStudents()
+    private void SelectAllGrades(HashSet<int> targetList)
     {
-        if (matchAll)
+        targetList.Clear();
+        foreach (int grade in allGrades)
         {
-            filteredStudents = allStudents.Where(s =>
-                (selectedCanHelpWith.Count == 0 || selectedCanHelpWith.All(subject => s.CanHelpWith != null && s.CanHelpWith.Contains(subject))) &&
-                (selectedNeedsHelpWith.Count == 0 || selectedNeedsHelpWith.All(subject => s.NeedsHelpWith != null && s.NeedsHelpWith.Contains(subject))) &&
-                (selectedGrades.Count == 0 || selectedGrades.Contains(s.Grade))
-                ).ToList();
-        }
-        else
-        {
-            filteredStudents = allStudents.Where(s =>
-                (selectedCanHelpWith.Count == 0 || selectedCanHelpWith.Any(subject => s.CanHelpWith != null && s.CanHelpWith.Contains(subject))) &&
-                (selectedNeedsHelpWith.Count == 0 || selectedNeedsHelpWith.Any(subject => s.NeedsHelpWith != null && s.NeedsHelpWith.Contains(subject))) &&
-                (selectedGrades.Count == 0 || selectedGrades.Contains(s.Grade))
-                ).ToList();
+            targetList.Add(grade);
         }
 
+        ApplyFilter();
+    }
+
+    private void ClearAllGrades(HashSet<int> targetList)
+    {
+        targetList.Clear();
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        filteredStudents = allStudents.Where(s =>
+            (selectedCanHelpWith.Count == 0 || (matchAll
+                ? selectedCanHelpWith.All(subject => s.CanHelpWith?.Where(x => x != Subject.NotSpecified).Contains(subject) == true)
+                : selectedCanHelpWith.Any(subject => s.CanHelpWith?.Where(x => x != Subject.NotSpecified).Contains(subject) == true))) &&
+            (selectedNeedsHelpWith.Count == 0 || (matchAll
+                ? selectedNeedsHelpWith.All(subject => s.NeedsHelpWith?.Where(x => x != Subject.NotSpecified).Contains(subject) == true)
+                : selectedNeedsHelpWith.Any(subject => s.NeedsHelpWith?.Where(x => x != Subject.NotSpecified).Contains(subject) == true))) &&
+                (selectedGrades.Count == 0 || selectedGrades.Contains(s.Grade))).ToList();
+
+        filteredStudentsCompatib.Clear();
+        foreach (var student in filteredStudents)
+        {
+            var compatibility = CalculateCompatibility(student, out List<Subject> commonCan, out List<Subject> commonNeeds);
+            filteredStudentsCompatib.Add((student, compatibility, commonCan, commonNeeds));
+        }
+        filteredStudentsCompatib = filteredStudentsCompatib.OrderByDescending(s => s.compatibility).ToList();
     }
     private void ResetFilters()
     {
@@ -199,7 +339,7 @@ else
         selectedCanHelpWith.Clear();
         selectedNeedsHelpWith.Clear();
 
-        FilterStudents();
+        ApplyFilter();
     }
 
 
@@ -213,4 +353,138 @@ else
             || s.Equals("1");
     }
 
+    private double CalculateCompatibility(Student student, out List<Subject> commonCan, out List<Subject> commonNeeds)
+    {
+        commonCan = student.CanHelpWith?.Where(s => s != Subject.NotSpecified).Intersect(selectedCanHelpWith).ToList();
+        commonNeeds = student.NeedsHelpWith?.Where(s => s != Subject.NotSpecified).Intersect(selectedNeedsHelpWith).ToList();
+
+        if (selectedCanHelpWith.Count == 0 && selectedNeedsHelpWith.Count == 0)
+            return 0;
+
+        else if (selectedCanHelpWith.Count == 0 && selectedNeedsHelpWith.Count > 0)
+            return ((double)commonNeeds.Count / selectedNeedsHelpWith.Count) * 100;
+
+        else if (selectedCanHelpWith.Count > 0 && selectedNeedsHelpWith.Count == 0)
+            return ((double)commonCan.Count / selectedCanHelpWith.Count) * 100;
+
+        else
+            return (((double)commonCan.Count / selectedCanHelpWith.Count) + ((double)commonNeeds.Count / selectedNeedsHelpWith.Count)) / 2 * 100;
+    }
+
+    private string GetAvatarUrl(Student student)
+    {
+        // TODO: вернуть URL аватарки, пока заглушка
+        return "_content/YourAppNamespace/images/default-avatar.png";
+    }
+    private void RequestMatch(Student student)
+    {
+        // Пока просто заглушка
+        Console.WriteLine($"Запрос на матчинг для {student.Name} {student.SecName}");
+        // Здесь можно добавить логику отправки запроса
+    }
+    private void ViewProfile(Student student)
+    {
+        // Логика перехода к профилю — например, NavigationManager.NavigateTo(...)
+        Console.WriteLine($"Просмотр профиля {student.Name} {student.SecName}");
+    }
 }
+
+<style>
+    fieldset {
+        border: none;
+        padding: 0;
+        margin-bottom: 1.2rem;
+    }
+
+    legend.filter-legend {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        align-items: flex-end;
+        margin-bottom: 1rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.2rem;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            font-size: 0.9rem;
+            padding: 0.2rem 0.4rem;
+        }
+    .match-subjects-container {
+        padding-bottom: 0.5rem;
+    }
+
+    .match-subjects-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .match-subjects-label {
+        min-width: 110px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #555;
+        white-space: nowrap;
+    }
+
+    .match-subjects-scroll {
+        overflow-x: auto;
+        display: flex;
+        gap: 0.5rem;
+        scrollbar-width: thin;
+    }
+
+        .match-subjects-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .match-subjects-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.15);
+            border-radius: 3px;
+        }
+
+    /* Светлее синий */
+    .light-blue-badge {
+        background-color: #e6f0ff; /* Было #cce5ff — теперь ещё светлее */
+        color: #003366;
+        font-weight: 400;
+    }
+
+    .light-red-badge {
+        background-color: #fce7e9;
+        color: #842029;
+        font-weight: 400;
+    }
+
+    .badge-match {
+        background-color: #a8d0ff; /* более яркий светло-синий */
+        color: #003366;
+        font-weight: 600;
+    }
+
+    .badge-nonmatch {
+        background-color: #e6f0ff; /* более бледный */
+        color: #555;
+        font-weight: 400;
+    }
+
+
+
+</style>
