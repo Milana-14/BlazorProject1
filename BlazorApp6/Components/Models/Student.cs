@@ -11,8 +11,8 @@ public class Student : User
 
     public int Grade { get; set; }
 
-    public List<Subject> CanHelpWith { get; set; } = new();
-    public List<Subject> NeedsHelpWith { get; set; } = new();
+    public HashSet<Subject> CanHelpWith { get; set; } = new();
+    public HashSet<Subject> NeedsHelpWith { get; set; } = new();
 
     public Student(string name, string secName, int age, int grade, string username, string password, string phoneNumber = "Не указан")
     {
