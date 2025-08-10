@@ -174,14 +174,15 @@ else
         currentStudent = AppState.CurrentUser;
 
         if (currentStudent != null)
+        {
             allStudents = StudentManager.GetAllStudents().Where(s => s.Username != currentStudent.Username).ToList();
 
+            allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToHashSet();
+            allGrades = allStudents.Select(s => s.Grade).ToHashSet();
 
-        allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToHashSet();
-        allGrades = allStudents.Select(s => s.Grade).ToHashSet();
-
-        AutoFilter();
-        ApplyFilter();
+            AutoFilter();
+            ApplyFilter();
+        }
     }
 
     private void ApplyFilter()
