@@ -1,7 +1,16 @@
-﻿@page "/other-profile"
+﻿@page "/other-profile/{id:guid}"
 
 <h3>OtherProfile</h3>
 
 @code {
+    [Parameter]
+    public Guid id { get; set; }
 
+    private Student? otherStudent;
+
+    protected override void OnInitialized()
+    {
+        // Используй id, чтобы загрузить данные студента
+        otherStudent = StudentManager.GetStudentById(id);
+    }
 }

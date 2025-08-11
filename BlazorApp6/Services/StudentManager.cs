@@ -20,7 +20,7 @@ namespace BlazorApp6.Services
                 throw new ApplicationException("Добавянето на ученик не бе успешно. Опитайте отново по-късно.", ex);
             }
         }
-        public static Student? FindStudent(string Username)
+        public static Student? FindStudentByUsername(string Username)
         {
             try
             {
@@ -31,6 +31,11 @@ namespace BlazorApp6.Services
             {
                 throw new ApplicationException("Зареждането на данните не бе успешно. Опитайте отново по-късно.", ex);
             }
+        }
+        public static Student? GetStudentById(Guid Id)
+        {
+            Student student = ; // ДОРАБОТАТЬ
+            return student;
         }
         public static void UpdateStudent(Student updatedStudent)
         {
