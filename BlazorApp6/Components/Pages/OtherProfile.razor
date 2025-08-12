@@ -1,16 +1,67 @@
-﻿@page "/other-profile/{id:guid}"
+﻿@page "/other-profile/{Id:guid}"
 
 <h3>OtherProfile</h3>
 
+@if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
+{
+    <div class="card mt-3 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">@otherStudent.Username</h5>
+            <br class="card-text">
+            <p><strong>Име:</strong> @otherStudent.Name</p>
+            <p><strong>Фамилия:</strong> @otherStudent.SecName</p>
+            <p><strong>Възраст:</strong> @otherStudent.Age</p>
+            <p><strong>Клас:</strong> @otherStudent.Grade</p>
+            <p><strong>Телефон:</strong> @otherStudent.PhoneNumber</p>
+
+            @if (otherStudent.CanHelpWith?.Any() == true)
+            {
+                <p><strong>Може да помогне с:</strong> @string.Join(", ", otherStudent.CanHelpWith)</p>
+            }
+
+            @if (otherStudent.NeedsHelpWith?.Any() == true)
+            {
+                <p><strong>Търси помощ по:</strong> @string.Join(", ", otherStudent.NeedsHelpWith)</p>
+            }
+
+            <button class="btn btn-primary">Матч</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
 @code {
     [Parameter]
-    public Guid id { get; set; }
+    public Guid Id { get; set; }
 
     private Student? otherStudent;
 
-    protected override void OnInitialized()
+    private string errorMessage = string.Empty;
+
+    protected override void OnParametersSet()
     {
-        // Используй id, чтобы загрузить данные студента
-        otherStudent = StudentManager.GetStudentById(id);
+        errorMessage = string.Empty;
+
+        if (Id == Guid.Empty)
+        {
+            errorMessage = "Некорректный идентификатор ученика.";
+            return;
+        }
+
+        try
+        {
+            otherStudent = StudentManager.FindStudent(s => s.Id == Id);
+            if (otherStudent == null)
+            {
+                errorMessage = "Ученик не найден.";
+            }
+        }
+        catch (ApplicationException ex)
+        {
+            errorMessage = ex.Message;
+        }
     }
 }

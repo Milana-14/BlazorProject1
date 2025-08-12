@@ -20,22 +20,18 @@ namespace BlazorApp6.Services
                 throw new ApplicationException("Добавянето на ученик не бе успешно. Опитайте отново по-късно.", ex);
             }
         }
-        public static Student? FindStudentByUsername(string Username)
+        public static Student? FindStudent(Func<Student, bool> predicate)
         {
             try
             {
                 List<Student> students = StudentFileManager.LoadFromFile();
-                return students.FirstOrDefault(s => s.Username == Username);
+                return students.FirstOrDefault(predicate);
+                // dbContext.Students.FirstOrDefault(predicate) - при переходе на бд
             }
             catch (ApplicationException ex)
             {
                 throw new ApplicationException("Зареждането на данните не бе успешно. Опитайте отново по-късно.", ex);
             }
-        }
-        public static Student? GetStudentById(Guid Id)
-        {
-            Student student = ; // ДОРАБОТАТЬ
-            return student;
         }
         public static void UpdateStudent(Student updatedStudent)
         {

@@ -38,14 +38,13 @@
 @code {
     private LoginStudentFormModel loginModel = new LoginStudentFormModel();
     private bool loginFailed = false;
-
     public string errorMessage = string.Empty;
 
     private void LoginUser()
     {
         try
         {
-            Student foundStudent = StudentManager.FindStudent(loginModel.Username);
+            Student foundStudent = StudentManager.FindStudent(s => s.Username == loginModel.Username);
 
             if (foundStudent != null && foundStudent.Password == loginModel.Password)
             {

@@ -78,7 +78,7 @@
     {
         try
         {
-            Student? alreadyExistingStudent = StudentManager.FindStudent(formModel.Username);
+            Student? alreadyExistingStudent = StudentManager.FindStudent(s => s.Username == formModel.Username);
             if (alreadyExistingStudent != null)
             {
                 alreadyExists = true;
