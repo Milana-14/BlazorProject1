@@ -4,29 +4,23 @@
 
 @if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 {
-    <div class="card mt-3 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">@otherStudent.Username</h5>
-            <br class="card-text">
-            <p><strong>Име:</strong> @otherStudent.Name</p>
-            <p><strong>Фамилия:</strong> @otherStudent.SecName</p>
-            <p><strong>Възраст:</strong> @otherStudent.Age</p>
-            <p><strong>Клас:</strong> @otherStudent.Grade</p>
-            <p><strong>Телефон:</strong> @otherStudent.PhoneNumber</p>
+    <p><strong>Име:</strong> @otherStudent.Name</p>
+    <p><strong>Фамилия:</strong> @otherStudent.SecName</p>
+    <p><strong>Възраст:</strong> @otherStudent.Age</p>
+    <p><strong>Клас:</strong> @otherStudent.Grade</p>
+    <p><strong>Телефон:</strong> @otherStudent.PhoneNumber</p>
 
-            @if (otherStudent.CanHelpWith?.Any() == true)
-            {
-                <p><strong>Може да помогне с:</strong> @string.Join(", ", otherStudent.CanHelpWith)</p>
-            }
+    @if (otherStudent.CanHelpWith?.Any() == true)
+    {
+        <p><strong>Може да помогне с:</strong> @string.Join(", ", otherStudent.CanHelpWith.Select(s => s.GetDisplayName()))</p>
+    }
 
-            @if (otherStudent.NeedsHelpWith?.Any() == true)
-            {
-                <p><strong>Търси помощ по:</strong> @string.Join(", ", otherStudent.NeedsHelpWith)</p>
-            }
+    @if (otherStudent.NeedsHelpWith?.Any() == true)
+    {
+        <p><strong>Търси помощ по:</strong> @string.Join(", ", otherStudent.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
+    }
 
-            <button class="btn btn-primary">Матч</button>
-        </div>
-    </div>
+    <button class="btn btn-primary">Матч</button>
 }
 else
 {

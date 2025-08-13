@@ -2,7 +2,7 @@
 
 public class Student : User
 {
-    public override Guid Id { get; set; } 
+    public override Guid Id { get; set; }
     public override string Name { get; set; }
     public override string SecName { get; set; }
     public override int Age { get; set; }
