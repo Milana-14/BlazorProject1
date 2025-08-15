@@ -56,30 +56,36 @@ else if (student is not null)
                 <InputText class="form-control" @bind-Value="student.PhoneNumber" />
             </div>
 
-            <div class="subject-section">
+            <div class="filter-row">
                 <h5>Мога да помогна с:</h5>
-                @foreach (var subject in allSubjects)
-                {
-                    <label>
-                        <input type="checkbox"
-                               checked="@student.CanHelpWith.Contains(subject)"
-                               @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith, student.NeedsHelpWith)" />
-                        @subject.GetDisplayName()
-                    </label>
-                }
+                <div class="checkbox-group">
+                    @foreach (var subject in allSubjects)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   checked="@student.CanHelpWith.Contains(subject)"
+                                   @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith, student.NeedsHelpWith)" />
+                            @subject.GetDisplayName()
+                        </div>
+                    }
+                </div>
             </div>
 
-            <div class="subject-section">
+            <div class="filter-row">
                 <h5>Нуждая се от помощ по:</h5>
-                @foreach (var subject in allSubjects)
-                {
-                    <label>
-                        <input type="checkbox"
-                               checked="@student.NeedsHelpWith.Contains(subject)"
-                               @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith, student.CanHelpWith)" />
-                        @subject.GetDisplayName()
-                    </label>
-                }
+                <div class="checkbox-group">
+                    @foreach (var subject in allSubjects)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   checked="@student.NeedsHelpWith.Contains(subject)"
+                                   @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith, student.CanHelpWith)" />
+                            @subject.GetDisplayName()
+                        </div>
+                    }
+                </div>
             </div>
             <button type="button" class="btn btn-success" @onclick="GoToChangePassword">Промени паролата</button>
 
@@ -154,3 +160,25 @@ else if (student is not null)
         Navigation.NavigateTo("/login");
     }
 }
+
+<style>
+    
+
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        flex: 1 1 auto;
+    }
+
+        .checkbox-group > div {
+            flex: 0 0 auto;
+            min-width: 45px;
+        }
+
+    .form-check-label {
+        user-select: none;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+</style>
