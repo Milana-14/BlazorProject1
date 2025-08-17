@@ -3,5 +3,6 @@
     public static class AppConstants
     {
         public const string StudentsFilePath = "Data/students.json";
+        public const string MatchesFilePath = "Data/matches.json";
     }
 }

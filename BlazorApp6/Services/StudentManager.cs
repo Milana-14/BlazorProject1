@@ -5,11 +5,17 @@ namespace BlazorApp6.Services
 {
     public class StudentManager
     {
-        public static List<Student> AddStudent(Student student)
+        private List<Student> students;
+        public StudentManager()
+        {
+            students = StudentFileManager.LoadFromFile();
+        }
+
+        public List<Student> AddStudent(Student student)
         {
             try
             {
-                List<Student> students = StudentFileManager.LoadFromFile();
+                // List<Student> students = StudentFileManager.LoadFromFile();
                 students.Add(student);
                 StudentFileManager.SaveToFile(students);
                 return students;
@@ -20,11 +26,11 @@ namespace BlazorApp6.Services
                 throw new ApplicationException("Добавянето на ученик не бе успешно. Опитайте отново по-късно.", ex);
             }
         }
-        public static Student? FindStudent(Func<Student, bool> predicate)
+        public Student? FindStudent(Func<Student, bool> predicate)
         {
             try
             {
-                List<Student> students = StudentFileManager.LoadFromFile();
+                // List<Student> students = StudentFileManager.LoadFromFile();
                 return students.FirstOrDefault(predicate);
                 // dbContext.Students.FirstOrDefault(predicate) - при переходе на бд
             }
@@ -33,9 +39,9 @@ namespace BlazorApp6.Services
                 throw new ApplicationException("Зареждането на данните не бе успешно. Опитайте отново по-късно.", ex);
             }
         }
-        public static void UpdateStudent(Student updatedStudent)
+        public void UpdateStudent(Student updatedStudent)
         {
-            var students = StudentFileManager.LoadFromFile();
+            // var students = StudentFileManager.LoadFromFile();
             int index = students.FindIndex(s => s.Username == updatedStudent.Username);
 
             if (index >= 0)
@@ -48,10 +54,12 @@ namespace BlazorApp6.Services
                 throw new Exception("Ученик не найден");
             }
         }
-        public static List<Student> GetAllStudents()
+        public List<Student> GetAllStudents()
         {
-            return StudentFileManager.LoadFromFile();
+            // return StudentFileManager.LoadFromFile();
+            return students;
         }
+
 
         // класс для чтения и записи данных в файл 
         private static class StudentFileManager
