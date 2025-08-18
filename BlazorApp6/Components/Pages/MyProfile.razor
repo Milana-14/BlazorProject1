@@ -95,9 +95,9 @@ else if (student is not null)
         </EditForm>
     }
 
-    @if (!isUpdated)
+    @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-success mt-3">errorMessage</div>
+        <div class="alert alert-success mt-3">@errorMessage</div>
     }
 
     @if (successMessageShown)
@@ -111,7 +111,6 @@ else if (student is not null)
     private Student? student;
     private List<Subject> allSubjects = new List<Subject>();
     private bool successMessageShown = false;
-    private bool isUpdated = false;
     private string errorMessage = string.Empty;
     private bool isEditing = false;
 
@@ -154,13 +153,11 @@ else if (student is not null)
             {
                 StudentManager.UpdateStudent(student);
                 isEditing = false;
-                isUpdated = true;
                 successMessageShown = true;
             }
             catch (Exception ex)
             {
                 errorMessage = ex.ToString();
-                isUpdated = false; 
             }
         }
     }
