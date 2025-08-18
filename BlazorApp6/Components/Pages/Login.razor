@@ -1,5 +1,6 @@
 ﻿@page "/login"
 @inject AppState AppState
+@inject StudentManager StudentManager
 @rendermode InteractiveServer
 
 <h3>Влезте в профила си</h3>
@@ -44,13 +45,12 @@
     {
         try
         {
-            Student foundStudent = StudentManager.FindStudent(s => s.Username == loginModel.Username);
+            Student? foundStudent = StudentManager.FindStudent(s => s.Username == loginModel.Username);
 
             if (foundStudent != null && foundStudent.Password == loginModel.Password)
             {
                 loginFailed = false;
                 errorMessage = string.Empty;
-
                 AppState.CurrentUser = foundStudent;
                 Navigation.NavigateTo("/my-profile");
             }

@@ -1,6 +1,7 @@
 ﻿@page "/my-profile"
 @inject NavigationManager Navigation
 @inject AppState AppState
+@inject StudentManager StudentManager
 @rendermode InteractiveServer
 
 <h3>Мой профил</h3>
@@ -94,6 +95,11 @@ else if (student is not null)
         </EditForm>
     }
 
+    @if (!isUpdated)
+    {
+        <div class="alert alert-success mt-3">errorMessage</div>
+    }
+
     @if (successMessageShown)
     {
         <div class="alert alert-success mt-3">Промените са запазени!</div>
@@ -105,6 +111,8 @@ else if (student is not null)
     private Student? student;
     private List<Subject> allSubjects = new List<Subject>();
     private bool successMessageShown = false;
+    private bool isUpdated = false;
+    private string errorMessage = string.Empty;
     private bool isEditing = false;
 
     protected override void OnInitialized()
@@ -142,9 +150,18 @@ else if (student is not null)
     {
         if (student is not null)
         {
-            StudentManager.UpdateStudent(student);
-            isEditing = false;
-            successMessageShown = true;
+            try
+            {
+                StudentManager.UpdateStudent(student);
+                isEditing = false;
+                isUpdated = true;
+                successMessageShown = true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.ToString();
+                isUpdated = false; 
+            }
         }
     }
     private void CancelEdit()

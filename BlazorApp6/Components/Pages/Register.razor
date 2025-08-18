@@ -1,5 +1,6 @@
 ﻿@page "/register"
 @rendermode InteractiveServer
+@inject StudentManager StudentManager
 
 <h3>Регистрация</h3>
 
@@ -42,7 +43,7 @@
         <InputText class="form-control" @bind-Value="formModel.Password" />
     </div>
 
-    <div class="mb-3"">
+    <div class="mb-3">
         <button type="submit" class="btn btn-primary">Регистрирай се</button>
     </div>
 </EditForm>
@@ -58,6 +59,13 @@
 {
     <div class="alert alert-danger mt-3">
         Ученик с това потребителско име вече съществува.
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(StudentManager.FileLoadError))
+{
+    <div class="alert alert-danger mt-3">
+        Грешка при зареждането на данните: @StudentManager.FileLoadError
     </div>
 }
 

@@ -6,57 +6,47 @@ namespace BlazorApp6.Services
     public class StudentManager
     {
         private List<Student> students;
+        public string? FileLoadError { get; private set; }
         public StudentManager()
         {
-            students = StudentFileManager.LoadFromFile();
-        }
-
-        public List<Student> AddStudent(Student student)
-        {
             try
             {
-                // List<Student> students = StudentFileManager.LoadFromFile();
-                students.Add(student);
-                StudentFileManager.SaveToFile(students);
-                return students;
-            }
-            catch(ApplicationException ex)
-            {
-                string errorMessage = ex.Message;
-                throw new ApplicationException("Добавянето на ученик не бе успешно. Опитайте отново по-късно.", ex);
-            }
-        }
-        public Student? FindStudent(Func<Student, bool> predicate)
-        {
-            try
-            {
-                // List<Student> students = StudentFileManager.LoadFromFile();
-                return students.FirstOrDefault(predicate);
-                // dbContext.Students.FirstOrDefault(predicate) - при переходе на бд
+                students = StudentFileManager.LoadFromFile();
+                FileLoadError = null;
             }
             catch (ApplicationException ex)
             {
-                throw new ApplicationException("Зареждането на данните не бе успешно. Опитайте отново по-късно.", ex);
+                students = new List<Student>();
+                FileLoadError = ex.Message;
             }
         }
-        public void UpdateStudent(Student updatedStudent)
+
+        public void AddStudent(Student student)
         {
-            // var students = StudentFileManager.LoadFromFile();
+            students.Add(student);
+            StudentFileManager.SaveToFile(students);
+        }
+        public Student? FindStudent(Func<Student, bool> predicate)
+        {
+            return students.FirstOrDefault(predicate);
+        }
+        public bool UpdateStudent(Student updatedStudent)
+        {
             int index = students.FindIndex(s => s.Username == updatedStudent.Username);
 
             if (index >= 0)
             {
                 students[index] = updatedStudent;
                 StudentFileManager.SaveToFile(students);
+                return true;
             }
             else
             {
-                throw new Exception("Ученик не найден");
+                return false;
             }
         }
         public List<Student> GetAllStudents()
         {
-            // return StudentFileManager.LoadFromFile();
             return students;
         }
 
@@ -66,8 +56,15 @@ namespace BlazorApp6.Services
         {
             public static void SaveToFile(List<Student> students)
             {
-                string line = JsonSerializer.Serialize(students);
-                File.WriteAllText(AppConstants.StudentsFilePath, line);
+                try
+                {
+                    string json = JsonSerializer.Serialize(students);
+                    File.WriteAllText(AppConstants.StudentsFilePath, json);
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException("Запазването на данните не бе успешно. Проверете правата на достъпа и наличието на свободното място на диска.", ex);
+                }
             }
             public static List<Student> LoadFromFile()
             {

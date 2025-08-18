@@ -8,6 +8,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<AppState>();
+builder.Services.AddSingleton<StudentManager>();
 
 var app = builder.Build();
 
