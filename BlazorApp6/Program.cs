@@ -9,6 +9,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSingleton<AppState>();
 builder.Services.AddSingleton<StudentManager>();
+builder.Services.AddSingleton<MatchManager>();
+
 
 var app = builder.Build();
 
