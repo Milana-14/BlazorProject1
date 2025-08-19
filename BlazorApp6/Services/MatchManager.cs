@@ -7,9 +7,21 @@ namespace BlazorApp6.Services
     {
         private List<Match> matches;
 
+        public string? FileLoadError { get; private set; }
         public MatchManager()
         {
             matches = MatchFileManager.LoadFromFile();
+
+            try
+            {
+                matches = MatchFileManager.LoadFromFile();
+                FileLoadError = null;
+            }
+            catch (ApplicationException ex)
+            {
+                matches = new List<Match>();
+                FileLoadError = ex.Message;
+            }
         }
 
         public Match RequestMatch(Student student1, Student student2)

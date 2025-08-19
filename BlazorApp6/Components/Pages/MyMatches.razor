@@ -1,40 +1,187 @@
 ﻿@page "/my-matches"
 @inject NavigationManager Navigation
 @inject AppState AppState
+@inject StudentManager StudentManager
+@inject MatchManager MatchManager
 
 @if (currentStudent == null)
 {
     <p>Моля, влезте в профила си</p>
 }
+else
+{
+    <div class="tabs">
+        <button class="@GetTabClass("pairs")" @onclick='@(() => SelectTab("pairs"))'>Моите партньори</button>
+        <button class="@GetTabClass("incoming")" @onclick='@(() => SelectTab("incoming"))'>Заявки към мен</button>
+        <button class="@GetTabClass("outgoing")" @onclick='@(() => SelectTab("outgoing"))'>Моите заявки</button>
+    </div>
 
-<div class="tabs">
-    <button class="@GetTabClass("pairs")" @onclick="@(() => SelectTab('pairs'))">Моите партньори</button>
-    <button class="@GetTabClass("incoming")" @onclick="@(() => SelectTab('incoming'))">Заявки към мен</button>
-    <button class="@GetTabClass("outgoing")" @onclick="@(() => SelectTab('outgoing'))">Моите заявки</button>
-</div>
+    <div class="tab-content mb-3">
+        @if (selectedTab == "pairs")
+        {
+            <p>My pairs</p>
+        }
+        else if (selectedTab == "incoming")
+        {
+            @if (incomingMatches.Count == 0)
+            {
+                <p>Няма намерени ученици.</p>
+            }
+            else
+            {
+                <p>Намерени ученици: @incomingMatches.Count</p>
+                <div class="row g-3">
+                    @foreach (var match in incomingMatches)
+                    {
+                        var student = StudentManager.FindStudent(s => s.Id == match.Student1Id);
+                        if (student == null) continue;
 
-<div class="tab-content mb-3">
-    @if (selectedTab == "pairs")
-    {
+                        <div class="col-12 col-md-6">
+                            <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
 
-    }
-    else if (selectedTab == "incoming")
-    {
+                                @* Профилна, име и клас *@
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <img src="@GetAvatarUrl(student)" alt="Avatar"
+                                         class="rounded-circle avatar-lg" />
+                                    <div>
+                                        <h5 class="fw-semibold mb-1">@student.Name @student.SecName</h5>
+                                        <p class="text-muted small mb-0">Клас: @student.Grade</p>
+                                    </div>
+                                </div>
+                                <hr />
 
-    }
-    else if (selectedTab == "outgoing")
-    {
+                                @* Списък с предмети *@
+                                <div class="d-flex flex-column flex-grow-1">
 
-    }
-</div>
+                                    <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
+                                    <div class="match-subjects-scroll mb-2">
+                                        @foreach (var subj in student.CanHelpWith.Where(s => s != Subject.NotSpecified))
+                                        {
+                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
+                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
+                                                @subj.GetDisplayName()
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
+                                    <div class="match-subjects-scroll mb-2">
+                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != Subject.NotSpecified))
+                                        {
+                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
+                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
+                                                @subj.GetDisplayName()
+                                            </span>
+                                        }
+                                    </div>
+
+                                    @* Бутини "Матч" и "Виж профила" *@
+                                    <div class="mt-auto d-flex gap-2">
+                                        <button class="btn btn-primary flex-fill" @onclick="() => MatchManager.ConfirmMatch(match)">Приеми заявката</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => MatchManager.RejectMatch(match)">Откажи заявката</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            }
+        }
+        else if (selectedTab == "outgoing")
+        {
+            @if (outgoingMatches.Count == 0)
+            {
+                <p>Няма намерени ученици.</p>
+            }
+            else
+            {
+                <p>Намерени ученици: @outgoingMatches.Count</p>
+                <div class="row g-3">
+                    @foreach (var match in outgoingMatches)
+                    {
+                        var student = StudentManager.FindStudent(s => s.Id == match.Student2Id);
+                        if (student == null) continue;
+
+                        <div class="col-12 col-md-6">
+                            <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
+
+                                @* Профилна, име и клас *@
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <img src="@GetAvatarUrl(student)" alt="Avatar"
+                                         class="rounded-circle avatar-lg" />
+                                    <div>
+                                        <h5 class="fw-semibold mb-1">@student.Name @student.SecName</h5>
+                                        <p class="text-muted small mb-0">Клас: @student.Grade</p>
+                                    </div>
+                                </div>
+                                <hr />
+
+                                @* Списък с предмети *@
+                                <div class="d-flex flex-column flex-grow-1">
+
+                                    <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
+                                    <div class="match-subjects-scroll mb-2">
+                                        @foreach (var subj in student.CanHelpWith.Where(s => s != Subject.NotSpecified))
+                                        {
+                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
+                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
+                                                @subj.GetDisplayName()
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
+                                    <div class="match-subjects-scroll mb-2">
+                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != Subject.NotSpecified))
+                                        {
+                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
+                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
+                                                @subj.GetDisplayName()
+                                            </span>
+                                        }
+                                    </div>
+
+                                    @* Бутини "Матч" и "Виж профила" *@
+                                    <div class="mt-auto d-flex gap-2">
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => MatchManager.CancelMatch(match)">Отмени моята заявка</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            }
+        }
+    </div>
+}
 
 @code {
     private Student? currentStudent;
     private string selectedTab = "pairs";
 
+    private List<Match> pairs = new List<Match>();
+    private List<Match> incomingMatches = new List<Match>();
+    private List<Match> outgoingMatches = new List<Match>();
+
     protected override void OnInitialized()
     {
         currentStudent = AppState.CurrentUser;
+
+        if (currentStudent == null) return;
+
+        List<Match> allMatches = MatchManager.GetAllMatches();
+
+        pairs = allMatches.Where(m => (m.Student1Id == currentStudent.Id || m.Student2Id == currentStudent.Id) && m.Status == MatchStatus.Confirmed).ToList();
+
+        incomingMatches = MatchManager.FindMatchesByStudent(currentStudent.Id)
+        .Where(m => m.Student2Id == currentStudent.Id && m.Status == MatchStatus.Pending).ToList();
+
+        outgoingMatches = MatchManager.FindMatchesByStudent(currentStudent.Id)
+        .Where(m => m.Student1Id == currentStudent.Id && m.Status == MatchStatus.Pending).ToList();
     }
 
     private void SelectTab(string tab)
@@ -44,5 +191,15 @@
     private string GetTabClass(string tab)
     {
         return (selectedTab == tab) ? "btn btn-primary" : "btn btn-outline-primary";
+    }
+
+    private void ViewProfile(Student student)
+    {
+        Navigation.NavigateTo($"/other-profile/{student.Id}");
+    }
+    private string GetAvatarUrl(Student student)
+    {
+        // Вернуть URL аватарки, пока заглушка
+        return "_content/YourAppNamespace/images/default-avatar.png";
     }
 }
