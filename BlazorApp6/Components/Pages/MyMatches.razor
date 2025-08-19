@@ -1,5 +1,48 @@
-﻿<h3>My matches</h3>
+﻿@page "/my-matches"
+@inject NavigationManager Navigation
+@inject AppState AppState
+
+@if (currentStudent == null)
+{
+    <p>Моля, влезте в профила си</p>
+}
+
+<div class="tabs">
+    <button class="@GetTabClass("pairs")" @onclick="@(() => SelectTab('pairs'))">Моите партньори</button>
+    <button class="@GetTabClass("incoming")" @onclick="@(() => SelectTab('incoming'))">Заявки към мен</button>
+    <button class="@GetTabClass("outgoing")" @onclick="@(() => SelectTab('outgoing'))">Моите заявки</button>
+</div>
+
+<div class="tab-content mb-3">
+    @if (selectedTab == "pairs")
+    {
+
+    }
+    else if (selectedTab == "incoming")
+    {
+
+    }
+    else if (selectedTab == "outgoing")
+    {
+
+    }
+</div>
 
 @code {
+    private Student? currentStudent;
+    private string selectedTab = "pairs";
 
+    protected override void OnInitialized()
+    {
+        currentStudent = AppState.CurrentUser;
+    }
+
+    private void SelectTab(string tab)
+    {
+        selectedTab = tab;
+    }
+    private string GetTabClass(string tab)
+    {
+        return (selectedTab == tab) ? "btn btn-primary" : "btn btn-outline-primary";
+    }
 }
