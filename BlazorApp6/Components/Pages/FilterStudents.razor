@@ -1,6 +1,7 @@
 ﻿@page "/students-filter"
 @inject AppState AppState
 @inject StudentManager StudentManager
+@inject MatchManager MatchManager
 @rendermode InteractiveServer
 
 <h3>Филтър</h3>
@@ -295,9 +296,7 @@ else
     }
     private void RequestMatch(Student student)
     {
-        // Пока просто заглушка
-        Console.WriteLine($"Запрос на матчинг для {student.Name} {student.SecName}");
-        // Здесь можно добавить логику отправки запроса
+        MatchManager.RequestMatch(currentStudent, student);
     }
     private void ViewProfile(Student student)
     {
