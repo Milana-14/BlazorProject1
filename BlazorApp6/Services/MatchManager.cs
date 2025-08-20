@@ -25,7 +25,7 @@ namespace BlazorApp6.Services
             }
         }
 
-        public Match RequestMatch(Student student1, Student student2)
+        public Match? RequestMatch(Student student1, Student student2)
         {
             Match match = new Match(student1, student2);
             if (!matches.Any(m => m.Id == match.Id))
@@ -81,6 +81,7 @@ namespace BlazorApp6.Services
             {
                 string line = JsonSerializer.Serialize(list);
                 File.WriteAllText(AppConstants.MatchesFilePath, line);
+
             }
             public static void HistorySaveToFile(List<Match> list)
             {

@@ -15,11 +15,11 @@
         public event Action<Match>? OnUnpaired;
 
         public Guid Id { get; private set; } = Guid.NewGuid();
-        public Guid Student1Id { get; }
-        public Guid Student2Id { get; }
+        public Guid Student1Id { get; set; }
+        public Guid Student2Id { get; set; }
         public MatchStatus Status { get; set; }
-        public DateTime DateRequested { get; private set; }
-        public DateTime? DateConfirmed { get; private set; }
+        public DateTime DateRequested { get; set; }
+        public DateTime? DateConfirmed { get; set; }
 
         public Match(Student student1, Student student2)
         {
