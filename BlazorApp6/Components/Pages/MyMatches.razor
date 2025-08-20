@@ -74,8 +74,8 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-danger btn-sm" @onclick="() => UnpairStudents(match)">Разделяне</button>
-                                        <button class="btn btn-outline-secondary btn-sm flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                        <button class="btn btn-danger" @onclick="() => UnpairStudents(match)">Разделяне</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
                             </div>
@@ -140,9 +140,9 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-success btn-sm flex-fill" @onclick="() => ConfirmMatch(match)">Приеми заявката</button>
-                                        <button class="btn btn-danger btn-sm" @onclick="() => RejectMatch(match)">Откажи заявката</button>
-                                        <button class="btn btn-outline-secondary btn-sm flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                        <button class="btn btn-primary" @onclick="() => ConfirmMatch(match)">Приеми заявката</button>
+                                        <button class="btn btn-danger" @onclick="() => RejectMatch(match)">Откажи заявката</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
                             </div>
@@ -208,8 +208,8 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-warning btn-sm" @onclick="() => CancelMatchRequest(match)">Отмени заявката ми</button>
-                                        <button class="btn btn-outline-secondary btn-sm flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                        <button class="btn btn-warning" @onclick="() => CancelMatchRequest(match)">Отмени заявката ми</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
                             </div>
@@ -258,7 +258,7 @@ else
     }
     private string GetTabClass(string tab)
     {
-        return (selectedTab == tab) ? "btn btn-primary btn-sm me-2" : "btn btn-outline-primary btn-sm me-2";
+        return (selectedTab == tab) ? "btn btn-primary me-2" : "btn btn-outline-primary me-2";
     }
 
     private void ConfirmMatch(Match match)
