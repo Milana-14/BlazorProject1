@@ -31,34 +31,34 @@ namespace BlazorApp6.Services
             if (!matches.Any(m => m.Id == match.Id))
             {
                 matches.Add(match);
-                MatchFileManager.SaveToFile(matches);
+                MatchFileManager.MatchesSaveToFile(matches);
                 return match;
             }
-            return null; // to see if this is the correct solution
+            return null;
         }
         public void ConfirmMatch(Match match)
         {
             match.Confirm();
-            MatchFileManager.SaveToFile(matches);
+            MatchFileManager.MatchesSaveToFile(matches);
         }
         public void RejectMatch(Match match)
         {
             matches.Remove(match);
             match.Reject();
-            MatchFileManager.SaveToFile(matches);
+            MatchFileManager.MatchesSaveToFile(matches);
         }
         public void CancelMatchRequest(Match match)
         {
             matches.Remove(match);
-            MatchFileManager.SaveToFile(matches);
+            MatchFileManager.MatchesSaveToFile(matches);
         }
         public void UnpairStudents(Match match)
         {
             matches.Remove(match);
             match.Unpair();
             if (!history.Any(m => m.Id == match.Id)) history.Add(match);
-            MatchFileManager.SaveToFile(matches);
-            MatchFileManager.SaveToFile(history);
+            MatchFileManager.MatchesSaveToFile(matches);
+            MatchFileManager.HistorySaveToFile(history);
         }
         public List<Match> FindMatchesByStudent(Guid studentId)
         {
@@ -77,10 +77,15 @@ namespace BlazorApp6.Services
         // класс для чтения и записи данных в файл 
         private static class MatchFileManager
         {
-            public static void SaveToFile(List<Match> list)
+            public static void MatchesSaveToFile(List<Match> list)
             {
                 string line = JsonSerializer.Serialize(list);
                 File.WriteAllText(AppConstants.MatchesFilePath, line);
+            }
+            public static void HistorySaveToFile(List<Match> list)
+            {
+                string line = JsonSerializer.Serialize(list);
+                File.WriteAllText(AppConstants.HistoryFilePath, line);
             }
 
             public static List<Match> LoadFromFile(string filePath)
