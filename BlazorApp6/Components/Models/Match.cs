@@ -4,14 +4,15 @@
     {
         Pending,
         Confirmed,
-        Rejected
+        Rejected,
+        Unpaired
     }
 
     public class Match
     {
         public event Action<Match>? OnConfirmed;
         public event Action<Match>? OnRejected;
-        public event Action<Match>? OnCanceled;
+        public event Action<Match>? OnUnpaired;
 
         public Guid Id { get; private set; } = Guid.NewGuid();
         public Guid Student1Id { get; }
@@ -31,7 +32,7 @@
         public void Confirm()
         {
             if (Status != MatchStatus.Pending)
-                throw new InvalidOperationException("Матч уже обработан.");
+                throw new InvalidOperationException("Матчът вече е обработен.");
 
             Status = MatchStatus.Confirmed;
             DateConfirmed = DateTime.Now;
@@ -42,11 +43,21 @@
         public void Reject()
         {
             if (Status != MatchStatus.Pending)
-                throw new InvalidOperationException("Матч уже обработан.");
+                throw new InvalidOperationException("Матчът вече е обработен.");
 
             Status = MatchStatus.Rejected;
 
             OnRejected?.Invoke(this);
+        }
+
+        public void Unpair()
+        {
+            if (Status != MatchStatus.Confirmed)
+                throw new InvalidOperationException("Този матч още не существува.");
+
+            Status = MatchStatus.Unpaired;
+
+            OnUnpaired?.Invoke(this);
         }
     }
 }

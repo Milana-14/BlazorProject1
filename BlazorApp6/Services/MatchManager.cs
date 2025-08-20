@@ -11,16 +11,16 @@ namespace BlazorApp6.Services
         public string? FileLoadError { get; private set; }
         public MatchManager()
         {
-            matches = MatchFileManager.LoadFromFile();
-
             try
             {
-                matches = MatchFileManager.LoadFromFile();
+                matches = MatchFileManager.LoadFromFile(AppConstants.MatchesFilePath);
+                history = MatchFileManager.LoadFromFile(AppConstants.HistoryFilePath);
                 FileLoadError = null;
             }
             catch (ApplicationException ex)
             {
                 matches = new List<Match>();
+                history = new List<Match>();
                 FileLoadError = ex.Message;
             }
         }
@@ -28,7 +28,7 @@ namespace BlazorApp6.Services
         public Match RequestMatch(Student student1, Student student2)
         {
             Match match = new Match(student1, student2);
-            matches.Add(match);
+            if (!matches.Any(m => m.Id == match.Id)) matches.Add(match);
             MatchFileManager.SaveToFile(matches);
             return match;
         }
@@ -39,8 +39,8 @@ namespace BlazorApp6.Services
         }
         public void RejectMatch(Match match)
         {
+            matches.Remove(match);
             match.Reject();
-            history.Add(match);
             MatchFileManager.SaveToFile(matches);
         }
         public void CancelMatch(Match match)
@@ -51,7 +51,10 @@ namespace BlazorApp6.Services
         public void UnpairStudents(Match match)
         {
             matches.Remove(match);
+            match.Unpair();
+            if (!history.Any(m => m.Id == match.Id)) history.Add(match);
             MatchFileManager.SaveToFile(matches);
+            MatchFileManager.SaveToFile(history);
         }
         public List<Match> FindMatchesByStudent(Guid studentId)
         {
@@ -59,7 +62,7 @@ namespace BlazorApp6.Services
         }
         public Match FindMatchById(Guid id)
         {
-            return matches.Where(m => m.Id == id).FirstOrDefault();
+            return matches.FirstOrDefault(m => m.Id == id);
         }
         public List<Match> GetAllMatches()
         {
@@ -70,24 +73,24 @@ namespace BlazorApp6.Services
         // класс для чтения и записи данных в файл 
         private static class MatchFileManager
         {
-            public static void SaveToFile(List<Match> matches)
+            public static void SaveToFile(List<Match> list)
             {
-                string line = JsonSerializer.Serialize(matches);
+                string line = JsonSerializer.Serialize(list);
                 File.WriteAllText(AppConstants.MatchesFilePath, line);
             }
 
-            public static List<Match> LoadFromFile()
+            public static List<Match> LoadFromFile(string filePath)
             {
-                if (!File.Exists(AppConstants.MatchesFilePath))
+                if (!File.Exists(filePath))
                 {
                     return new List<Match>();
                 }
 
                 try
                 {
-                    string lines = File.ReadAllText(AppConstants.MatchesFilePath);
-                    List<Match> matches = JsonSerializer.Deserialize<List<Match>>(lines);
-                    return matches;
+                    string lines = File.ReadAllText(filePath);
+                    List<Match> list = JsonSerializer.Deserialize<List<Match>>(lines);
+                    return list;
                 }
                 catch (Exception ex)
                 {
