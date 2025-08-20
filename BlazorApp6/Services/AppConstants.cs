@@ -2,8 +2,8 @@
 {
     public static class AppConstants
     {
-        public const string StudentsFilePath = "Components/Data/students.json";
-        public const string MatchesFilePath = "Components/Data/matches.json";
-        public const string HistoryFilePath = "Components/Data/history.json";
+        public const string StudentsFilePath = "Data/students.json";
+        public const string MatchesFilePath = "Data/matches.json";
+        public const string HistoryFilePath = "Data/history.json";
     }
 }
