@@ -1,9 +1,15 @@
 ﻿@page "/other-profile/{Id:guid}"
+@inject AppState AppState
 @inject StudentManager StudentManager
+@inject MatchManager MatchManager
 
 <h3>OtherProfile</h3>
 
-@if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
+@if(currentStudent == null)
+{
+    <p>Моля, влезте в профила си</p>
+}
+else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 {
     <p><strong>Име:</strong> @otherStudent.Name</p>
     <p><strong>Фамилия:</strong> @otherStudent.SecName</p>
@@ -21,7 +27,14 @@
         <p><strong>Търси помощ по:</strong> @string.Join(", ", otherStudent.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
     }
 
-    <button class="btn btn-primary">Матч</button>
+    @if (!isAlreadyRequested)
+    {
+        <button class="btn btn-primary" @onclick="() => RequestMatch(currentStudent, otherStudent)">Матч</button>
+    }
+    else
+    {
+        <button class="btn btn-outline-secondary" @onclick="() => CancelMatchRequest(match)">Отмени заявката ми</button>
+    }
 }
 else
 {
@@ -31,14 +44,22 @@ else
 @code {
     [Parameter]
     public Guid Id { get; set; }
-
     private Student? otherStudent;
+
+    private Student? currentStudent;
+
+    private bool isAlreadyRequested = false;
+    private Match? match;
 
     private string errorMessage = string.Empty;
 
     protected override void OnParametersSet()
     {
         errorMessage = string.Empty;
+
+        currentStudent = AppState.CurrentUser;
+
+        if (currentStudent == null) errorMessage = "Моля, влезте в профила си.";
 
         if (Id == Guid.Empty)
         {
@@ -49,14 +70,29 @@ else
         try
         {
             otherStudent = StudentManager.FindStudent(s => s.Id == Id);
-            if (otherStudent == null)
-            {
-                errorMessage = "Ученик не найден.";
-            }
+            if (otherStudent == null) errorMessage = "Ученикът не беше намерен.";
         }
         catch (ApplicationException ex)
         {
             errorMessage = ex.Message;
         }
+
+        List<Match> allMatches = MatchManager.GetAllMatches();
+        isAlreadyRequested = allMatches.Any(m => (m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id));
+    }
+
+    private void RequestMatch(Student student1, Student student2)
+    {
+        match = MatchManager.RequestMatch(student1, student2);
+        if (match == null)
+        {
+            isAlreadyRequested = true;
+        }
+        isAlreadyRequested = false;
+    }
+
+    private void CancelMatchRequest(Match match)
+    {
+        MatchManager.CancelMatchRequest(match);
     }
 }

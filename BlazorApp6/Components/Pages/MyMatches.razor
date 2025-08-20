@@ -74,7 +74,7 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => MatchManager.UnpairStudents(match)">Разделяне</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => UnpairStudents(match)">Разделяне</button>
                                         <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
@@ -140,8 +140,8 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-primary flex-fill" @onclick="() => MatchManager.ConfirmMatch(match)">Приеми заявката</button>
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => MatchManager.RejectMatch(match)">Откажи заявката</button>
+                                        <button class="btn btn-primary flex-fill" @onclick="() => ConfirmMatch(match)">Приеми заявката</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => RejectMatch(match)">Откажи заявката</button>
                                         <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
@@ -208,7 +208,7 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => MatchManager.CancelMatch(match)">Отмени моята заявка</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => CancelRequest(match)">Отмени заявката ми</button>
                                         <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
@@ -231,19 +231,24 @@ else
 
     protected override void OnInitialized()
     {
-        currentStudent = AppState.CurrentUser;
+        LoadData();
+    }
 
+    private void LoadData()
+    {
         if (currentStudent == null) return;
 
         List<Match> allMatches = MatchManager.GetAllMatches();
 
-        pairs = allMatches.Where(m => (m.Student1Id == currentStudent.Id || m.Student2Id == currentStudent.Id) && m.Status == MatchStatus.Confirmed).ToList();
+        pairs = allMatches.Where(m =>
+            (m.Student1Id == currentStudent.Id || m.Student2Id == currentStudent.Id)
+            && m.Status == MatchStatus.Confirmed).ToList();
 
-        incomingMatches = MatchManager.FindMatchesByStudent(currentStudent.Id)
-        .Where(m => m.Student2Id == currentStudent.Id && m.Status == MatchStatus.Pending).ToList();
+        incomingMatches = allMatches
+            .Where(m => m.Student2Id == currentStudent.Id && m.Status == MatchStatus.Pending).ToList();
 
-        outgoingMatches = MatchManager.FindMatchesByStudent(currentStudent.Id)
-        .Where(m => m.Student1Id == currentStudent.Id && m.Status == MatchStatus.Pending).ToList();
+        outgoingMatches = allMatches
+            .Where(m => m.Student1Id == currentStudent.Id && m.Status == MatchStatus.Pending).ToList();
     }
 
     private void SelectTab(string tab)
@@ -254,6 +259,31 @@ else
     {
         return (selectedTab == tab) ? "btn btn-primary" : "btn btn-outline-primary";
     }
+
+    private void ConfirmMatch(Match match)
+    {
+        MatchManager.ConfirmMatch(match);
+        LoadData();
+    }
+
+    private void RejectMatch(Match match)
+    {
+        MatchManager.RejectMatch(match);
+        LoadData();
+    }
+
+    private void CancelRequest(Match match)
+    {
+        MatchManager.CancelRequest(match);
+        LoadData();
+    }
+
+    private void UnpairStudents(Match match)
+    {
+        MatchManager.UnpairStudents(match);
+        LoadData();
+    }
+
 
     private void ViewProfile(Student student)
     {

@@ -28,9 +28,13 @@ namespace BlazorApp6.Services
         public Match RequestMatch(Student student1, Student student2)
         {
             Match match = new Match(student1, student2);
-            if (!matches.Any(m => m.Id == match.Id)) matches.Add(match);
-            MatchFileManager.SaveToFile(matches);
-            return match;
+            if (!matches.Any(m => m.Id == match.Id))
+            {
+                matches.Add(match);
+                MatchFileManager.SaveToFile(matches);
+                return match;
+            }
+            return null; // to see if this is the correct solution
         }
         public void ConfirmMatch(Match match)
         {
@@ -43,7 +47,7 @@ namespace BlazorApp6.Services
             match.Reject();
             MatchFileManager.SaveToFile(matches);
         }
-        public void CancelMatch(Match match)
+        public void CancelMatchRequest(Match match)
         {
             matches.Remove(match);
             MatchFileManager.SaveToFile(matches);
