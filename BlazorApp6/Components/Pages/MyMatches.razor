@@ -20,7 +20,69 @@ else
     <div class="tab-content mb-3">
         @if (selectedTab == "pairs")
         {
-            <p>My pairs</p>
+            @if (pairs.Count == 0)
+            {
+                <p>Нямате партньори.</p>
+            }
+            else
+            {
+                <p>Вашите партньори: @pairs.Count</p>
+                <div class="row g-3">
+                    @foreach (var match in pairs)
+                    {
+                        var student = StudentManager.FindStudent(s => s.Id == match.Student1Id);
+                        if (student == null) continue;
+
+                        <div class="col-12 col-md-6">
+                            <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
+
+                                @* Профилна, име и клас *@
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <img src="@GetAvatarUrl(student)" alt="Avatar"
+                                         class="rounded-circle avatar-lg" />
+                                    <div>
+                                        <h5 class="fw-semibold mb-1">@student.Name @student.SecName</h5>
+                                        <p class="text-muted small mb-0">Клас: @student.Grade</p>
+                                    </div>
+                                </div>
+                                <hr />
+
+                                @* Списък с предмети *@
+                                <div class="d-flex flex-column flex-grow-1">
+
+                                    <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
+                                    <div class="match-subjects-scroll mb-2">
+                                        @foreach (var subj in student.CanHelpWith.Where(s => s != Subject.NotSpecified))
+                                        {
+                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
+                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
+                                                @subj.GetDisplayName()
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
+                                    <div class="match-subjects-scroll mb-2">
+                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != Subject.NotSpecified))
+                                        {
+                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
+                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
+                                                @subj.GetDisplayName()
+                                            </span>
+                                        }
+                                    </div>
+
+                                    @* Бутини "Матч" и "Виж профила" *@
+                                    <div class="mt-auto d-flex gap-2">
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => MatchManager.UnpairStudents(match)">Разделяне</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
         }
         else if (selectedTab == "incoming")
         {

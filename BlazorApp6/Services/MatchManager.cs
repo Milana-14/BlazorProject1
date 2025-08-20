@@ -6,6 +6,7 @@ namespace BlazorApp6.Services
     public class MatchManager
     {
         private List<Match> matches;
+        private List<Match> history;
 
         public string? FileLoadError { get; private set; }
         public MatchManager()
@@ -36,15 +37,20 @@ namespace BlazorApp6.Services
             match.Confirm();
             MatchFileManager.SaveToFile(matches);
         }
-        
         public void RejectMatch(Match match)
         {
             match.Reject();
+            history.Add(match);
             MatchFileManager.SaveToFile(matches);
         }
         public void CancelMatch(Match match)
         {
-            match.Cancel();
+            matches.Remove(match);
+            MatchFileManager.SaveToFile(matches);
+        }
+        public void UnpairStudents(Match match)
+        {
+            matches.Remove(match);
             MatchFileManager.SaveToFile(matches);
         }
         public List<Match> FindMatchesByStudent(Guid studentId)

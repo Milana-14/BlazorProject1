@@ -4,8 +4,7 @@
     {
         Pending,
         Confirmed,
-        Rejected,
-        Canceled
+        Rejected
     }
 
     public class Match
@@ -48,16 +47,6 @@
             Status = MatchStatus.Rejected;
 
             OnRejected?.Invoke(this);
-        }
-
-        public void Cancel()
-        {
-            if (Status != MatchStatus.Pending)
-                throw new InvalidOperationException("Матч уже обработан.");
-
-            Status = MatchStatus.Canceled;
-
-            OnCanceled?.Invoke(this);
         }
     }
 }
