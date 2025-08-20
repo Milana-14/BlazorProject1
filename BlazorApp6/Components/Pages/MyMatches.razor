@@ -74,8 +74,8 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => UnpairStudents(match)">Разделяне</button>
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                        <button class="btn btn-danger btn-sm" @onclick="() => UnpairStudents(match)">Разделяне</button>
+                                        <button class="btn btn-outline-secondary btn-sm flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
                             </div>
@@ -140,9 +140,9 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-primary flex-fill" @onclick="() => ConfirmMatch(match)">Приеми заявката</button>
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => RejectMatch(match)">Откажи заявката</button>
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                        <button class="btn btn-success btn-sm flex-fill" @onclick="() => ConfirmMatch(match)">Приеми заявката</button>
+                                        <button class="btn btn-danger btn-sm" @onclick="() => RejectMatch(match)">Откажи заявката</button>
+                                        <button class="btn btn-outline-secondary btn-sm flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
                             </div>
@@ -208,8 +208,8 @@ else
 
                                     @* Бутини "Матч" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => CancelRequest(match)">Отмени заявката ми</button>
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                        <button class="btn btn-warning btn-sm" @onclick="() => CancelMatchRequest(match)">Отмени заявката ми</button>
+                                        <button class="btn btn-outline-secondary btn-sm flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
                             </div>
@@ -231,13 +231,14 @@ else
 
     protected override void OnInitialized()
     {
+        currentStudent = AppState.CurrentUser;
+        if (currentStudent == null) return;
+
         LoadData();
     }
 
     private void LoadData()
     {
-        if (currentStudent == null) return;
-
         List<Match> allMatches = MatchManager.GetAllMatches();
 
         pairs = allMatches.Where(m =>
@@ -257,7 +258,7 @@ else
     }
     private string GetTabClass(string tab)
     {
-        return (selectedTab == tab) ? "btn btn-primary" : "btn btn-outline-primary";
+        return (selectedTab == tab) ? "btn btn-primary btn-sm me-2" : "btn btn-outline-primary btn-sm me-2";
     }
 
     private void ConfirmMatch(Match match)
@@ -272,7 +273,7 @@ else
         LoadData();
     }
 
-    private void CancelRequest(Match match)
+    private void CancelMatchRequest(Match match)
     {
         MatchManager.CancelMatchRequest(match);
         LoadData();
