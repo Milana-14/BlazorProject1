@@ -14,7 +14,7 @@ else if (student is not null)
 {
     @if (!isEditing)
     {
-        <p><strong>Име:</strong> @student.Name</p>
+        <p><strong>Име:</strong> @student.FirstName</p>
         <p><strong>Фамилия:</strong> @student.SecName</p>
         <p><strong>Възраст:</strong> @student.Age</p>
         <p><strong>Клас:</strong> @student.Grade</p>
@@ -34,7 +34,7 @@ else if (student is not null)
 
             <div class="mb-3">
                 <label>Име:</label>
-                <InputText class="form-control" @bind-Value="student.Name" />
+                <InputText class="form-control" @bind-Value="student.FirstName" />
             </div>
 
             <div class="mb-3">

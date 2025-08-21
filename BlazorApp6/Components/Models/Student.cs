@@ -3,7 +3,7 @@
 public class Student : User
 {
     public override Guid Id { get; set; }
-    public override string Name { get; set; }
+    public override string FirstName { get; set; }
     public override string SecName { get; set; }
     public override int Age { get; set; }
     public override string PhoneNumber { get; set; }
@@ -18,7 +18,7 @@ public class Student : User
     public Student(string name, string secName, int age, int grade, string username, string password, string phoneNumber = "Не указан")
     {
         Id = Guid.NewGuid();
-        Name = name;
+        FirstName = name;
         SecName = secName;
         Age = age;
         Grade = grade;
@@ -57,7 +57,7 @@ public class Student : User
 
     public override void PrintInfo()
     {
-        Console.WriteLine($"Имя: {Name}");
+        Console.WriteLine($"Имя: {FirstName}");
         Console.WriteLine($"Возраст: {Age}");
         Console.WriteLine($"Класс: {Grade}");
         Console.WriteLine($"Номер телефона: {PhoneNumber}");

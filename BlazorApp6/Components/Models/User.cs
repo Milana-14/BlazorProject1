@@ -4,7 +4,7 @@ namespace BlazorApp6.Components.Models;
 public abstract class User
 {
     public abstract Guid Id { get; set; }
-    public abstract string Name { get; set; }
+    public abstract string FirstName { get; set; }
     public abstract string SecName { get; set; }
     public abstract int Age { get; set; }
     public abstract string PhoneNumber { get; set; }
