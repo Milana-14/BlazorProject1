@@ -7,6 +7,7 @@ public abstract class User
     public abstract string FirstName { get; set; }
     public abstract string SecName { get; set; }
     public abstract int Age { get; set; }
+    public abstract string Email { get; set; }
     public abstract string PhoneNumber { get; set; }
     public abstract string Username { get; }
     public abstract string Password { get; protected set; }

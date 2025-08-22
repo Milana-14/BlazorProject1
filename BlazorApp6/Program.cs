@@ -1,16 +1,19 @@
 using BlazorApp6.Components;
 using BlazorApp6.Services;
+using Microsoft.Data.Sqlite;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddScoped<IDbConnection>(sp => new SqliteConnection(connectionString));
+
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<AppState>();
 builder.Services.AddSingleton<StudentManager>();
 builder.Services.AddSingleton<MatchManager>();
-
 
 var app = builder.Build();
 

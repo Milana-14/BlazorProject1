@@ -25,6 +25,9 @@ namespace BlazorApp6.Components.Models.FormModels
         [MinLength(6, ErrorMessage = "Паролата трябва да е поне 6 символа")]
         public string Password { get; set; }
 
+        [Required(ErrorMessage = "Имейлът е задължителен")]
+        public string Email { get; set; }
+
         [MinLength(13, ErrorMessage = "Телефонният номер е невалиден")]
         public string PhoneNumber { get; set; }
     }

@@ -6,6 +6,7 @@ public class Student : User
     public override string FirstName { get; set; }
     public override string SecName { get; set; }
     public override int Age { get; set; }
+    public override string Email { get; set; }
     public override string PhoneNumber { get; set; }
     public override string Username { get; }
     public override string Password { get; protected set; }
@@ -15,15 +16,16 @@ public class Student : User
     public HashSet<Subject> CanHelpWith { get; set; } = new();
     public HashSet<Subject> NeedsHelpWith { get; set; } = new();
 
-    public Student(string name, string secName, int age, int grade, string username, string password, string phoneNumber = "Не указан")
+    public Student(string firstName, string secName, int age, int grade, string username, string password, string email, string phoneNumber = "Не указан")
     {
         Id = Guid.NewGuid();
-        FirstName = name;
+        FirstName = firstName;
         SecName = secName;
         Age = age;
         Grade = grade;
         Username = username;
         Password = password;
+        Email = email;
         PhoneNumber = !string.IsNullOrWhiteSpace(phoneNumber) ? phoneNumber : "Не посочен";
     }
 

@@ -53,6 +53,11 @@ else if (student is not null)
             </div>
 
             <div class="mb-3">
+                <label>Имейл:</label>
+                <InputText class="form-control" @bind-Value="student.Email" />
+            </div>
+
+            <div class="mb-3">
                 <label>Телефон:</label>
                 <InputText class="form-control" @bind-Value="student.PhoneNumber" />
             </div>
