@@ -23,7 +23,7 @@
     </div>
 </EditForm>
 
-<a onclick="ResetPassword()">Забравена парола</a>
+<a class="btn btn-link" @onclick="() => ResetPassword()">Забравена парола</a>
 
 @if (loginFailed)
 {
