@@ -16,7 +16,7 @@ public class Student : User
     public HashSet<Subject> CanHelpWith { get; set; } = new();
     public HashSet<Subject> NeedsHelpWith { get; set; } = new();
 
-    public Student(string firstName, string secName, int age, int grade, string username, string password, string email, string phoneNumber = "Не указан")
+    public Student(string firstName, string secName, int age, int grade, string username, string password, string email, string phoneNumber = "")
     {
         Id = Guid.NewGuid();
         FirstName = firstName;
@@ -26,7 +26,7 @@ public class Student : User
         Username = username;
         Password = password;
         Email = email;
-        PhoneNumber = !string.IsNullOrWhiteSpace(phoneNumber) ? phoneNumber : "Не посочен";
+        PhoneNumber = phoneNumber;
     }
 
     public void ChangePassword(string password)

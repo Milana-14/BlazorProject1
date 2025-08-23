@@ -18,6 +18,7 @@ else if (student is not null)
         <p><strong>Фамилия:</strong> @student.SecName</p>
         <p><strong>Възраст:</strong> @student.Age</p>
         <p><strong>Клас:</strong> @student.Grade</p>
+        <p><strong>Имейл:</strong> @student.Email</p>
         <p><strong>Телефон:</strong> @student.PhoneNumber</p>
 
         <p><strong>Може да помогне с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
