@@ -193,7 +193,8 @@ else
 
         if (currentStudent != null)
         {
-            allStudents = StudentManager.GetAllStudents().Where(s => s.Id != currentStudent.Id).ToList();
+            allStudents = StudentManager.GetAllStudents().Where(s => s.Id != currentStudent.Id).GroupBy(s => s.Id).Select(g => g.First()).ToList();
+
 
             allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToHashSet();
             allGrades = allStudents.Select(s => s.Grade).ToHashSet();

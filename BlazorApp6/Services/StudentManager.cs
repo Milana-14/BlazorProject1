@@ -22,26 +22,12 @@ namespace BlazorApp6.Services
                 students = new List<Student>();
                 FileLoadError = ex.Message;
             }
-
-            //try
-            //{
-            //    students = StudentFileManager.LoadFromFile();
-            //    FileLoadError = null;
-            //}
-            //catch (ApplicationException ex)
-            //{
-            //    students = new List<Student>();
-            //    FileLoadError = ex.Message;
-            //}
         }
 
         public void AddStudent(Student student)
         {
             students.Add(student);
             db.SaveStudent(student);
-
-            //students.Add(student);
-            //StudentFileManager.SaveToFile(students);
         }
         public Student? FindStudent(Func<Student, bool> predicate)
         {
@@ -55,7 +41,6 @@ namespace BlazorApp6.Services
             {
                 students[index] = updatedStudent;
                 db.UpdateStudent(updatedStudent);
-                // StudentFileManager.SaveToFile(students);
                 return true;
             }
             return false;
@@ -148,50 +133,5 @@ namespace BlazorApp6.Services
                 cmd.ExecuteNonQuery();
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-        //private static class StudentFileManager
-        //{
-        //    public static void SaveToFile(List<Student> students)
-        //    {
-        //        try
-        //        {
-        //            string json = JsonSerializer.Serialize(students);
-        //            File.WriteAllText(AppConstants.StudentsFilePath, json);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            throw new ApplicationException("Запазването на данните не бе успешно. Проверете правата на достъпа и наличието на свободното място на диска.", ex);
-        //        }
-        //    }
-        //    public static List<Student> LoadFromFile()
-        //    {
-        //        if (!File.Exists(AppConstants.StudentsFilePath))
-        //        {
-        //            return new List<Student>();
-        //        }
-
-        //        try
-        //        {
-        //            string lines = File.ReadAllText(AppConstants.StudentsFilePath);
-        //            List<Student> students = JsonSerializer.Deserialize<List<Student>>(lines) ?? new List<Student>();
-        //            return students;
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            // Можно логировать ошибку (если есть логгер), а пользователю показать:
-        //            throw new ApplicationException("Зареждането на данните не беше успешно. Опитайте отново по-късно.");
-        //        }
-        //    }
-        //}
     }
 }

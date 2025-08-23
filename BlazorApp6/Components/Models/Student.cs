@@ -55,17 +55,4 @@ public class Student : User
         }
         return false;
     }
-
-
-    public override void PrintInfo()
-    {
-        Console.WriteLine($"Имя: {FirstName}");
-        Console.WriteLine($"Возраст: {Age}");
-        Console.WriteLine($"Класс: {Grade}");
-        Console.WriteLine($"Номер телефона: {PhoneNumber}");
-        Console.Write("Может помочь по: ");
-        Console.WriteLine(string.Join(", ", CanHelpWith));
-        Console.Write("Нуждается в помощи по: ");
-        Console.WriteLine(string.Join(", ", NeedsHelpWith));
-    }
 }
