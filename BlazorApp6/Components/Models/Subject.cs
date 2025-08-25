@@ -46,3 +46,16 @@ public static class EnumExtensions
         return value.GetType().GetMember(value.ToString()).First().GetCustomAttribute<DisplayAttribute>()?.Name ?? value.ToString();
     }
 }
+
+public class Subject
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+}
+
+public class StudentSubject
+{
+    public int StudentId { get; set; }
+    public int SubjectId { get; set; }
+    public bool CanHelp { get; set; }
+}
