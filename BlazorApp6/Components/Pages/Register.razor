@@ -1,51 +1,51 @@
-﻿@page "/register"
+﻿@page "/register" // страница за регистрация на нов ученик
 @rendermode InteractiveServer
 @inject StudentManager StudentManager
 
 <h3>Регистрация</h3>
 
-<EditForm Model="@formModel" OnValidSubmit="Submit">
+<EditForm Model="@registeredStudent" OnValidSubmit="Submit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="mb-3">
         <label>Име:</label>
-        <InputText class="form-control" @bind-Value="formModel.Name" />
+        <InputText class="form-control" @bind-Value="registeredStudent.FirstName" />
     </div>
 
     <div class="mb-3">
         <label>Фамилия:</label>
-        <InputText class="form-control" @bind-Value="formModel.SecName" />
+        <InputText class="form-control" @bind-Value="registeredStudent.SecName" />
     </div>
 
     <div class="mb-3">
         <label>Възраст:</label>
-        <InputNumber class="form-control" @bind-Value="formModel.Age" />
+        <InputNumber class="form-control" @bind-Value="registeredStudent.Age" />
     </div>
 
     <div class="mb-3">
         <label>Клас:</label>
-        <InputNumber class="form-control" @bind-Value="formModel.Grade" />
+        <InputNumber class="form-control" @bind-Value="registeredStudent.Grade" />
     </div>
 
     <div class="mb-3">
         <label>Имейл:</label>
-        <InputText class="form-control" @bind-Value="formModel.Email" />
+        <InputText class="form-control" @bind-Value="registeredStudent.Email" />
     </div>
 
     <div class="mb-3">
         <label>Телефон:</label>
-        <InputText class="form-control" @bind-Value="formModel.PhoneNumber" />
+        <InputText class="form-control" @bind-Value="registeredStudent.PhoneNumber" />
     </div>
 
     <div class="mb-3">
         <label>Потребителско име:</label>
-        <InputText class="form-control" @bind-Value="formModel.Username" />
+        <InputText class="form-control" @bind-Value="registeredStudent.Username" />
     </div>
 
     <div class="mb-3">
         <label>Парола:</label>
-        <InputText class="form-control" @bind-Value="formModel.Password" />
+        <InputText class="form-control" @bind-Value="registeredStudent.Password" />
     </div>
 
     <div class="mb-3">
@@ -80,8 +80,6 @@
 }
 
 @code {
-
-    private RegisterStudentFormModel formModel = new();
     private Student? registeredStudent;
 
     private bool alreadyExists = false;
@@ -91,7 +89,7 @@
     {
         try
         {
-            Student? alreadyExistingStudent = StudentManager.FindStudent(s => s.Username == formModel.Username);
+            Student? alreadyExistingStudent = StudentManager.FindStudent(s => s.Username == registeredStudent.Username);
             if (alreadyExistingStudent != null)
             {
                 alreadyExists = true;
@@ -99,7 +97,6 @@
                 return;
             }
 
-            registeredStudent = formModel.ToStudent();
             StudentManager.AddStudent(registeredStudent);
             errorMessage = string.Empty;
             alreadyExists = false;

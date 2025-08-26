@@ -1,17 +1,37 @@
-﻿namespace BlazorApp6.Components.Models;
+﻿using System.ComponentModel.DataAnnotations;
 
-public class Student : User
+namespace BlazorApp6.Components.Models;
+
+public class Student
 {
-    public override Guid Id { get; set; }
-    public override string FirstName { get; set; }
-    public override string SecName { get; set; }
-    public override int Age { get; set; }
-    public override string Email { get; set; }
-    public override string PhoneNumber { get; set; }
-    public override string Username { get; }
-    public override string Password { get; protected set; }
+    public Guid Id { get; set; }
 
+    [Required(ErrorMessage = "Името е задължително")]
+    public string FirstName { get; set; }
+
+    [Required(ErrorMessage = "Фамилията е задължителна")]
+    public string SecName { get; set; }
+
+    [Required(ErrorMessage = "Възрастта е задължителна")]
+    [Range(1, 120, ErrorMessage = "Невалидна възраст")]
+    public int Age { get; set; }
+
+    [Required(ErrorMessage = "Класът е задължителен")]
+    [Range(1, 12, ErrorMessage = "Класът трябва да е от 1 до 12")]
     public int Grade { get; set; }
+
+    [Required(ErrorMessage = "Имейлът е задължителен")]
+    public string Email { get; set; }
+
+    [MinLength(13, ErrorMessage = "Телефонният номер е невалиден")]
+    public string PhoneNumber { get; set; }
+
+    [Required(ErrorMessage = "Потребителското име е задължително")]
+    public string Username { get; set; }
+
+    [Required(ErrorMessage = "Паролата е задължителна")]
+    [MinLength(6, ErrorMessage = "Паролата трябва да е поне 6 символа")]
+    public string Password { get; set; }
 
     public HashSet<SubjectEnum> CanHelpWith { get; set; } = new();
     public HashSet<SubjectEnum> NeedsHelpWith { get; set; } = new();
@@ -44,15 +64,5 @@ public class Student : User
     public bool HasValidSubjects()
     {
         return CanHelpWith.Any(s => s != SubjectEnum.NotSpecified) && NeedsHelpWith.Any(s => s != SubjectEnum.NotSpecified);
-    }
-
-    public bool IsMatching(Student otherStudent)
-    {
-        if (Grade == otherStudent.Grade && (HasValidSubjects() || otherStudent.HasValidSubjects()))
-        {
-            return CanHelpWith.Any(subject => otherStudent.NeedsHelpWith.Contains(subject)) &&
-           NeedsHelpWith.Any(subject => otherStudent.CanHelpWith.Contains(subject));
-        }
-        return false;
     }
 }

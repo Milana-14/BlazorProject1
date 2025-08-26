@@ -1,4 +1,4 @@
-﻿@page "/other-profile/{Id:guid}"
+﻿@page "/other-profile/{Id:guid}" // страница за преглед на профила на друг ученик
 @inject AppState AppState
 @inject StudentManager StudentManager
 @inject MatchManager MatchManager
@@ -63,7 +63,7 @@ else
 
         if (Id == Guid.Empty)
         {
-            errorMessage = "Некорректный идентификатор ученика.";
+            errorMessage = "Невалиден id.";
             return;
         }
 
