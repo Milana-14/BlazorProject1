@@ -67,10 +67,10 @@
     </div>
 }
 
-@if (!string.IsNullOrEmpty(StudentManager.FileLoadError))
+@if (!string.IsNullOrEmpty(StudentManager.DbError))
 {
     <div class="alert alert-danger mt-3">
-        Грешка при зареждането на данните: @StudentManager.FileLoadError
+        Грешка при зареждането на данните: @StudentManager.DbError
     </div>
 }
 
