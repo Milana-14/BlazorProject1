@@ -115,7 +115,7 @@ else if (student is not null)
 
 @code {
     private Student? student;
-    private List<Subject> allSubjects = new List<Subject>();
+    private List<SubjectEnum> allSubjects = new List<SubjectEnum>();
     private bool successMessageShown = false;
     private string errorMessage = string.Empty;
     private bool isEditing = false;
@@ -126,10 +126,10 @@ else if (student is not null)
 
         isEditing = false;
 
-        allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToList();
+        allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
     }
 
-    private void ToggleSubject(Subject subject, bool isChecked, HashSet<Subject> targetList, HashSet<Subject> otherList)
+    private void ToggleSubject(SubjectEnum subject, bool isChecked, HashSet<SubjectEnum> targetList, HashSet<SubjectEnum> otherList)
     {
         if (isChecked)
         {

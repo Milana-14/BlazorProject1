@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BlazorApp6.Components.Models;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace BlazorApp6.Components.Models
 {
-    public enum Subject
+    public enum SubjectEnum
     {
         [Display(Name = "Не посочено")]
         NotSpecified,

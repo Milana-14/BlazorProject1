@@ -88,7 +88,7 @@ else
 
     <hr />
 
-    @* Списък списък намерени ученици *@
+    @* Списък с намерени ученици *@
     @if (filteredStudents.Count == 0)
     {
         <p>Няма намерени ученици.</p>
@@ -118,7 +118,7 @@ else
 
                             <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
                             <div class="match-subjects-scroll mb-2">
-                                @foreach (var subj in student.student.CanHelpWith.Where(s => s != Subject.NotSpecified))
+                                @foreach (var subj in student.student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                 {
                                     var isMatch = selectedCanHelpWith.Contains(subj);
                                     <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
@@ -129,7 +129,7 @@ else
 
                             <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
                             <div class="match-subjects-scroll mb-2">
-                                @foreach (var subj in student.student.NeedsHelpWith.Where(s => s != Subject.NotSpecified))
+                                @foreach (var subj in student.student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                 {
                                     var isMatch = selectedNeedsHelpWith.Contains(subj);
                                     <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
@@ -138,7 +138,7 @@ else
                                 }
                             </div>
 
-                            @* Бутини "Матч" и "Виж профила" *@
+                            @* Бутони "Матч" и "Виж профила" *@
                             <div class="mt-auto d-flex gap-2">
                                 @if (student.student.Grade == currentStudent?.Grade)
                                 {
@@ -174,15 +174,15 @@ else
     private Student? currentStudent;
 
     private HashSet<int> allGrades = new();
-    private HashSet<Subject> allSubjects = new();
+    private HashSet<SubjectEnum> allSubjects = new();
     private List<Student> allStudents = new();
 
     private HashSet<int> selectedGrades = new();
-    private HashSet<Subject> selectedCanHelpWith = new();
-    private HashSet<Subject> selectedNeedsHelpWith = new();
+    private HashSet<SubjectEnum> selectedCanHelpWith = new();
+    private HashSet<SubjectEnum> selectedNeedsHelpWith = new();
 
     private List<Student> filteredStudents = new();
-    private List<(Student student, double compatibility, List<Subject> commonCan, List<Subject> commonNeeds)> filteredStudentsCompatib = new();
+    private List<(Student student, double compatibility, List<SubjectEnum> commonCan, List<SubjectEnum> commonNeeds)> filteredStudentsCompatib = new();
 
     private bool isAlreadyRequested = false;
     private Match? match;
@@ -196,7 +196,7 @@ else
             allStudents = StudentManager.GetAllStudents().Where(s => s.Id != currentStudent.Id).GroupBy(s => s.Id).Select(g => g.First()).ToList();
 
 
-            allSubjects = Enum.GetValues(typeof(Subject)).Cast<Subject>().Where(s => s != Subject.NotSpecified).ToHashSet();
+            allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToHashSet();
             allGrades = allStudents.Select(s => s.Grade).ToHashSet();
 
             AutoFilter();
@@ -214,7 +214,7 @@ else
         filteredStudentsCompatib.Clear();
         foreach (var student in filteredStudents)
         {
-            var compatibility = CalculateCompatibility(student, out List<Subject> commonCan, out List<Subject> commonNeeds);
+            var compatibility = CalculateCompatibility(student, out List<SubjectEnum> commonCan, out List<SubjectEnum> commonNeeds);
             filteredStudentsCompatib.Add((student, compatibility, commonCan, commonNeeds));
         }
         filteredStudentsCompatib = filteredStudentsCompatib.OrderByDescending(s => s.compatibility).ToList();
@@ -245,7 +245,7 @@ else
         ApplyFilter();
     }
 
-    private void ToggleSubject(Subject subject, bool isChecked, HashSet<Subject> targetList)
+    private void ToggleSubject(SubjectEnum subject, bool isChecked, HashSet<SubjectEnum> targetList)
     {
         if (isChecked) targetList.Add(subject);
         else targetList.Remove(subject);
@@ -267,7 +267,7 @@ else
         ApplyFilter();
     }
 
-    private void SelectAllSubjects(HashSet<Subject> targetList)
+    private void SelectAllSubjects(HashSet<SubjectEnum> targetList)
     {
         targetList.Clear();
         foreach (var subject in allSubjects)
@@ -276,16 +276,16 @@ else
         ApplyFilter();
     }
 
-    private void ClearAllSubjects(HashSet<Subject> targetList)
+    private void ClearAllSubjects(HashSet<SubjectEnum> targetList)
     {
         targetList.Clear();
         ApplyFilter();
     }
 
-    private double CalculateCompatibility(Student student, out List<Subject> commonCan, out List<Subject> commonNeeds)
+    private double CalculateCompatibility(Student student, out List<SubjectEnum> commonCan, out List<SubjectEnum> commonNeeds)
     {
-        commonCan = student.CanHelpWith?.Where(s => s != Subject.NotSpecified).Intersect(selectedCanHelpWith).ToList();
-        commonNeeds = student.NeedsHelpWith?.Where(s => s != Subject.NotSpecified).Intersect(selectedNeedsHelpWith).ToList();
+        commonCan = student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedCanHelpWith).ToList();
+        commonNeeds = student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedNeedsHelpWith).ToList();
 
         if (selectedCanHelpWith.Count == 0 && selectedNeedsHelpWith.Count == 0)
             return 0;

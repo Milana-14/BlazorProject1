@@ -52,7 +52,7 @@ else
 
                                     <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.CanHelpWith.Where(s => s != Subject.NotSpecified))
+                                        @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
                                             var isMatch = currentStudent.CanHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
@@ -63,7 +63,7 @@ else
 
                                     <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != Subject.NotSpecified))
+                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
                                             var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
@@ -118,7 +118,7 @@ else
 
                                     <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.CanHelpWith.Where(s => s != Subject.NotSpecified))
+                                        @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
                                             var isMatch = currentStudent.CanHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
@@ -129,7 +129,7 @@ else
 
                                     <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != Subject.NotSpecified))
+                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
                                             var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
@@ -186,7 +186,7 @@ else
 
                                     <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.CanHelpWith.Where(s => s != Subject.NotSpecified))
+                                        @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
                                             var isMatch = currentStudent.CanHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
@@ -197,7 +197,7 @@ else
 
                                     <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != Subject.NotSpecified))
+                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
                                             var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
