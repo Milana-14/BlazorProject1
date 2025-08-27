@@ -1,5 +1,6 @@
 ﻿@page "/register" // страница за регистрация на нов ученик
 @rendermode InteractiveServer
+@inject NavigationManager Navigation
 @inject StudentManager StudentManager
 
 <h3>Регистрация</h3>
@@ -53,7 +54,7 @@
     </div>
 </EditForm>
 
-@if (registeredStudent is not null)
+@if (registeredSuccessfully)
 {
     <div class="alert alert-success mt-3">
         Добре дошъл, @registeredStudent.FirstName! Възраст: @registeredStudent.Age, Клас: @registeredStudent.Grade.
@@ -80,10 +81,11 @@
 }
 
 @code {
-    private Student? registeredStudent;
+    private Student? registeredStudent = new Student();
 
     private bool alreadyExists = false;
     private string errorMessage = string.Empty;
+    private bool registeredSuccessfully = false;
 
     private void Submit()
     {
@@ -92,12 +94,14 @@
             Student? alreadyExistingStudent = StudentManager.FindStudent(s => s.Username == registeredStudent.Username);
             if (alreadyExistingStudent != null)
             {
+                registeredSuccessfully = false;
                 alreadyExists = true;
                 registeredStudent = null;
                 return;
             }
 
             StudentManager.AddStudent(registeredStudent);
+            registeredSuccessfully = true;
             errorMessage = string.Empty;
             alreadyExists = false;
         }

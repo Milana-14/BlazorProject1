@@ -9,14 +9,14 @@ namespace BlazorApp6.Services
     {
         private readonly string connectionString;
         private List<Student> students = new List<Student>();
-        public string? DbError { get; private set; } = "";
+        public string? DbError { get; private set; } = string.Empty;
         public StudentManager(IConfiguration config)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
 
             if (!LoadStudentsFromDb(out List<Student> studentsFromDb))
             {
-                DbError = "Зареждането на данните за учениците не беше успешно.";
+                DbError += "Зареждането на данните за учениците не беше успешно.";
                 return;
             }
 
@@ -83,7 +83,7 @@ namespace BlazorApp6.Services
                 using var connection = new NpgsqlConnection(connectionString);
                 connection.Open();
 
-                using NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT Id, FirstName, SecName, Age, Email, PhoneNumber, Username, Password, Grade FROM ""Students""", connection);
+                using NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT ""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"" FROM ""Students""", connection);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -103,8 +103,9 @@ namespace BlazorApp6.Services
                 }
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                DbError = "Грешка при зареждането: " + ex.Message;
                 return false;
             }
         } // bool за да се види дали имаше грешка
@@ -117,7 +118,7 @@ namespace BlazorApp6.Services
                     connection.Open();
 
                     string sql = @"INSERT INTO ""Students"" 
-                           (Id, FirstName, SecName, Age, Email, PhoneNumber, Username, Password, Grade)
+                           (""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"")
                            VALUES (@Id, @FirstName, @SecName, @Age, @Email, @PhoneNumber, @Username, @Password, @Grade)";
 
                     using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
@@ -149,9 +150,10 @@ namespace BlazorApp6.Services
                 connection.Open();
 
                 string sql = @"UPDATE ""Students""
-                           SET FirstName=@FirstName, SecName=@SecName, Age=@Age, Email=@Email,
-                               PhoneNumber=@PhoneNumber, Username=@Username, Password=@Password, Grade=@Grade
-                           WHERE Id=@Id";
+                               SET ""FirstName""=@FirstName, ""SecName""=@SecName, ""Age""=@Age, ""Email""=@Email,
+                                   ""PhoneNumber""=@PhoneNumber, ""Username""=@Username, ""Password""=@Password, ""Grade""=@Grade
+                               WHERE ""Id""=@Id";
+
 
                 using var cmd = new NpgsqlCommand(sql, connection);
 
@@ -167,9 +169,9 @@ namespace BlazorApp6.Services
 
                 cmd.ExecuteNonQuery();
             }
-            catch
+            catch (Exception ex)
             {
-                DbError = "Обновяването на данните за ученик в базата не беше успешно.";
+                DbError = $"Обновяването на данните за ученик в базата не беше успешно: {ex}";
             }
         }
     }
