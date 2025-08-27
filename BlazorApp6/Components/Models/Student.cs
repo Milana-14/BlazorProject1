@@ -36,7 +36,10 @@ public class Student
     public HashSet<SubjectEnum> CanHelpWith { get; set; } = new();
     public HashSet<SubjectEnum> NeedsHelpWith { get; set; } = new();
 
-    public Student() { }
+    public Student() 
+    {
+        Id = Guid.NewGuid();
+    }
     public Student(string firstName, string secName, int age, int grade, string username, string password, string email, string phoneNumber = "")
     {
         Id = Guid.NewGuid();

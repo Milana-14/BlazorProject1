@@ -21,14 +21,6 @@
         public DateTime DateRequested { get; set; }
         public DateTime? DateConfirmed { get; set; }
 
-        //public Match(Student student1, Student student2)
-        //{
-        //    this.Student1Id = student1.Id;
-        //    this.Student2Id = student2.Id;
-        //    DateRequested = DateTime.Now;
-        //    Status = MatchStatus.Pending;
-        //}
-
         public void Confirm()
         {
             if (Status != MatchStatus.Pending)

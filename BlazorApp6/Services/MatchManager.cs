@@ -107,7 +107,7 @@ namespace BlazorApp6.Services
                 using var connection = new NpgsqlConnection(connectionString);
                 connection.Open();
 
-                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Matches"" WHERE Status = 0 OR Status = 1", connection);
+                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Matches"" WHERE ""Status"" = 0 OR ""Status"" = 1", connection);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -137,7 +137,7 @@ namespace BlazorApp6.Services
                 using var connection = new NpgsqlConnection(connectionString);
                 connection.Open();
 
-                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Matches"" WHERE Status = 2 OR Status = 3", connection);
+                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Matches"" WHERE ""Status"" = 2 OR ""Status"" = 3", connection);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -164,7 +164,7 @@ namespace BlazorApp6.Services
             {
                 connection.Open();
 
-                string sql = @"INSERT INTO ""Matches"" (Id, Student1Id, Student2Id, Status, DateRequested, DateConfirmed) 
+                string sql = @"INSERT INTO ""Matches"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"") 
                                 VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed)";
 
 
@@ -186,7 +186,7 @@ namespace BlazorApp6.Services
             connection.Open();
 
             string sql = @"UPDATE ""Matches""
-                            SET Status = @Status, DateConfirmed = @DateConfirmed WHERE Id=@Id";
+                            SET ""Status"" = @Status, ""DateConfirmed"" = @DateConfirmed WHERE ""Id""=@Id";
 
             using var cmd = new NpgsqlCommand(sql, connection);
 
@@ -201,7 +201,7 @@ namespace BlazorApp6.Services
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();
 
-            using var cmd = new NpgsqlCommand(@"DELETE FROM ""Matches"" WHERE Id=@Id", connection);
+            using var cmd = new NpgsqlCommand(@"DELETE FROM ""Matches"" WHERE ""Id""=@Id", connection);
             cmd.Parameters.AddWithValue("@Id", match.Id);
             cmd.ExecuteNonQuery();
         }

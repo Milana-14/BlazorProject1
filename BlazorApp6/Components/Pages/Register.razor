@@ -91,14 +91,24 @@
     {
         try
         {
-            Student? alreadyExistingStudent = StudentManager.FindStudent(s => s.Username == registeredStudent.Username);
-            if (alreadyExistingStudent != null)
+            if (StudentManager.FindStudent(s => s.Username == registeredStudent.Username) != null)
             {
                 registeredSuccessfully = false;
                 alreadyExists = true;
-                registeredStudent = null;
+                registeredStudent = new Student();
                 return;
             }
+
+            Student newStudent = new Student(
+                registeredStudent.FirstName,
+                registeredStudent.SecName,
+                registeredStudent.Age,
+                registeredStudent.Grade,
+                registeredStudent.Username,
+                registeredStudent.Password,
+                registeredStudent.Email,
+                registeredStudent.PhoneNumber
+            );
 
             StudentManager.AddStudent(registeredStudent);
             registeredSuccessfully = true;

@@ -30,7 +30,7 @@ else
                 <div class="row g-3">
                     @foreach (var match in pairs)
                     {
-                        var student = StudentManager.FindStudent(s => s.Id == match.Student1Id);
+                        var student = StudentManager.FindStudent(s => s.Id == ((match.Student1Id == currentStudent.Id) ? match.Student2Id : match.Student1Id));
                         if (student == null) continue;
 
                         <div class="col-12 col-md-6">

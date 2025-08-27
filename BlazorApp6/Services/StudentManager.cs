@@ -34,7 +34,7 @@ namespace BlazorApp6.Services
              students.Add(newStudent);
             if (!SaveStudentToDb(newStudent))
             {
-                DbError = "Не се е получило да се запише ученик в базата данни.";
+                DbError += "Не се е получило да се запише ученик в базата данни.";
                 return false;
             }
             return true;
@@ -136,9 +136,9 @@ namespace BlazorApp6.Services
                 }
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                DbError = "Записването на нов ученик в базата не беше успешно.";
+                DbError = "Записването на нов ученик в базата не беше успешно." + ex;
                 return false;
             }
         }  // Същото и тук с bool

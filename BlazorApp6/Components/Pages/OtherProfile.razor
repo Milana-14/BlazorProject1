@@ -27,13 +27,17 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
         <p><strong>Търси помощ по:</strong> @string.Join(", ", otherStudent.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
     }
 
-    @if (!isAlreadyRequested)
+    @if (currentStatus == Status.NotRequested)
     {
         <button class="btn btn-primary" @onclick="() => RequestMatch(currentStudent, otherStudent)">Матч</button>
     }
-    else
+    else if (currentStatus == Status.Requested)
     {
         <button class="btn btn-outline-secondary" @onclick="() => CancelMatchRequest(match)">Отмени заявката ми</button>
+    }
+    else if (currentStatus == Status.Matched)
+    {
+        <button class="btn btn-outline-danger" @onclick="() => Unpair(match)">Разделяне</button>
     }
 }
 else
@@ -48,7 +52,13 @@ else
 
     private Student? currentStudent;
 
-    private bool isAlreadyRequested = false;
+    private enum Status
+    {
+        NotRequested,
+        Requested,
+        Matched
+    }
+    private Status currentStatus = Status.NotRequested;
     private Match? match;
 
     private string errorMessage = string.Empty;
@@ -78,7 +88,15 @@ else
         }
 
         List<Match> allMatches = MatchManager.GetAllMatches();
-        isAlreadyRequested = allMatches.Any(m => (m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id));
+        if (allMatches.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == MatchStatus.Pending))
+        {
+            currentStatus = Status.Requested;
+        }
+        else if (allMatches.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == MatchStatus.Confirmed))
+        {
+            currentStatus = Status.Matched;
+        }
+        else currentStatus = Status.NotRequested;
     }
 
     private void RequestMatch(Student student1, Student student2)
@@ -86,13 +104,21 @@ else
         match = MatchManager.RequestMatch(student1, student2);
         if (match == null)
         {
-            isAlreadyRequested = true;
+            currentStatus = Status.Requested;
         }
-        isAlreadyRequested = false;
+        else
+        {
+            currentStatus = Status.NotRequested;
+        }
     }
 
     private void CancelMatchRequest(Match match)
     {
         MatchManager.CancelMyRequest(match);
+    }
+
+    private void Unpair(Match match)
+    {
+        MatchManager.UnpairStudents(match);
     }
 }
