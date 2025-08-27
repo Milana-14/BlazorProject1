@@ -1,5 +1,6 @@
 ﻿using BlazorApp6.Components.Models;
 using Npgsql;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace BlazorApp6.Services
@@ -7,24 +8,26 @@ namespace BlazorApp6.Services
     public class MatchManager // За управление на матчовете межд учениците
     {
         private readonly string connectionString;
-        private List<Match> matches;
-        private List<Match> history;
+        private List<Match> matches = new List<Match>(); // Само за матчове със статус Pending или Confirmed
+        private List<Match> history = new List<Match>(); // Само за матчове със статус Rejected или Unpaired (отменените матчове изобщо не се записват - няма смис)
         public string? DbError { get; private set; }
         public MatchManager(IConfiguration config)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
-            try
+
+            if (!LoadMatchesFromDb(out List<Match> loadedMatchesFromDb))
             {
-                matches = LoadMatchesFromDb();
-                history = LoadHistoryMatchesFromDb();
-                DbError = null;
+                DbError = "Зареждането на данните за матчовете не беше успешно";
+                return;
             }
-            catch (ApplicationException ex)
+            matches = loadedMatchesFromDb;
+
+            if (!LoadHistoryMatchesFromDb(out List<Match> historyFromDb))
             {
-                matches = new List<Match>();
-                history = new List<Match>();
-                DbError = ex.Message;
+                DbError = "Зареждането на данните за историята на матчовете не беше успешно";
+                return;
             }
+            history = historyFromDb;
         }
 
         public Match? RequestMatch(Student student1, Student student2)
@@ -41,90 +44,45 @@ namespace BlazorApp6.Services
                 Status = MatchStatus.Pending
             };
 
-            try
-            {
-                matches.Add(match);
-                SaveMatchToDb(match);
-                return match;
-            }
-            catch (Exception ex)
-            {
-                matches.Remove(match);
-                DbError = ex.Message;
-                return null;
-            }
+            matches.Add(match);
+            SaveMatchToDb(match);
+            return match;
         }
-        public bool ConfirmMatch(Match match)
+        public void ConfirmMatch(Match match)
         {
-            try
-            {
-                match.Confirm();
-                UpdateMatchInDb(match);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                DbError = ex.Message;
-                return false;
-            }
+            match.Confirm();
+            UpdateMatchInDb(match);
         }
-        public bool RejectMatch(Match match)
+        public void RejectMatch(Match match)
         {
-            try
-            {
-                match.Reject();
-                matches.Remove(match);
+            match.Reject();
+            matches.Remove(match);
 
-                if (!history.Any(m => m.Id == match.Id)) history.Add(match);
+            if (!history.Any(m => m.Id == match.Id)) history.Add(match);
 
-                UpdateMatchInDb(match);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                DbError = ex.Message;
-                return false;
-            }
+            UpdateMatchInDb(match);
         }
 
-        public bool CancelMatchRequest(Match match)
+        public void CancelMyRequest(Match match)
         {
-            try
-            {
-                matches.Remove(match);
-                DeleteMatchFromDb(match);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                DbError = ex.Message;
-                return false;
-            }
+            matches.Remove(match);
+            DeleteMatchFromDb(match);
         }
 
-        public bool UnpairStudents(Match match)
+        public void UnpairStudents(Match match)
         {
-            try
-            {
-                matches.Remove(match);
-                match.Unpair();
+            matches.Remove(match);
+            match.Unpair();
 
-                if (!history.Any(m => m.Id == match.Id)) history.Add(match);
+            if (!history.Any(m => m.Id == match.Id)) history.Add(match);
 
-                UpdateMatchInDb(match);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                DbError = ex.Message;
-                return false;
-            }
+            UpdateMatchInDb(match);
         }
         public List<Match> FindMatchesByStudent(Guid studentId)
         {
             return matches.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();
         }
-        public Match FindMatchById(Guid id)
+        public Match? FindMatchById(Guid id)
         {
             return matches.FirstOrDefault(m => m.Id == id);
         }
@@ -140,93 +98,100 @@ namespace BlazorApp6.Services
 
 
         // Работа с база данни
-        public List<Match> LoadMatchesFromDb()
+        public bool LoadMatchesFromDb(out List<Match> loadedMatchesFromDb)
         {
-            List<Match> matches = new List<Match>();
+            loadedMatchesFromDb = new List<Match>();
 
-            using var connection = new NpgsqlConnection(connectionString);
-            connection.Open();
-
-            string sql = @"SELECT * FROM ""Matches"" WHERE Status = 0 OR Status = 1";
-
-            using var cmd = new NpgsqlCommand(sql, connection);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                Match match = new Match();
-                match.Id = reader.GetGuid(0);
-                match.Student1Id = reader.GetGuid(1);
-                match.Student2Id = reader.GetGuid(2);
-                match.Status = (MatchStatus)reader.GetInt32(3);
-                match.DateRequested = reader.GetDateTime(4);
-                match.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
+                using var connection = new NpgsqlConnection(connectionString);
+                connection.Open();
 
-                matches.Add(match);
+                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Matches"" WHERE Status = 0 OR Status = 1", connection);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Match match = new Match();
+                    match.Id = reader.GetGuid(0);
+                    match.Student1Id = reader.GetGuid(1);
+                    match.Student2Id = reader.GetGuid(2);
+                    match.Status = (MatchStatus)reader.GetInt32(3);
+                    match.DateRequested = reader.GetDateTime(4);
+                    match.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
+
+                    loadedMatchesFromDb.Add(match);
+                }
+                return true;
             }
-            return matches;
+            catch
+            {
+                return false;
+            }
         }
-        public List<Match> LoadHistoryMatchesFromDb()
+        public bool LoadHistoryMatchesFromDb(out List<Match> historyFromDb)
         {
-            List<Match> history = new List<Match>();
+            historyFromDb = new List<Match>();
 
-            using var connection = new NpgsqlConnection(connectionString);
-            connection.Open();
-
-            string sql = @"SELECT * FROM ""Matches"" WHERE Status = 2 OR Status = 3";
-
-            using var cmd = new NpgsqlCommand(sql, connection);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                Match match = new Match();
-                match.Id = reader.GetGuid(0);
-                match.Student1Id = reader.GetGuid(1);
-                match.Student2Id = reader.GetGuid(2);
-                match.Status = (MatchStatus)reader.GetInt32(3);
-                match.DateRequested = reader.GetDateTime(4);
-                match.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
+                using var connection = new NpgsqlConnection(connectionString);
+                connection.Open();
 
-                history.Add(match);
+                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Matches"" WHERE Status = 2 OR Status = 3", connection);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Match match = new Match();
+                    match.Id = reader.GetGuid(0);
+                    match.Student1Id = reader.GetGuid(1);
+                    match.Student2Id = reader.GetGuid(2);
+                    match.Status = (MatchStatus)reader.GetInt32(3);
+                    match.DateRequested = reader.GetDateTime(4);
+                    match.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
+
+                    historyFromDb.Add(match);
+                }
+                return true;
             }
-            return history;
+            catch
+            {
+                return false;
+            }
         }
         public void SaveMatchToDb(Match match)
         {
-            using var connection = new NpgsqlConnection(connectionString);
-            connection.Open();
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
 
-            string sql = @"INSERT INTO ""Matches"" 
-                           (Id, Student1Id, Student2Id, Status, DateRequested, DateConfirmed)
-                           VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed)";
+                string sql = @"INSERT INTO ""Matches"" (Id, Student1Id, Student2Id, Status, DateRequested, DateConfirmed) 
+                                VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed)";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
 
-            cmd.Parameters.AddWithValue("@Id", match.Id);
-            cmd.Parameters.AddWithValue("@Student1Id", match.Student1Id);
-            cmd.Parameters.AddWithValue("@Student2Id", match.Student2Id);
-            cmd.Parameters.AddWithValue("@Status", (int)match.Status);
-            cmd.Parameters.AddWithValue("@DateRequested", match.DateRequested);
-            cmd.Parameters.AddWithValue("@DateConfirmed", (object?)match.DateConfirmed ?? DBNull.Value);
+                using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
 
-            cmd.ExecuteNonQuery();
+                cmd.Parameters.AddWithValue("@Id", match.Id);
+                cmd.Parameters.AddWithValue("@Student1Id", match.Student1Id);
+                cmd.Parameters.AddWithValue("@Student2Id", match.Student2Id);
+                cmd.Parameters.AddWithValue("@Status", (int)match.Status);
+                cmd.Parameters.AddWithValue("@DateRequested", match.DateRequested);
+                cmd.Parameters.AddWithValue("@DateConfirmed", (object?)match.DateConfirmed ?? DBNull.Value);
+
+                cmd.ExecuteNonQuery();
+            }
         }
         public void UpdateMatchInDb(Match match)
         {
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();
 
-            string sql = @"UPDATE ""Matches"" 
-                            SET Student1Id=@Student1Id, Student2Id=@Student2Id, Status=@Status,
-                                 DateRequested=@DateRequested, DateConfirmed=@DateConfirmed
-                            WHERE Id=@Id";
+            string sql = @"UPDATE ""Matches""
+                            SET Status = @Status, DateConfirmed = @DateConfirmed WHERE Id=@Id";
 
             using var cmd = new NpgsqlCommand(sql, connection);
 
             cmd.Parameters.AddWithValue("@Id", match.Id);
-            cmd.Parameters.AddWithValue("@Student1Id", match.Student1Id);
-            cmd.Parameters.AddWithValue("@Student2Id", match.Student2Id);
             cmd.Parameters.AddWithValue("@Status", (int)match.Status);
-            cmd.Parameters.AddWithValue("@DateRequested", match.DateRequested);
             cmd.Parameters.AddWithValue("@DateConfirmed", (object?)match.DateConfirmed ?? DBNull.Value);
 
             cmd.ExecuteNonQuery();
@@ -236,9 +201,7 @@ namespace BlazorApp6.Services
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();
 
-            string sql = @"DELETE FROM ""Matches"" WHERE Id=@Id";
-
-            using var cmd = new NpgsqlCommand(sql, connection);
+            using var cmd = new NpgsqlCommand(@"DELETE FROM ""Matches"" WHERE Id=@Id", connection);
             cmd.Parameters.AddWithValue("@Id", match.Id);
             cmd.ExecuteNonQuery();
         }

@@ -8,27 +8,36 @@ namespace BlazorApp6.Services
     public class StudentManager
     {
         private readonly string connectionString;
-        private List<Student> students;
+        private List<Student> students = new List<Student>();
         public string? DbError { get; private set; } = "";
         public StudentManager(IConfiguration config)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
-
-            students = new List<Student>();
 
             if (!LoadStudentsFromDb(out List<Student> studentsFromDb))
             {
                 DbError = "Зареждането на данните за учениците не беше успешно.";
                 return;
             }
+
+            students = studentsFromDb;
         }
 
-        public void AddStudent(Student newStudent)
+        public bool AddStudent(Student newStudent)
         {
-            if (students.Any(s => s.Username == newStudent.Username)) DbError = "Ученик с този юзърнейм вече съществува.";
+            if (students.Any(s => s.Username == newStudent.Username))
+            {
+                DbError = "Ученик с този юзърнейм вече съществува.";
+                return false;
+            }
 
-            students.Add(newStudent);
-             if (!SaveStudentToDb(newStudent)) DbError = "Не се е получило да се запише ученик в базата данни.";
+             students.Add(newStudent);
+            if (!SaveStudentToDb(newStudent))
+            {
+                DbError = "Не се е получило да се запише ученик в базата данни.";
+                return false;
+            }
+            return true;
         }
         public bool UpdateStudent(Student updatedStudent)
         {
@@ -48,7 +57,7 @@ namespace BlazorApp6.Services
             }
             catch (Exception ex)
             {
-                DbError = ex.Message;
+                DbError = "Обновяването на данните за ученик не беше успешно.";
                 return false;
             }
         }
@@ -74,9 +83,7 @@ namespace BlazorApp6.Services
                 using var connection = new NpgsqlConnection(connectionString);
                 connection.Open();
 
-                string sql = @"SELECT Id, FirstName, SecName, Age, Email, PhoneNumber, Username, Password, Grade FROM ""Students""";
-
-                using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
+                using NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT Id, FirstName, SecName, Age, Email, PhoneNumber, Username, Password, Grade FROM ""Students""", connection);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -96,7 +103,7 @@ namespace BlazorApp6.Services
                 }
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -105,21 +112,32 @@ namespace BlazorApp6.Services
         {
             try
             {
-                using NpgsqlConnection connection = new NpgsqlConnection(connectionString);
-                connection.Open();
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
 
-                string sql = @"INSERT INTO ""Students"" 
+                    string sql = @"INSERT INTO ""Students"" 
                            (Id, FirstName, SecName, Age, Email, PhoneNumber, Username, Password, Grade)
                            VALUES (@Id, @FirstName, @SecName, @Age, @Email, @PhoneNumber, @Username, @Password, @Grade)";
 
-                using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
-                SetStudentParameters(cmd, student);
+                    using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
+                    cmd.Parameters.AddWithValue("@Id", student.Id);
+                    cmd.Parameters.AddWithValue("@FirstName", student.FirstName ?? "");
+                    cmd.Parameters.AddWithValue("@SecName", student.SecName ?? "");
+                    cmd.Parameters.AddWithValue("@Age", student.Age);
+                    cmd.Parameters.AddWithValue("@Email", student.Email ?? "");
+                    cmd.Parameters.AddWithValue("@PhoneNumber", student.PhoneNumber ?? "");
+                    cmd.Parameters.AddWithValue("@Username", student.Username);
+                    cmd.Parameters.AddWithValue("@Password", student.Password);
+                    cmd.Parameters.AddWithValue("@Grade", student.Grade);
 
-                cmd.ExecuteNonQuery();
+                    cmd.ExecuteNonQuery();
+                }
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
+                DbError = "Записването на нов ученик в базата не беше успешно.";
                 return false;
             }
         }  // Същото и тук с bool
@@ -137,27 +155,22 @@ namespace BlazorApp6.Services
 
                 using var cmd = new NpgsqlCommand(sql, connection);
 
-                SetStudentParameters(cmd, student);
+                cmd.Parameters.AddWithValue("@Id", student.Id);
+                cmd.Parameters.AddWithValue("@FirstName", student.FirstName ?? "");
+                cmd.Parameters.AddWithValue("@SecName", student.SecName ?? "");
+                cmd.Parameters.Add("@Age", NpgsqlTypes.NpgsqlDbType.Integer).Value = student.Age;
+                cmd.Parameters.AddWithValue("@Email", student.Email ?? "");
+                cmd.Parameters.AddWithValue("@PhoneNumber", student.PhoneNumber ?? "");
+                cmd.Parameters.AddWithValue("@Username", student.Username);
+                cmd.Parameters.AddWithValue("@Password", student.Password);
+                cmd.Parameters.AddWithValue("@Grade", student.Grade);
 
                 cmd.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch
             {
-                throw new ApplicationException("Грешка при обновяване на ученик в базата данни. " + ex.Message);
+                DbError = "Обновяването на данните за ученик в базата не беше успешно.";
             }
         }
-
-        private void SetStudentParameters(NpgsqlCommand cmd, Student student)
-        {
-            cmd.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = student.Id;
-            cmd.Parameters.AddWithValue("@FirstName", NpgsqlTypes.NpgsqlDbType.Varchar).Value = student.FirstName ?? "";
-            cmd.Parameters.AddWithValue("@SecName", NpgsqlTypes.NpgsqlDbType.Varchar).Value = student.SecName ?? "";
-            cmd.Parameters.Add("@Age", NpgsqlTypes.NpgsqlDbType.Smallint).Value = student.Age;
-            cmd.Parameters.AddWithValue("@Email", NpgsqlTypes.NpgsqlDbType.Varchar).Value = student.Email ?? "";
-            cmd.Parameters.AddWithValue("@PhoneNumber", NpgsqlTypes.NpgsqlDbType.Varchar).Value = student.PhoneNumber ?? "";
-            cmd.Parameters.AddWithValue("@Username", NpgsqlTypes.NpgsqlDbType.Varchar).Value = student.Username;
-            cmd.Parameters.AddWithValue("@Password", NpgsqlTypes.NpgsqlDbType.Varchar).Value = student.Password;
-            cmd.Parameters.AddWithValue("@Grade", NpgsqlTypes.NpgsqlDbType.Smallint).Value = student.Grade;
-        } // За да не пиша едно и също нещо 500 пъти
     }
 }
