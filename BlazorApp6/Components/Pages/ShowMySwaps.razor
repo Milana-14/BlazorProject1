@@ -1,9 +1,11 @@
-﻿@page "/my-matches" // страница за преглед на мои заявки, заявки към мен и текущи партньори
+﻿@page "/my-swaps" // страница за преглед на мои заявки, заявки към мен и текущи партньори
+@using BlazorApp6.Components.Models
 @inject NavigationManager Navigation
 @inject AppState AppState
 @inject StudentManager StudentManager
 @inject SwapManager SwapManager
 @rendermode InteractiveServer
+@using SwapModel = BlazorApp6.Components.Models.Swap
 
 @if (currentStudent == null)
 {
@@ -59,25 +61,12 @@ else
                                     {
                                         <p class="text small mb-2 fw-semibold">Помага ти по </p>
                                     }
-                                    <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@swap.SubjectForHelp</span>
+                                    <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@swap.SubjectForHelp.GetDisplayName()</span>
 
                                     @* Бутони *@
                                     <div class="mt-auto d-flex gap-2">
-                                        @if (swap.Status == SwapStatus.Confirmed)
-                                        {
-                                            <button class="btn btn-outline-danger flex-fill" @onclick="() => FinishSession(student)">Завърши свапа</button>
-                                            <button class="btn btn-secondary flex-fill" @onclick="() => GoToChat(student)">Отвори чата</button>
-                                        }
-                                        else if (swap.Status == SwapStatus.PendingCompleted)
-                                        {
-                                            <p>Очаква се потвърждение от другия ученик</p>
-                                            <button class="btn btn-secondary flex-fill" @onclick="() => GoToChat(student)">Отвори чата</button>
-                                        }
-                                        else if (swap.Status == SwapStatus.CompletedNotRated)
-                                        {
-                                            <p>Свапът е завършен</p>
-                                            @* Да добавя някаква логика за Rate student's help (звездички + коментар ддз)*@
-                                        }
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => GoToSwap(swap)">Виж детайли</button>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -89,24 +78,24 @@ else
         @* Заявки, които изпратиха на мен *@
         else if (selectedTab == "incoming")
         {
-            @if (incomingMatches.Count == 0)
+            @if (incomingSwaps.Count == 0)
             {
                 <p>Все още никой не ти е продложил кооперация.</p>
             }
             else
             {
-                @if (incomingMatches.Count == 1)
+                @if (incomingSwaps.Count == 1)
                 {
                     <p>1 ученик ти предложи помощ.</p>
                 }
                 else
                 {
-                    <p>@incomingMatches.Count ученика ти преложиха помощ.</p>
+                    <p>@incomingSwaps.Count ученика ти преложиха помощ.</p>
                 }
                 <div class="row g-3">
-                    @foreach (var match in incomingMatches)
+                    @foreach (var swap in incomingSwaps)
                     {
-                        var student = StudentManager.FindStudent(s => s.Id == match.Student1Id);
+                        var student = StudentManager.FindStudent(s => s.Id == swap.Student1Id);
                         if (student == null) continue;
 
                         <div class="col-12 col-md-6">
@@ -128,30 +117,30 @@ else
 
                                     <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                        @foreach (var subj in student.CanHelpWith.Where(s => s.Name != SubjectEnum.NotSpecified.ToString()))
                                         {
                                             var isMatch = currentStudent.CanHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                                @subj.GetDisplayName()
+                                                @subj.Name
                                             </span>
                                         }
                                     </div>
 
                                     <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s.Name != SubjectEnum.NotSpecified.ToString()))
                                         {
                                             var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                                @subj.GetDisplayName()
+                                                @subj.Name
                                             </span>
                                         }
                                     </div>
 
-                                    @* Бутини "Матч" и "Виж профила" *@
+                                    @* Бутони "Приеми/откажи заявката" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-primary" @onclick="() => ConfirmSwap(match)">Приеми заявката</button>
-                                        <button class="btn btn-danger" @onclick="() => RejectSwap(match)">Откажи заявката</button>
+                                        <button class="btn btn-primary" @onclick="() => ConfirmSwap(swap)">Приеми заявката</button>
+                                        <button class="btn btn-danger" @onclick="() => RejectSwap(swap)">Откажи заявката</button>
                                         <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
@@ -166,17 +155,17 @@ else
         @* Заявки, които съм изпратил *@
         else if (selectedTab == "outgoing")
         {
-            @if (outgoingMatches.Count == 0)
+            @if (outgoingSwaps.Count == 0)
             {
                 <p>Още на никого не си предложил кооперация.</p>
             }
             else
             {
-                <p>Намерени ученици: @outgoingMatches.Count</p>
+                <p>Намерени ученици: @outgoingSwaps.Count</p>
                 <div class="row g-3">
-                    @foreach (var match in outgoingMatches)
+                    @foreach (var swap in outgoingSwaps)
                     {
-                        var student = StudentManager.FindStudent(s => s.Id == match.Student2Id);
+                        var student = StudentManager.FindStudent(s => s.Id == swap.Student2Id);
                         if (student == null) continue;
 
                         <div class="col-12 col-md-6">
@@ -198,29 +187,29 @@ else
 
                                     <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                        @foreach (var subj in student.CanHelpWith.Where(s => s.Name != SubjectEnum.NotSpecified.ToString()))
                                         {
                                             var isMatch = currentStudent.CanHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                                @subj.GetDisplayName()
+                                                @subj.Name
                                             </span>
                                         }
                                     </div>
 
                                     <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
                                     <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s.Name != SubjectEnum.NotSpecified.ToString()))
                                         {
                                             var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                                @subj.GetDisplayName()
+                                                @subj.Name
                                             </span>
                                         }
                                     </div>
 
                                     @* Бутини "Отмени заявката ми" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-warning" @onclick="() => CancelSwapRequest(match)">Отмени заявката ми</button>
+                                        <button class="btn btn-warning" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
                                         <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
                                 </div>
@@ -237,9 +226,9 @@ else
     private Student? currentStudent;
     private string selectedTab = "pairs";
 
-    private List<Swap> pairs = new List<Swap>();
-    private List<Swap> incomingMatches = new List<Swap>();
-    private List<Swap> outgoingMatches = new List<Swap>();
+    private List<SwapModel> pairs = new();
+    private List<SwapModel> incomingSwaps = new();
+    private List<SwapModel> outgoingSwaps = new();
 
     protected override void OnInitialized()
     {
@@ -251,16 +240,16 @@ else
 
     private void LoadData()
     {
-        List<Swap> allSwaps = SwapManager.GetAllSwaps();
+        List<SwapModel> allSwaps = SwapManager.GetAllSwaps();
 
         pairs = allSwaps.Where(m =>
             (m.Student1Id == currentStudent.Id || m.Student2Id == currentStudent.Id)
             && (m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted)).ToList();
 
-        incomingMatches = allSwaps
+        incomingSwaps = allSwaps
             .Where(m => m.Student2Id == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
 
-        outgoingMatches = allSwaps
+        outgoingSwaps = allSwaps
             .Where(m => m.Student1Id == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
     }
 
@@ -273,31 +262,34 @@ else
         return (selectedTab == tab) ? "btn btn-primary me-2" : "btn btn-outline-primary me-2";
     }
 
-    private void ConfirmSwap(Swap swap)
+    private void ConfirmSwap(SwapModel swap)
     {
         SwapManager.ConfirmSwap(swap);
         LoadData();
     }
 
-    private void RejectSwap(Swap swap)
+    private void RejectSwap(SwapModel swap)
     {
         SwapManager.RejectSwap(swap);
         LoadData();
     }
 
-    private void CancelSwapRequest(Swap swap)
+    private void CancelSwapRequest(SwapModel swap)
     {
         SwapManager.CancelMyRequest(swap);
         LoadData();
     }
 
-    private void UnpairStudents(Swap swap)
+    private void CompleteSwap(SwapModel swap)
     {
         SwapManager.CompleteSwap(swap);
         LoadData();
     }
 
-
+    private void GoToSwap(SwapModel swap)
+    {
+        Navigation.NavigateTo($"/swap/{swap.Id}");
+    }
     private void ViewProfile(Student student)
     {
         Navigation.NavigateTo($"/other-profile/{student.Id}");

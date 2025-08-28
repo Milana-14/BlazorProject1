@@ -42,7 +42,7 @@ namespace BlazorApp6.Components.Models
 }
 public static class EnumExtensions
 {
-    public static string GetDisplayName(this Enum value)
+    public static string GetDisplayName(this SubjectEnum value)
     {
         return value.GetType().GetMember(value.ToString()).First().GetCustomAttribute<DisplayAttribute>()?.Name ?? value.ToString();
     }

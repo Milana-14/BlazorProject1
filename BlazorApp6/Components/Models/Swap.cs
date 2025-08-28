@@ -15,7 +15,7 @@
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid Student1Id { get; set; } // този, който иска помощ
         public Guid Student2Id { get; set; } // този, който ще помогне
-        public Subject SubjectForHelp { get; set; }
+        public SubjectEnum SubjectForHelp { get; set; }
         public SwapStatus Status { get; set; }
         public DateTime DateRequested { get; set; }
         public DateTime? DateConfirmed { get; set; }

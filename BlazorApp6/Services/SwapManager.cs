@@ -30,7 +30,7 @@ namespace BlazorApp6.Services
             history = historyFromDb;
         }
 
-        public Swap? RequestHelp(Student requestingSt, Student helpingSt, Subject subject)
+        public Swap? RequestHelp(Student requestingSt, Student helpingSt, SubjectEnum subject)
         {
             if (swaps.FirstOrDefault(m =>
                 (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
@@ -49,11 +49,12 @@ namespace BlazorApp6.Services
             SaveSwapToDb(swap);
             return swap;
         }
-        public Swap? OfferHelp(Student requestingSt, Student helpingSt, Subject subject)
+        public Swap? OfferHelp(Student requestingSt, Student helpingSt, SubjectEnum subject)
         {
             if (swaps.FirstOrDefault(m =>
                 (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
                 (m.Student1Id == helpingSt.Id && m.Student2Id == requestingSt.Id)) != null) return null;
+
             Swap swap = new Swap
             {
                 Student1Id = requestingSt.Id,
@@ -116,28 +117,31 @@ namespace BlazorApp6.Services
 
 
         // Работа с база данни
-        public bool LoadSwapsFromDb(out List<Swap> loadedMatchesFromDb)
+        public bool LoadSwapsFromDb(out List<Swap> loadedSwapsFromDb)
         {
-            loadedMatchesFromDb = new List<Swap>();
+            loadedSwapsFromDb = new List<Swap>();
 
             try
             {
                 using var connection = new NpgsqlConnection(connectionString);
                 connection.Open();
 
-                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Matches"" WHERE ""Status"" = 0 OR ""Status"" = 1", connection);
+                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Swaps"" WHERE ""Status"" = 0 OR ""Status"" = 1 OR ""Status"" = 3 OR ""Status"" = 4", connection);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    Swap match = new Swap();
-                    match.Id = reader.GetGuid(0);
-                    match.Student1Id = reader.GetGuid(1);
-                    match.Student2Id = reader.GetGuid(2);
-                    match.Status = (SwapStatus)reader.GetInt32(3);
-                    match.DateRequested = reader.GetDateTime(4);
-                    match.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
 
-                    loadedMatchesFromDb.Add(match);
+
+                    Swap swap = new Swap();
+                    swap.Id = reader.GetGuid(0);
+                    swap.Student1Id = reader.GetGuid(1);
+                    swap.Student2Id = reader.GetGuid(2);
+                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(3);
+                    swap.Status = (SwapStatus)reader.GetInt32(4);
+                    swap.DateRequested = reader.GetDateTime(5);
+                    swap.DateConfirmed = reader.IsDBNull(6) ? null : reader.GetDateTime(5);
+
+                    loadedSwapsFromDb.Add(swap);
                 }
                 return true;
             }
@@ -155,19 +159,20 @@ namespace BlazorApp6.Services
                 using var connection = new NpgsqlConnection(connectionString);
                 connection.Open();
 
-                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Matches"" WHERE ""Status"" = 2 OR ""Status"" = 3", connection);
+                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Swaps"" WHERE ""Status"" = 2 OR ""Status"" = 5", connection);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    Swap match = new Swap();
-                    match.Id = reader.GetGuid(0);
-                    match.Student1Id = reader.GetGuid(1);
-                    match.Student2Id = reader.GetGuid(2);
-                    match.Status = (SwapStatus)reader.GetInt32(3);
-                    match.DateRequested = reader.GetDateTime(4);
-                    match.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
+                    Swap swap = new Swap();
+                    swap.Id = reader.GetGuid(0);
+                    swap.Student1Id = reader.GetGuid(1);
+                    swap.Student2Id = reader.GetGuid(2);
+                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(3);
+                    swap.Status = (SwapStatus)reader.GetInt32(4);
+                    swap.DateRequested = reader.GetDateTime(5);
+                    swap.DateConfirmed = reader.IsDBNull(6) ? null : reader.GetDateTime(6);
 
-                    historyFromDb.Add(match);
+                    historyFromDb.Add(swap);
                 }
                 return true;
             }
@@ -176,51 +181,52 @@ namespace BlazorApp6.Services
                 return false;
             }
         }
-        public void SaveSwapToDb(Swap match)
+        public void SaveSwapToDb(Swap swap)
         {
             using (var connection = new NpgsqlConnection(connectionString))
             {
                 connection.Open();
 
-                string sql = @"INSERT INTO ""Matches"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"") 
-                                VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed)";
+                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""SubjectForHelp"", ""Status"", ""DateRequested"", ""DateConfirmed"") 
+                                VALUES (@Id, @Student1Id, @Student2Id, @SubjectForHelp, @Status, @DateRequested, @DateConfirmed)";
 
 
                 using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
 
-                cmd.Parameters.AddWithValue("@Id", match.Id);
-                cmd.Parameters.AddWithValue("@Student1Id", match.Student1Id);
-                cmd.Parameters.AddWithValue("@Student2Id", match.Student2Id);
-                cmd.Parameters.AddWithValue("@Status", (int)match.Status);
-                cmd.Parameters.AddWithValue("@DateRequested", match.DateRequested);
-                cmd.Parameters.AddWithValue("@DateConfirmed", (object?)match.DateConfirmed ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Id", swap.Id);
+                cmd.Parameters.AddWithValue("@Student1Id", swap.Student1Id);
+                cmd.Parameters.AddWithValue("@Student2Id", swap.Student2Id);
+                cmd.Parameters.AddWithValue("@SubjectForHelp", (object?)swap.SubjectForHelp ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
+                cmd.Parameters.AddWithValue("@DateRequested", swap.DateRequested);
+                cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
 
                 cmd.ExecuteNonQuery();
             }
         }
-        public void UpdateSwapInDb(Swap match)
+        public void UpdateSwapInDb(Swap swap)
         {
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();
 
-            string sql = @"UPDATE ""Matches""
+            string sql = @"UPDATE ""Swaps""
                             SET ""Status"" = @Status, ""DateConfirmed"" = @DateConfirmed WHERE ""Id""=@Id";
 
             using var cmd = new NpgsqlCommand(sql, connection);
 
-            cmd.Parameters.AddWithValue("@Id", match.Id);
-            cmd.Parameters.AddWithValue("@Status", (int)match.Status);
-            cmd.Parameters.AddWithValue("@DateConfirmed", (object?)match.DateConfirmed ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Id", swap.Id);
+            cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
+            cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
 
             cmd.ExecuteNonQuery();
         }
-        public void DeleteSwapFromDb(Swap match)
+        public void DeleteSwapFromDb(Swap swap)
         {
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();
 
-            using var cmd = new NpgsqlCommand(@"DELETE FROM ""Matches"" WHERE ""Id""=@Id", connection);
-            cmd.Parameters.AddWithValue("@Id", match.Id);
+            using var cmd = new NpgsqlCommand(@"DELETE FROM ""Swaps"" WHERE ""Id""=@Id", connection);
+            cmd.Parameters.AddWithValue("@Id", swap.Id);
             cmd.ExecuteNonQuery();
         }
     }
