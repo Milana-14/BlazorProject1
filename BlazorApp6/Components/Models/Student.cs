@@ -33,8 +33,8 @@ public class Student
     [MinLength(6, ErrorMessage = "Паролата трябва да е поне 6 символа")]
     public string Password { get; set; }
 
-    public HashSet<Subject> CanHelpWith { get; set; } = new();
-    public HashSet<Subject> NeedsHelpWith { get; set; } = new();
+    public HashSet<SubjectEnum> CanHelpWith { get; set; } = new();
+    public HashSet<SubjectEnum> NeedsHelpWith { get; set; } = new();
 
     public Student() 
     {
@@ -59,14 +59,14 @@ public class Student
             this.Password = password;
     }
 
-    public void AddSubjects(Subject canHelpWith = Subject.NotSpecified, Subject needsHelpWith = Subject.NotSpecified)
+    public void AddSubjects(SubjectEnum canHelpWith = SubjectEnum.NotSpecified, SubjectEnum needsHelpWith = SubjectEnum.NotSpecified)
     {
-        if (canHelpWith != Subject.NotSpecified) CanHelpWith.Add(canHelpWith);
-        if (needsHelpWith != Subject.NotSpecified) NeedsHelpWith.Add(needsHelpWith);
+        if (canHelpWith != SubjectEnum.NotSpecified) CanHelpWith.Add(canHelpWith);
+        if (needsHelpWith != SubjectEnum.NotSpecified) NeedsHelpWith.Add(needsHelpWith);
     }
 
     public bool HasValidSubjects()
     {
-        return CanHelpWith.Any(s => s != Subject.NotSpecified) && NeedsHelpWith.Any(s => s != Subject.NotSpecified);
+        return CanHelpWith.Any(s => s != SubjectEnum.NotSpecified) && NeedsHelpWith.Any(s => s != SubjectEnum.NotSpecified);
     }
 }
