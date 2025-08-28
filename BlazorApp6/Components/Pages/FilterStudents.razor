@@ -2,8 +2,9 @@
 @inject AppState AppState
 @inject NavigationManager Navigation
 @inject StudentManager StudentManager
-@inject MatchManager MatchManager
+@inject SwapManager SwapManager
 @rendermode InteractiveServer
+@using SwapModel = BlazorApp6.Components.Models.Swap
 
 <h3>Филтър</h3>
 
@@ -48,7 +49,7 @@ else
                 @foreach (var subject in allSubjects)
                 {
                     <div class="form-check" @key="subject">
-                        <input class="form-check-input" 
+                        <input class="form-check-input"
                                id=@($"can_{subject}")
                                type="checkbox"
                                checked=@(selectedCanHelpWith.Contains(subject))
@@ -72,8 +73,8 @@ else
                 @foreach (var subject in allSubjects)
                 {
                     <div class="form-check" @key="subject">
-                        <input class="form-check-input" 
-                               id="@($"need_{subject}")" 
+                        <input class="form-check-input"
+                               id="@($"need_{subject}")"
                                type="checkbox"
                                checked=@selectedNeedsHelpWith.Contains(subject)
                                @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedNeedsHelpWith)" />
@@ -145,11 +146,12 @@ else
                                 {
                                     @if (!isAlreadyRequested)
                                     {
-                                        <button class="btn btn-primary" @onclick="() => RequestMatch(currentStudent, student.student)">Матч</button>
+                                        <button class="btn btn-primary" @onclick="() => RequestHelp(currentStudent, student.student)">Помоли за помощ</button>
+                                        <button class="btn btn-primary" @onclick="() => OfferHelp(currentStudent, student.student)">Предложи помощ</button>
                                     }
                                     else
                                     {
-                                        <button class="btn btn-outline-secondary" @onclick="() => CancelMatchRequest(match)">Отмени заявката ми</button>
+                                        <button class="btn btn-outline-secondary" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
                                     }
                                     <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student.student)">Виж профила</button>
 
@@ -186,7 +188,7 @@ else
     private List<(Student student, double compatibility, List<SubjectEnum> commonCan, List<SubjectEnum> commonNeeds)> filteredStudentsCompatib = new();
 
     private bool isAlreadyRequested = false;
-    private Swap? match;
+    private SwapModel? swap;
 
     protected override void OnInitialized()
     {
@@ -307,18 +309,27 @@ else
         return "_content/YourAppNamespace/images/default-avatar.png";
     }
 
-    private void RequestMatch(Student student1, Student student2)
+    private void RequestHelp(Student student1, Student student2)
     {
-        match = MatchManager.RequestMatch(student1, student2);
-        if (match == null)
+        swap = SwapManager.RequestHelp(student1, student2);
+        if (swap == null)
         {
             isAlreadyRequested = true;
         }
         isAlreadyRequested = false;
     }
-    private void CancelMatchRequest(Swap match)
+    private void OfferHelp(Student student1, Student student2)
     {
-        MatchManager.CancelMyRequest(match);
+        swap = SwapManager.OfferHelp(student1, student2);
+        if (swap == null)
+        {
+            isAlreadyRequested = true;
+        }
+        isAlreadyRequested = false;
+    }
+    private void CancelSwapRequest(SwapModel swap)
+    {
+        SwapManager.CancelMyRequest(swap);
     }
 
     private void ViewProfile(Student student)
@@ -374,6 +385,7 @@ else
             font-size: 0.9rem;
             padding: 0.2rem 0.4rem;
         }
+
     .match-subjects-container {
         padding-bottom: 0.5rem;
     }

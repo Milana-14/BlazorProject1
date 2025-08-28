@@ -3,10 +3,11 @@
 @inject NavigationManager NavigationManager
 @inject StudentManager StudentManager
 @inject SwapManager SwapManager
+@using SwapModel = BlazorApp6.Components.Models.Swap
 
 <h3>OtherProfile</h3>
 
-@if(currentStudent == null)
+@if (currentStudent == null)
 {
     <p>Моля, влезте в профила си</p>
 }
@@ -65,7 +66,7 @@ else
         Matched
     }
     private Status currentStatus = Status.NotRequested;
-    private Swap? swap;
+    private SwapModel? swap;
 
     private string errorMessage = string.Empty;
 
@@ -93,7 +94,7 @@ else
             errorMessage = ex.Message;
         }
 
-        List<Swap> allSwaps = SwapManager.GetAllSwaps();
+        List<SwapModel> allSwaps = SwapManager.GetAllSwaps();
         if (allSwaps.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == SwapStatus.Pending))
         {
             currentStatus = Status.Requested;
@@ -131,7 +132,7 @@ else
         }
     }
 
-    private void CancelSwapRequest(Swap swap)
+    private void CancelSwapRequest(SwapModel swap)
     {
         SwapManager.CancelMyRequest(swap);
     }
