@@ -24,8 +24,6 @@
     </div>
 </EditForm>
 
-<a class="btn btn-link" @onclick="() => ResetPassword()">Забравена парола</a>
-
 @if (loginFailed)
 {
     <div class="alert alert-danger mt-3">
@@ -67,10 +65,5 @@
             errorMessage = ex.Message;
             loginFailed = true;
         }
-    }
-
-    private void ResetPassword()
-    {
-        Navigation.NavigateTo("/reset-password");
     }
 }  

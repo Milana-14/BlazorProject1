@@ -5,92 +5,110 @@ using System.Text.Json;
 
 namespace BlazorApp6.Services
 {
-    public class MatchManager // За управление на матчовете межд учениците
+    public class SwapManager // За управление на матчовете межд учениците
     {
         private readonly string connectionString;
-        private List<Match> matches = new List<Match>(); // Само за матчове със статус Pending или Confirmed
-        private List<Match> history = new List<Match>(); // Само за матчове със статус Rejected или Unpaired (отменените матчове изобщо не се записват - няма смис)
+        private List<Swap> swaps = new List<Swap>(); // Само за свапове със статус Pending или Confirmed
+        private List<Swap> history = new List<Swap>(); // Само за свапове със статус Rejected, Completed или Canceled (отменените свапове изобщо не се записват - няма смис)
         public string? DbError { get; private set; }
-        public MatchManager(IConfiguration config)
+        public SwapManager(IConfiguration config)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
 
-            if (!LoadMatchesFromDb(out List<Match> loadedMatchesFromDb))
+            if (!LoadSwapsFromDb(out List<Swap> loadedMatchesFromDb))
             {
-                DbError = "Зареждането на данните за матчовете не беше успешно";
+                DbError = "Зареждането на данните за сваповете не беше успешно";
                 return;
             }
-            matches = loadedMatchesFromDb;
+            swaps = loadedMatchesFromDb;
 
-            if (!LoadHistoryMatchesFromDb(out List<Match> historyFromDb))
+            if (!LoadHistorySwapsFromDb(out List<Swap> historyFromDb))
             {
-                DbError = "Зареждането на данните за историята на матчовете не беше успешно";
+                DbError = "Зареждането на данните за историята на сваповете не беше успешно";
                 return;
             }
             history = historyFromDb;
         }
 
-        public Match? RequestMatch(Student student1, Student student2)
+        public Swap? RequestHelp(Student requestingSt, Student helpingSt, Subject subject)
         {
-            if (matches.FirstOrDefault(m =>
-                (m.Student1Id == student1.Id && m.Student2Id == student2.Id) ||
-                (m.Student1Id == student2.Id && m.Student2Id == student1.Id)) != null) return null;
+            if (swaps.FirstOrDefault(m =>
+                (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
+                (m.Student1Id == helpingSt.Id && m.Student2Id == requestingSt.Id)) != null) return null;
 
-            Match match = new Match
+            Swap swap = new Swap
             {
-                Student1Id = student1.Id,
-                Student2Id = student2.Id,
+                Student1Id = requestingSt.Id,
+                Student2Id = helpingSt.Id,
+                SubjectForHelp = subject,
                 DateRequested = DateTime.Now,
-                Status = MatchStatus.Pending
+                Status = SwapStatus.Pending
             };
 
-            matches.Add(match);
-            SaveMatchToDb(match);
-            return match;
+            swaps.Add(swap);
+            SaveSwapToDb(swap);
+            return swap;
         }
-        public void ConfirmMatch(Match match)
+        public Swap? OfferHelp(Student requestingSt, Student helpingSt, Subject subject)
         {
-            match.Confirm();
-            UpdateMatchInDb(match);
+            if (swaps.FirstOrDefault(m =>
+                (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
+                (m.Student1Id == helpingSt.Id && m.Student2Id == requestingSt.Id)) != null) return null;
+            Swap swap = new Swap
+            {
+                Student1Id = requestingSt.Id,
+                Student2Id = helpingSt.Id,
+                SubjectForHelp = subject,
+                DateRequested = DateTime.Now,
+                Status = SwapStatus.Pending
+            };
+            swaps.Add(swap);
+            SaveSwapToDb(swap);
+            return swap;
         }
-        public void RejectMatch(Match match)
+        public void ConfirmSwap(Swap swap)
         {
-            match.Reject();
-            matches.Remove(match);
+            swap.Confirm();
+            UpdateSwapInDb(swap);
+        }
+        public void RejectSwap(Swap swap)
+        {
+            swap.Reject();
+            swaps.Remove(swap);
 
-            if (!history.Any(m => m.Id == match.Id)) history.Add(match);
+            if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
 
-            UpdateMatchInDb(match);
-        }
-
-        public void CancelMyRequest(Match match)
-        {
-            matches.Remove(match);
-            DeleteMatchFromDb(match);
+            UpdateSwapInDb(swap);
         }
 
-        public void UnpairStudents(Match match)
+        public void CancelMyRequest(Swap swap)
         {
-            matches.Remove(match);
-            match.Unpair();
+            swaps.Remove(swap);
+            DeleteSwapFromDb(swap);
+        }
 
-            if (!history.Any(m => m.Id == match.Id)) history.Add(match);
+        public void CompleteSwap(Swap swap)
+        {
+            swaps.Remove(swap);
+            swap.CompleteSwap();
 
-            UpdateMatchInDb(match);
+            if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
+
+            UpdateSwapInDb(swap);
         }
-        public List<Match> FindMatchesByStudent(Guid studentId)
+        public List<Swap> FindSwapsByStudent(Guid studentId)
         {
-            return matches.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();
+            return swaps.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();
         }
-        public Match? FindMatchById(Guid id)
+        public Swap? FindSwapsById(Guid id)
         {
-            return matches.FirstOrDefault(m => m.Id == id);
+            return swaps.FirstOrDefault(m => m.Id == id);
         }
-        public List<Match> GetAllMatches()
+        public List<Swap> GetAllSwaps()
         {
-            return matches;
+            return swaps;
         }
-        public List<Match> GetAllHistory()
+        public List<Swap> GetAllHistory()
         {
             return history;
         }
@@ -98,9 +116,9 @@ namespace BlazorApp6.Services
 
 
         // Работа с база данни
-        public bool LoadMatchesFromDb(out List<Match> loadedMatchesFromDb)
+        public bool LoadSwapsFromDb(out List<Swap> loadedMatchesFromDb)
         {
-            loadedMatchesFromDb = new List<Match>();
+            loadedMatchesFromDb = new List<Swap>();
 
             try
             {
@@ -111,11 +129,11 @@ namespace BlazorApp6.Services
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    Match match = new Match();
+                    Swap match = new Swap();
                     match.Id = reader.GetGuid(0);
                     match.Student1Id = reader.GetGuid(1);
                     match.Student2Id = reader.GetGuid(2);
-                    match.Status = (MatchStatus)reader.GetInt32(3);
+                    match.Status = (SwapStatus)reader.GetInt32(3);
                     match.DateRequested = reader.GetDateTime(4);
                     match.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
 
@@ -128,9 +146,9 @@ namespace BlazorApp6.Services
                 return false;
             }
         }
-        public bool LoadHistoryMatchesFromDb(out List<Match> historyFromDb)
+        public bool LoadHistorySwapsFromDb(out List<Swap> historyFromDb)
         {
-            historyFromDb = new List<Match>();
+            historyFromDb = new List<Swap>();
 
             try
             {
@@ -141,11 +159,11 @@ namespace BlazorApp6.Services
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    Match match = new Match();
+                    Swap match = new Swap();
                     match.Id = reader.GetGuid(0);
                     match.Student1Id = reader.GetGuid(1);
                     match.Student2Id = reader.GetGuid(2);
-                    match.Status = (MatchStatus)reader.GetInt32(3);
+                    match.Status = (SwapStatus)reader.GetInt32(3);
                     match.DateRequested = reader.GetDateTime(4);
                     match.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
 
@@ -158,7 +176,7 @@ namespace BlazorApp6.Services
                 return false;
             }
         }
-        public void SaveMatchToDb(Match match)
+        public void SaveSwapToDb(Swap match)
         {
             using (var connection = new NpgsqlConnection(connectionString))
             {
@@ -180,7 +198,7 @@ namespace BlazorApp6.Services
                 cmd.ExecuteNonQuery();
             }
         }
-        public void UpdateMatchInDb(Match match)
+        public void UpdateSwapInDb(Swap match)
         {
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();
@@ -196,7 +214,7 @@ namespace BlazorApp6.Services
 
             cmd.ExecuteNonQuery();
         }
-        public void DeleteMatchFromDb(Match match)
+        public void DeleteSwapFromDb(Swap match)
         {
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();

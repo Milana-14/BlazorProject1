@@ -10,7 +10,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<AppState>();
 builder.Services.AddScoped<StudentManager>();
-builder.Services.AddScoped<MatchManager>();
+builder.Services.AddScoped<SwapManager>();
 
 var app = builder.Build();
 

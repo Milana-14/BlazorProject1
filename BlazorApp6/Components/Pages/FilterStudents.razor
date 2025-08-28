@@ -186,7 +186,7 @@ else
     private List<(Student student, double compatibility, List<SubjectEnum> commonCan, List<SubjectEnum> commonNeeds)> filteredStudentsCompatib = new();
 
     private bool isAlreadyRequested = false;
-    private Match? match;
+    private Swap? match;
 
     protected override void OnInitialized()
     {
@@ -316,7 +316,7 @@ else
         }
         isAlreadyRequested = false;
     }
-    private void CancelMatchRequest(Match match)
+    private void CancelMatchRequest(Swap match)
     {
         MatchManager.CancelMyRequest(match);
     }

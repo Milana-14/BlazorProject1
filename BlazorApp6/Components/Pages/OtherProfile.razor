@@ -1,7 +1,8 @@
 ﻿@page "/other-profile/{Id:guid}" // страница за преглед на профила на друг ученик
 @inject AppState AppState
+@inject NavigationManager NavigationManager
 @inject StudentManager StudentManager
-@inject MatchManager MatchManager
+@inject SwapManager SwapManager
 
 <h3>OtherProfile</h3>
 
@@ -13,9 +14,13 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 {
     <p><strong>Име:</strong> @otherStudent.FirstName</p>
     <p><strong>Фамилия:</strong> @otherStudent.SecName</p>
-    <p><strong>Възраст:</strong> @otherStudent.Age</p>
+    @* <p><strong>Възраст:</strong> @otherStudent.Age</p> *@ // нз дали да се показва възрастта
     <p><strong>Клас:</strong> @otherStudent.Grade</p>
-    <p><strong>Имейл:</strong> @otherStudent.Email</p>
+
+    @if (currentStatus == Status.Matched)
+    {
+        <p><strong>Имейл:</strong> @otherStudent.Email</p>
+    }
 
     @if (otherStudent.CanHelpWith?.Any() == true)
     {
@@ -29,15 +34,16 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 
     @if (currentStatus == Status.NotRequested)
     {
-        <button class="btn btn-primary" @onclick="() => RequestMatch(currentStudent, otherStudent)">Матч</button>
+        <button class="btn btn-primary" @onclick="() => OfferHelp(otherStudent, currentStudent)">Предложи помощ</button>
+        <button class="btn btn-primary" @onclick="() => RequestHelp(currentStudent, otherStudent)">Помоли за помощ</button>
     }
     else if (currentStatus == Status.Requested)
     {
-        <button class="btn btn-outline-secondary" @onclick="() => CancelMatchRequest(match)">Отмени заявката ми</button>
+        <button class="btn btn-outline-secondary" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
     }
     else if (currentStatus == Status.Matched)
     {
-        <button class="btn btn-outline-danger" @onclick="() => Unpair(match)">Разделяне</button>
+        <button class="btn btn-outline-danger" @onclick="() => GoToChat(otherStudent)">Изпрати съобщение</button>
     }
 }
 else
@@ -59,7 +65,7 @@ else
         Matched
     }
     private Status currentStatus = Status.NotRequested;
-    private Match? match;
+    private Swap? swap;
 
     private string errorMessage = string.Empty;
 
@@ -87,22 +93,22 @@ else
             errorMessage = ex.Message;
         }
 
-        List<Match> allMatches = MatchManager.GetAllMatches();
-        if (allMatches.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == MatchStatus.Pending))
+        List<Swap> allSwaps = SwapManager.GetAllSwaps();
+        if (allSwaps.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == SwapStatus.Pending))
         {
             currentStatus = Status.Requested;
         }
-        else if (allMatches.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == MatchStatus.Confirmed))
+        else if (allSwaps.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == SwapStatus.Confirmed))
         {
             currentStatus = Status.Matched;
         }
         else currentStatus = Status.NotRequested;
     }
 
-    private void RequestMatch(Student student1, Student student2)
+    private void OfferHelp(Student requestingSt, Student helpingSt)
     {
-        match = MatchManager.RequestMatch(student1, student2);
-        if (match == null)
+        swap = SwapManager.OfferHelp(requestingSt, helpingSt);
+        if (swap == null)
         {
             currentStatus = Status.Requested;
         }
@@ -112,13 +118,26 @@ else
         }
     }
 
-    private void CancelMatchRequest(Match match)
+    private void RequestHelp(Student requestingSt, Student helpingSt)
     {
-        MatchManager.CancelMyRequest(match);
+        swap = SwapManager.RequestHelp(requestingSt, helpingSt);
+        if (swap == null)
+        {
+            currentStatus = Status.Requested;
+        }
+        else
+        {
+            currentStatus = Status.NotRequested;
+        }
     }
 
-    private void Unpair(Match match)
+    private void CancelSwapRequest(Swap swap)
     {
-        MatchManager.UnpairStudents(match);
+        SwapManager.CancelMyRequest(swap);
+    }
+
+    private void GoToChat(Student studentToChatWith)
+    {
+        NavigationManager.NavigateTo($"/chat/{studentToChatWith.Id}");
     }
 }
