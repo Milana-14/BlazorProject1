@@ -196,7 +196,7 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@Id", swap.Id);
                 cmd.Parameters.AddWithValue("@Student1Id", swap.Student1Id);
                 cmd.Parameters.AddWithValue("@Student2Id", swap.Student2Id);
-                cmd.Parameters.AddWithValue("@SubjectForHelp", (object?)swap.SubjectForHelp ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@SubjectForHelp", (int)swap.SubjectForHelp);
                 cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
                 cmd.Parameters.AddWithValue("@DateRequested", swap.DateRequested);
                 cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
