@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BlazorApp6.Components.Models.FormModels
+namespace BlazorApp6.Models.FormModels
 {
     public class LoginStudentFormModel // Временно запазва потребителското име и паролата, выведени от потребителя в Login.razor
     {

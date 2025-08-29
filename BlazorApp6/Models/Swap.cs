@@ -1,4 +1,4 @@
-﻿namespace BlazorApp6.Components.Models
+﻿namespace BlazorApp6.Models
 {
     public enum SwapStatus
     {

@@ -1,8 +1,8 @@
-﻿using BlazorApp6.Components.Models;
+﻿using BlazorApp6.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace BlazorApp6.Components.Models
+namespace BlazorApp6.Models
 {
     public enum SubjectEnum
     {

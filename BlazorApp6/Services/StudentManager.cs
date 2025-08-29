@@ -1,4 +1,4 @@
-﻿using BlazorApp6.Components.Models;
+﻿using BlazorApp6.Models;
 using Microsoft.Data.Sqlite;
 using Npgsql;
 using System.Text.Json;
@@ -69,6 +69,13 @@ namespace BlazorApp6.Services
         {
             return students.FirstOrDefault(predicate);
         }
+
+        public string GetAvatarUrl(Student student)
+        {
+            // Вернуть URL аватарки, пока заглушка
+            return "_content/YourAppNamespace/images/default-avatar.png";
+        }
+
 
 
 

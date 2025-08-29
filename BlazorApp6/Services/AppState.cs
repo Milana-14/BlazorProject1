@@ -1,4 +1,4 @@
-﻿using BlazorApp6.Components.Models;
+﻿using BlazorApp6.Models;
 
 namespace BlazorApp6.Services
 {

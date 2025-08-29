@@ -4,7 +4,7 @@
 @inject StudentManager StudentManager
 @inject SwapManager SwapManager
 @rendermode InteractiveServer
-@using SwapModel = BlazorApp6.Components.Models.Swap
+@using SwapModel = BlazorApp6.Models.Swap
 
 <h3>Филтър</h3>
 
@@ -106,7 +106,7 @@ else
 
                         @* Профилна, име и клас *@
                         <div class="d-flex align-items-center gap-3 mb-3">
-                            <img src="@GetAvatarUrl(student.student)" alt="Avatar"
+                            <img src="@StudentManager.GetAvatarUrl(student.student)" alt="Avatar"
                                  class="rounded-circle avatar-lg" />
                             <div>
                                 <h5 class="fw-semibold mb-1">@student.student.FirstName @student.student.SecName</h5>
@@ -189,6 +189,7 @@ else
 
     private bool isAlreadyRequested = false;
     private SwapModel? swap;
+    private SubjectEnum selectedSubjectForSwap = SubjectEnum.NotSpecified;
 
     protected override void OnInitialized()
     {
@@ -210,8 +211,8 @@ else
     private void ApplyFilter()
     {
         filteredStudents = allStudents.Where(s =>
-            (selectedCanHelpWith.Count == 0 || s.CanHelpWith.Overlaps(selectedCanHelpWith)) &&
-            (selectedNeedsHelpWith.Count == 0 || s.NeedsHelpWith.Overlaps(selectedNeedsHelpWith)) &&
+            ((selectedCanHelpWith.Count == 0 || s.CanHelpWith.Overlaps(selectedCanHelpWith)) ||
+            (selectedNeedsHelpWith.Count == 0 || s.NeedsHelpWith.Overlaps(selectedNeedsHelpWith))) &&
             (selectedGrades.Count == 0 || selectedGrades.Contains(s.Grade))).ToList();
 
         filteredStudentsCompatib.Clear();
@@ -303,24 +304,18 @@ else
             return (((double)commonCan.Count / selectedCanHelpWith.Count) + ((double)commonNeeds.Count / selectedNeedsHelpWith.Count)) / 2 * 100;
     }
 
-    private string GetAvatarUrl(Student student)
+    private void RequestHelp(Student student1, Student student2, SubjectEnum subject)
     {
-        // Вернуть URL аватарки, пока заглушка
-        return "_content/YourAppNamespace/images/default-avatar.png";
-    }
-
-    private void RequestHelp(Student student1, Student student2)
-    {
-        swap = SwapManager.RequestHelp(student1, student2);
+        swap = SwapManager.RequestHelp(student1, student2, subject);
         if (swap == null)
         {
             isAlreadyRequested = true;
         }
         isAlreadyRequested = false;
     }
-    private void OfferHelp(Student student1, Student student2)
+    private void OfferHelp(Student student1, Student student2, SubjectEnum subject)
     {
-        swap = SwapManager.OfferHelp(student1, student2);
+        swap = SwapManager.OfferHelp(student1, student2, subject);
         if (swap == null)
         {
             isAlreadyRequested = true;

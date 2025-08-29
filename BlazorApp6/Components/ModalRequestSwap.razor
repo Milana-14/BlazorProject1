@@ -1,0 +1,69 @@
+﻿@using MudBlazor
+@inject StudentManager StudentManager
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <img src="@StudentManager.GetAvatarUrl(student)" alt="Avatar"
+                 class="rounded-circle avatar-lg" />
+            <div>
+                <h4 class="fw-semibold mb-1">@student.FirstName @student.SecName</h4>
+                <p class="text-muted small mb-0">Клас: @student.Grade</p>
+            </div>
+        </div>
+
+        @* Списък с предметите на ученика *@
+        @if (isRequiringHelp)
+        {
+            <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
+            <div class="match-subjects-scroll mb-2">
+                @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                {
+                    <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@subj.GetDisplayName()</span>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
+            <div class="match-subjects-scroll mb-2">
+                @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                {
+                    <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@subj.GetDisplayName()</span>
+                }
+            </div>
+        }
+        <hr />
+
+        <MudSelect T="SubjectEnum" Label="Выбери предмет" @bind-Value="SelectedSubject">
+            @foreach (var subj in ((isRequiringHelp) ? student.NeedsHelpWith : student.CanHelpWith).Where(s => s != SubjectEnum.NotSpecified))
+            {
+                <MudSelectItem Value="@subj">.GetDisplayName()</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="!isChosen" OnClick="SendRequest">Изпрати заявка</MudButton>
+        <MudButton OnClick="Cancel">Назад</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Student student { get; set; }
+    [Parameter] public bool isRequiringHelp { get; set; }
+
+    private SubjectEnum SelectedSubject = SubjectEnum.NotSpecified;
+    private bool isChosen => SelectedSubject != SubjectEnum.NotSpecified;
+
+    private void SendRequest() => MudDialog.Close(DialogResult.Ok(SelectedSubject));
+    private void Cancel() => MudDialog.Cancel();
+}
+
+<style>
+    .badge-match {
+        background-color: #e6f0ff; /* светло-синий (ярче a8d0ff) */
+        color: #003366; /* 555 */
+        font-weight: 600;
+    }
+</style>

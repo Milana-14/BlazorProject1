@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 
 
-namespace BlazorApp6.Components.Models;
+namespace BlazorApp6.Models;
 
 public class Student
 {
@@ -58,6 +58,6 @@ public class Student
     public void ChangePassword(string password)
     {
         if (password.Length > 5)
-            this.Password = password;
+            Password = password;
     }
 }

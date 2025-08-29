@@ -3,7 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject StudentManager StudentManager
 @inject SwapManager SwapManager
-@using SwapModel = BlazorApp6.Components.Models.Swap
+@using SwapModel = BlazorApp6.Models.Swap
 
 <h3>OtherProfile</h3>
 
@@ -13,8 +13,7 @@
 }
 else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 {
-    <p><strong>Име:</strong> @otherStudent.FirstName</p>
-    <p><strong>Фамилия:</strong> @otherStudent.SecName</p>
+    <p><strong>Име:</strong> @otherStudent.FirstName @otherStudent.SecName</p>
     @* <p><strong>Възраст:</strong> @otherStudent.Age</p> *@ // нз дали да се показва възрастта
     <p><strong>Клас:</strong> @otherStudent.Grade</p>
 
