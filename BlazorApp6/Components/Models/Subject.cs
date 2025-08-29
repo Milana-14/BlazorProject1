@@ -48,15 +48,16 @@ public static class EnumExtensions
     }
 }
 
-public class Subject
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = "";
-}
-
 public class StudentSubject
 {
-    public int StudentId { get; set; }
-    public int SubjectId { get; set; }
+    public Guid StudentId { get; set; }
+    public SubjectEnum Subject { get; set; }
     public bool CanHelp { get; set; }
+
+    public StudentSubject(Guid StudentId, SubjectEnum Subject, bool CanHelp)
+    {
+        this.StudentId = StudentId;
+        this.Subject = Subject;
+        this.CanHelp = CanHelp;
+    }
 }

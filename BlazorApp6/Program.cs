@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<AppState>();
+builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<StudentManager>();
 builder.Services.AddScoped<SwapManager>();
 

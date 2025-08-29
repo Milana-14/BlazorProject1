@@ -2,6 +2,7 @@
 @inject NavigationManager Navigation
 @inject AppState AppState
 @inject StudentManager StudentManager
+@inject SubjectsManager SubjectsManager
 @rendermode InteractiveServer
 
 <h3>Мой профил</h3>
@@ -72,7 +73,7 @@ else if (student is not null)
                             <input class="form-check-input"
                                    type="checkbox"
                                    checked="@student.CanHelpWith.Contains(subject)"
-                                   @onchange="e => ToggleSubject(subject, e.Value is true, student.CanHelpWith, student.NeedsHelpWith)" />
+                                   @onchange="e => ToggleCanHelpSubject(subject, e.Value is true)" />
                             @subject.GetDisplayName()
                         </div>
                     }
@@ -88,7 +89,7 @@ else if (student is not null)
                             <input class="form-check-input"
                                    type="checkbox"
                                    checked="@student.NeedsHelpWith.Contains(subject)"
-                                   @onchange="e => ToggleSubject(subject, e.Value is true, student.NeedsHelpWith, student.CanHelpWith)" />
+                                   @onchange="e => ToggleNeedsHelpSubject(subject, e.Value is true)" />
                             @subject.GetDisplayName()
                         </div>
                     }
@@ -129,22 +130,24 @@ else if (student is not null)
         allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
     }
 
-    private void ToggleSubject(SubjectEnum subject, bool isChecked, HashSet<SubjectEnum> targetList, HashSet<SubjectEnum> otherList)
+    private void ToggleCanHelpSubject(SubjectEnum subject, bool isChecked)
     {
         if (isChecked)
-        {
-            if (otherList.Contains(subject))
-                otherList.Remove(subject);
-
-            if (!targetList.Contains(subject))
-                targetList.Add(subject);
-        }
+            student.CanHelpWith.Add(subject);
         else
-        {
-            if (targetList.Contains(subject))
-                targetList.Remove(subject);
-        }
+            student.CanHelpWith.Remove(subject);
+
     }
+
+    private void ToggleNeedsHelpSubject(SubjectEnum subject, bool isChecked)
+    {
+        if (isChecked)
+            student.NeedsHelpWith.Add(subject);
+        else
+            student.NeedsHelpWith.Remove(subject);
+
+    }
+
 
     private void GoToChangePassword()
     {
@@ -158,6 +161,7 @@ else if (student is not null)
             try
             {
                 StudentManager.UpdateStudent(student);
+                SubjectsManager.UpdateStudentSubjects(student);
                 isEditing = false;
                 successMessageShown = true;
             }

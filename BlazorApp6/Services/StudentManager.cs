@@ -108,7 +108,7 @@ namespace BlazorApp6.Services
                 DbError = "Грешка при зареждането: " + ex.Message;
                 return false;
             }
-        } // bool за да се види дали имаше грешка
+        }
         public bool SaveStudentToDb(Student student)
         {
             try
@@ -141,7 +141,7 @@ namespace BlazorApp6.Services
                 DbError = "Записването на нов ученик в базата не беше успешно." + ex;
                 return false;
             }
-        }  // Същото и тук с bool
+        } 
         public void UpdateStudentInDb(Student student)
         {
             try

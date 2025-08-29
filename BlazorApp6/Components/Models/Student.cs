@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BlazorApp6.Services;
+using System.ComponentModel.DataAnnotations;
+
 
 namespace BlazorApp6.Components.Models;
 
@@ -57,16 +59,5 @@ public class Student
     {
         if (password.Length > 5)
             this.Password = password;
-    }
-
-    public void AddSubjects(SubjectEnum canHelpWith = SubjectEnum.NotSpecified, SubjectEnum needsHelpWith = SubjectEnum.NotSpecified)
-    {
-        if (canHelpWith != SubjectEnum.NotSpecified) CanHelpWith.Add(canHelpWith);
-        if (needsHelpWith != SubjectEnum.NotSpecified) NeedsHelpWith.Add(needsHelpWith);
-    }
-
-    public bool HasValidSubjects()
-    {
-        return CanHelpWith.Any(s => s != SubjectEnum.NotSpecified) && NeedsHelpWith.Any(s => s != SubjectEnum.NotSpecified);
     }
 }
