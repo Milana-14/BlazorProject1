@@ -146,8 +146,46 @@ else
                                 {
                                     @if (!isAlreadyRequested)
                                     {
-                                        <button class="btn btn-primary" @onclick="() => RequestHelp(currentStudent, student.student)">Помоли за помощ</button>
-                                        <button class="btn btn-primary" @onclick="() => OfferHelp(currentStudent, student.student)">Предложи помощ</button>
+                                        @* <button class="btn btn-primary" @onclick="() => RequestHelp(currentStudent, student.student)">Помоли за помощ</button>
+                                        <button class="btn btn-primary" @onclick="() => OfferHelp(currentStudent, student.student)">Предложи помощ</button> *@
+
+                                        @* Кнопки "Помоли за помощ" и "Предложи помощ" с кастомной модалкой *@
+                                        <button class="btn btn-primary" @onclick="() => OpenModal(student.student, true)">Помоли за помощ</button>
+                                        <button class="btn btn-primary" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
+
+                                        @if (isModalOpen && modalStudent != null)
+                                        {
+                                            <div class="modal-backdrop">
+                                                <div class="modal-content">
+                                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                                        <img src="@StudentManager.GetAvatarUrl(modalStudent)" alt="Avatar"
+                                                             class="rounded-circle avatar-lg" />
+                                                        <div>
+                                                            <h5 class="fw-semibold mb-1">@modalStudent.FirstName @modalStudent.SecName</h5>
+                                                            <p class="text-muted small mb-0">Клас: @modalStudent.Grade</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <label for="subjectSelect" class="form-label">Избери предмет</label>
+                                                    <select id="subjectSelect" class="form-select" @bind="selectedSubjectForSwap">
+                                                        <option value="@SubjectEnum.NotSpecified">-- Избери --</option>
+                                                        @foreach (var subj in GetAvailableSubjects(modalStudent, isRequestHelp))
+                                                        {
+                                                            <option value="@subj">@subj.GetDisplayName()</option>
+                                                        }
+                                                    </select>
+
+                                                    <div class="modal-actions mt-3">
+                                                        <button class="btn btn-primary" disabled="@(selectedSubjectForSwap == SubjectEnum.NotSpecified)"
+                                                                @onclick="ConfirmModal">
+                                                            Изпрати заявка
+                                                        </button>
+                                                        <button class="btn btn-secondary" @onclick="CloseModal">Назад</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+
                                     }
                                     else
                                     {
@@ -190,6 +228,54 @@ else
     private bool isAlreadyRequested = false;
     private SwapModel? swap;
     private SubjectEnum selectedSubjectForSwap = SubjectEnum.NotSpecified;
+
+
+
+    // -----------------------------------------------------------
+    private bool isModalOpen = false;
+    private Student? modalStudent;
+    private bool isRequestHelp;
+
+    private void OpenModal(Student student, bool requestHelp)
+    {
+        modalStudent = student;
+        isRequestHelp = requestHelp;
+        selectedSubjectForSwap = SubjectEnum.NotSpecified;
+        isModalOpen = true;
+    }
+
+    private void CloseModal()
+    {
+        isModalOpen = false;
+        modalStudent = null;
+        selectedSubjectForSwap = SubjectEnum.NotSpecified;
+    }
+
+    private void ConfirmModal()
+    {
+        if (modalStudent == null || selectedSubjectForSwap == SubjectEnum.NotSpecified)
+            return;
+
+        if (isRequestHelp)
+            RequestHelp(currentStudent!, modalStudent, selectedSubjectForSwap);
+        else
+            OfferHelp(currentStudent!, modalStudent, selectedSubjectForSwap);
+
+        CloseModal();
+    }
+
+    // Метод для выбора доступных предметов в модалке
+    private IEnumerable<SubjectEnum> GetAvailableSubjects(Student student, bool requestHelp)
+    {
+        return requestHelp
+            ? student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified)
+            : student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified);
+    }
+
+    // -----------------------------------------------------------
+
+
+
 
     protected override void OnInitialized()
     {

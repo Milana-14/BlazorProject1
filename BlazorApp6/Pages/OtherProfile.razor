@@ -34,8 +34,8 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 
     @if (currentStatus == Status.NotRequested)
     {
-        <button class="btn btn-primary" @onclick="() => OfferHelp(otherStudent, currentStudent)">Предложи помощ</button>
-        <button class="btn btn-primary" @onclick="() => RequestHelp(currentStudent, otherStudent)">Помоли за помощ</button>
+        @* <button class="btn btn-primary" @onclick="() => OfferHelp(otherStudent, currentStudent)">Предложи помощ</button>
+        <button class="btn btn-primary" @onclick="() => RequestHelp(currentStudent, otherStudent)">Помоли за помощ</button> *@
     }
     else if (currentStatus == Status.Requested)
     {
@@ -105,31 +105,31 @@ else
         else currentStatus = Status.NotRequested;
     }
 
-    private void OfferHelp(Student requestingSt, Student helpingSt)
-    {
-        swap = SwapManager.OfferHelp(requestingSt, helpingSt);
-        if (swap == null)
-        {
-            currentStatus = Status.Requested;
-        }
-        else
-        {
-            currentStatus = Status.NotRequested;
-        }
-    }
+    // private void OfferHelp(Student requestingSt, Student helpingSt)
+    // {
+    //     swap = SwapManager.OfferHelp(requestingSt, helpingSt);
+    //     if (swap == null)
+    //     {
+    //         currentStatus = Status.Requested;
+    //     }
+    //     else
+    //     {
+    //         currentStatus = Status.NotRequested;
+    //     }
+    // }
 
-    private void RequestHelp(Student requestingSt, Student helpingSt)
-    {
-        swap = SwapManager.RequestHelp(requestingSt, helpingSt);
-        if (swap == null)
-        {
-            currentStatus = Status.Requested;
-        }
-        else
-        {
-            currentStatus = Status.NotRequested;
-        }
-    }
+    // private void RequestHelp(Student requestingSt, Student helpingSt)
+    // {
+    //     swap = SwapManager.RequestHelp(requestingSt, helpingSt);
+    //     if (swap == null)
+    //     {
+    //         currentStatus = Status.Requested;
+    //     }
+    //     else
+    //     {
+    //         currentStatus = Status.NotRequested;
+    //     }
+    // }
 
     private void CancelSwapRequest(SwapModel swap)
     {
