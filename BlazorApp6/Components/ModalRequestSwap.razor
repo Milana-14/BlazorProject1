@@ -1,5 +1,7 @@
 ﻿@using MudBlazor
+@using MudBlazor.Services
 @inject StudentManager StudentManager
+@inject IDialogService DialogService
 
 <MudDialog>
     <DialogContent>
@@ -36,7 +38,7 @@
         <hr />
 
         <MudSelect T="SubjectEnum" Label="Выбери предмет" @bind-Value="SelectedSubject">
-            @foreach (var subj in ((isRequiringHelp) ? student.NeedsHelpWith : student.CanHelpWith).Where(s => s != SubjectEnum.NotSpecified))
+            @foreach (var subj in ((isRequiringHelp) ? student.NeedsHelpWith.Where(s => otherStudent.CanHelpWith.Contains(s)) : student.CanHelpWith.Where(s => otherStudent.NeedsHelpWith.Contains(s))).Where(s => s != SubjectEnum.NotSpecified))
             {
                 <MudSelectItem Value="@subj">.GetDisplayName()</MudSelectItem>
             }
@@ -51,6 +53,7 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Student student { get; set; }
+    [Parameter] public Student otherStudent { get; set; }
     [Parameter] public bool isRequiringHelp { get; set; }
 
     private SubjectEnum SelectedSubject = SubjectEnum.NotSpecified;
