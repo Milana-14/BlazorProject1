@@ -3,11 +3,10 @@
 
 @if (IsOpen)
 {
-    <div class="modal-backdrop">
+    <div class="modal">
         <div class="modal-content">
             <div class="d-flex align-items-center gap-3 mb-3">
-                <img src="@StudentManager.GetAvatarUrl(student)" alt="Avatar"
-                     class="rounded-circle avatar-lg" />
+                <img src="@StudentManager.GetAvatarUrl(student)" alt="Avatar" class="rounded-circle avatar-lg" />
                 <div>
                     <h4 class="fw-semibold mb-1">@student.FirstName @student.SecName</h4>
                     <p class="text-muted small mb-0">Клас: @student.Grade</p>
@@ -38,17 +37,23 @@
 
             <hr />
 
-            <label for="subjectSelect" class="form-label">Выбери предмет</label>
-            <select id="subjectSelect" class="form-select" @bind="SelectedSubject">
-                <option value="@SubjectEnum.NotSpecified">-- Выбери --</option>
-                @foreach (var subj in ((isRequiringHelp)
-                            ? student.NeedsHelpWith.Where(s => otherStudent.CanHelpWith.Contains(s))
-                            : student.CanHelpWith.Where(s => otherStudent.NeedsHelpWith.Contains(s)))
-                            .Where(s => s != SubjectEnum.NotSpecified))
-                {
-                    <option value="@subj">@subj.GetDisplayName()</option>
-                }
-            </select>
+            <div class="filter-row">
+                <h5>Избери предмет:</h5>
+                <div class="radio-group">
+                    @foreach (var subject in ((isRequiringHelp) ? student.NeedsHelpWith.Where(s => otherStudent.CanHelpWith.Contains(s))
+                                    : student.CanHelpWith.Where(s => otherStudent.NeedsHelpWith.Contains(s))).Where(s => s != SubjectEnum.NotSpecified))
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"  name="subjectChoice"
+                                   checked="@(SelectedSubject == subject)"
+                                   @onchange="() => ChooseSubject(subject)" />
+                            <label class="form-check-label">@subject.GetDisplayName()</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+
 
             <div class="modal-actions mt-3">
                 <button class="btn btn-primary" disabled="@( !isChosen )" @onclick="SendRequest">Изпрати заявка</button>
@@ -62,12 +67,17 @@
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public EventCallback<SubjectEnum?> OnClose { get; set; }
 
-    [Parameter] public Student student { get; set; } = default!;
-    [Parameter] public Student otherStudent { get; set; } = default!;
+    [Parameter] public Student student { get; set; }
+    [Parameter] public Student otherStudent { get; set; }
     [Parameter] public bool isRequiringHelp { get; set; }
 
     private SubjectEnum SelectedSubject { get; set; } = SubjectEnum.NotSpecified;
     private bool isChosen => SelectedSubject != SubjectEnum.NotSpecified;
+
+    private void ChooseSubject(SubjectEnum subject)
+    {
+        SelectedSubject = subject;
+    }
 
     private async Task SendRequest()
     {
@@ -83,38 +93,41 @@
 }
 
 <style>
-    .modal-backdrop {
+    /* Контейнер для модалки */
+    .modal {
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
+        width: 100%;
+        height: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 9999;
+        backdrop-filter: blur(6px); /* размытие фона */
+        -webkit-backdrop-filter: blur(6px); /* поддержка Safari */
+        z-index: 999; /* поверх всего */
     }
 
+    /* Само модальное окно */
     .modal-content {
-        background: white;
+        background: #fff; /* белый фон окна */
         padding: 20px;
-        border-radius: 10px;
-        min-width: 350px;
+        border-radius: 12px;
         max-width: 500px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        width: 100%;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        z-index: 1000; /* поверх размытия */
     }
 
-    .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .badge-match {
-        background-color: #e6f0ff;
-        color: #003366;
-        font-weight: 600;
+    /* Кнопка закрытия */
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        cursor: pointer;
     }
 
 </style>

@@ -1,7 +1,5 @@
 ﻿using BlazorApp6.Models;
-using Microsoft.Data.Sqlite;
 using Npgsql;
-using System.Text.Json;
 
 namespace BlazorApp6.Services
 {

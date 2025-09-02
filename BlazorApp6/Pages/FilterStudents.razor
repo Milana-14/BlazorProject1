@@ -101,6 +101,8 @@ else
         <div class="row g-3">
             @foreach (var student in filteredStudentsCompatib)
             {
+                bool isAlreadyRequested = SwapManager.FindSwapByStudents(student.student.Id, currentStudent.Id) != null;
+                SwapModel? swap = SwapManager.FindSwapByStudents(student.student.Id, currentStudent.Id);
                 <div class="col-12 col-md-6">
                     <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
 
@@ -140,52 +142,14 @@ else
                                 }
                             </div>
 
-                            @* Бутони "Матч" и "Виж профила" *@
+                            @* Бутони *@
                             <div class="mt-auto d-flex gap-2">
                                 @if (student.student.Grade == currentStudent?.Grade)
                                 {
                                     @if (!isAlreadyRequested)
                                     {
-                                        @* <button class="btn btn-primary" @onclick="() => RequestHelp(currentStudent, student.student)">Помоли за помощ</button>
-                                        <button class="btn btn-primary" @onclick="() => OfferHelp(currentStudent, student.student)">Предложи помощ</button> *@
-
-                                        @* Кнопки "Помоли за помощ" и "Предложи помощ" с кастомной модалкой *@
-                                        <button class="btn btn-primary" @onclick="() => OpenModal(student.student, true)">Помоли за помощ</button>
-                                        <button class="btn btn-primary" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
-
-                                        @if (isModalOpen && modalStudent != null)
-                                        {
-                                            <div class="modal-backdrop">
-                                                <div class="modal-content">
-                                                    <div class="d-flex align-items-center gap-3 mb-3">
-                                                        <img src="@StudentManager.GetAvatarUrl(modalStudent)" alt="Avatar"
-                                                             class="rounded-circle avatar-lg" />
-                                                        <div>
-                                                            <h5 class="fw-semibold mb-1">@modalStudent.FirstName @modalStudent.SecName</h5>
-                                                            <p class="text-muted small mb-0">Клас: @modalStudent.Grade</p>
-                                                        </div>
-                                                    </div>
-
-                                                    <label for="subjectSelect" class="form-label">Избери предмет</label>
-                                                    <select id="subjectSelect" class="form-select" @bind="selectedSubjectForSwap">
-                                                        <option value="@SubjectEnum.NotSpecified">-- Избери --</option>
-                                                        @foreach (var subj in GetAvailableSubjects(modalStudent, isRequestHelp))
-                                                        {
-                                                            <option value="@subj">@subj.GetDisplayName()</option>
-                                                        }
-                                                    </select>
-
-                                                    <div class="modal-actions mt-3">
-                                                        <button class="btn btn-primary" disabled="@(selectedSubjectForSwap == SubjectEnum.NotSpecified)"
-                                                                @onclick="ConfirmModal">
-                                                            Изпрати заявка
-                                                        </button>
-                                                        <button class="btn btn-secondary" @onclick="CloseModal">Назад</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-
+                                        <button class="btn btn-primary" @onclick="() => OpenModal(student.student, false)"> Помоли за помощ</button>
+                                        <button class="btn btn-primary" @onclick="() => OpenModal(student.student, true)">Предложи помощ</button>
                                     }
                                     else
                                     {
@@ -211,6 +175,15 @@ else
     }
 }
 
+
+<!-- Модальное окно (один экземпляр на странице) -->
+<ModalRequestSwap IsOpen="@modalOpen"
+              student="@modalTargetStudent"
+              otherStudent="@currentStudent"
+              isRequiringHelp="@modalIsHelping"
+              OnClose="SendRequestForSwapAndCloseModal" />
+
+
 @code {
     private Student? currentStudent;
 
@@ -225,57 +198,13 @@ else
     private List<Student> filteredStudents = new();
     private List<(Student student, double compatibility, List<SubjectEnum> commonCan, List<SubjectEnum> commonNeeds)> filteredStudentsCompatib = new();
 
-    private bool isAlreadyRequested = false;
-    private SwapModel? swap;
+    // private bool isAlreadyRequested = false;
+    // private SwapModel? swap;
     private SubjectEnum selectedSubjectForSwap = SubjectEnum.NotSpecified;
 
-
-
-    // -----------------------------------------------------------
-    private bool isModalOpen = false;
-    private Student? modalStudent;
-    private bool isRequestHelp;
-
-    private void OpenModal(Student student, bool requestHelp)
-    {
-        modalStudent = student;
-        isRequestHelp = requestHelp;
-        selectedSubjectForSwap = SubjectEnum.NotSpecified;
-        isModalOpen = true;
-    }
-
-    private void CloseModal()
-    {
-        isModalOpen = false;
-        modalStudent = null;
-        selectedSubjectForSwap = SubjectEnum.NotSpecified;
-    }
-
-    private void ConfirmModal()
-    {
-        if (modalStudent == null || selectedSubjectForSwap == SubjectEnum.NotSpecified)
-            return;
-
-        if (isRequestHelp)
-            RequestHelp(currentStudent!, modalStudent, selectedSubjectForSwap);
-        else
-            OfferHelp(currentStudent!, modalStudent, selectedSubjectForSwap);
-
-        CloseModal();
-    }
-
-    // Метод для выбора доступных предметов в модалке
-    private IEnumerable<SubjectEnum> GetAvailableSubjects(Student student, bool requestHelp)
-    {
-        return requestHelp
-            ? student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified)
-            : student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified);
-    }
-
-    // -----------------------------------------------------------
-
-
-
+    private bool modalOpen = false;
+    private Student modalTargetStudent;
+    private bool modalIsHelping;
 
     protected override void OnInitialized()
     {
@@ -392,21 +321,11 @@ else
 
     private void RequestHelp(Student student1, Student student2, SubjectEnum subject)
     {
-        swap = SwapManager.RequestHelp(student1, student2, subject);
-        if (swap == null)
-        {
-            isAlreadyRequested = true;
-        }
-        isAlreadyRequested = false;
+        SwapModel newSwap = SwapManager.RequestHelp(student1, student2, subject);
     }
     private void OfferHelp(Student student1, Student student2, SubjectEnum subject)
     {
-        swap = SwapManager.OfferHelp(student1, student2, subject);
-        if (swap == null)
-        {
-            isAlreadyRequested = true;
-        }
-        isAlreadyRequested = false;
+        SwapModel newSwap = SwapManager.OfferHelp(student1, student2, subject);
     }
     private void CancelSwapRequest(SwapModel swap)
     {
@@ -417,6 +336,39 @@ else
     {
         Navigation.NavigateTo($"/other-profile/{student.Id}");
     }
+
+
+    private void OpenModal(Student target, bool isHelping)
+    {
+        modalTargetStudent = target;
+        modalIsHelping = isHelping;
+        modalOpen = true;
+    }
+    private void SendRequestForSwapAndCloseModal(SubjectEnum? selectedSubject)
+    {
+        modalOpen = false;
+
+        if (selectedSubject.HasValue && modalTargetStudent != null && currentStudent != null)
+        {
+            SubjectEnum subject = selectedSubject.Value;
+
+            SwapModel? newSwap;
+            if (modalIsHelping)
+            {
+                newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, subject);
+            }
+            else
+            {
+                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject);
+            }
+        }
+
+        modalTargetStudent = null;
+
+        InvokeAsync(StateHasChanged);
+    }
+
+
 
     private static bool ValueToBool(object? value)
     {

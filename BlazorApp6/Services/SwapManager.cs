@@ -1,7 +1,5 @@
 ﻿using BlazorApp6.Models;
 using Npgsql;
-using System.Collections.Generic;
-using System.Text.Json;
 
 namespace BlazorApp6.Services
 {
@@ -100,6 +98,10 @@ namespace BlazorApp6.Services
         public List<Swap> FindSwapsByStudent(Guid studentId)
         {
             return swaps.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();
+        }
+        public Swap? FindSwapByStudents(Guid student1Id, Guid student2Id)
+        {
+            return swaps.Where(m => (m.Student1Id == student1Id && m.Student2Id == student2Id) || (m.Student1Id == student2Id && m.Student2Id == student1Id)).FirstOrDefault();
         }
         public Swap? FindSwapsById(Guid id)
         {

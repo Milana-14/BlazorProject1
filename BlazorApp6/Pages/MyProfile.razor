@@ -22,8 +22,8 @@ else if (student is not null)
         <p><strong>Имейл:</strong> @student.Email</p>
         <p><strong>Телефон:</strong> @student.PhoneNumber</p>
 
-        <p><strong>Може да помогне с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
-        <p><strong>Нуждае се от помощ по:</strong> @string.Join(", ", student.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
+        <p><strong>Мога да помогне с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
+        <p><strong>Нуждая се от помощ по:</strong> @string.Join(", ", student.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
 
         <button class="btn btn-primary" @onclick="() => isEditing = true">Редактиране</button>
         <button class="btn btn-secondary" @onclick="ExitProfile">Изход</button>
