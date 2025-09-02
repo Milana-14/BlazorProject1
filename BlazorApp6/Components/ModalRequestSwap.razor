@@ -79,15 +79,15 @@
         SelectedSubject = subject;
     }
 
-    private async Task SendRequest()
+    private void SendRequest()
     {
-        await OnClose.InvokeAsync(SelectedSubject);
+        OnClose.InvokeAsync(SelectedSubject);
         SelectedSubject = SubjectEnum.NotSpecified;
     }
 
-    private async Task Cancel()
+    private void Cancel()
     {
-        await OnClose.InvokeAsync(null);
+        OnClose.InvokeAsync(null);
         SelectedSubject = SubjectEnum.NotSpecified;
     }
 }
