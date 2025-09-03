@@ -151,8 +151,8 @@ else
                                 {
                                     @if (!isAlreadyRequested)
                                     {
-                                        <button class="btn btn-primary" disabled="@canRequestHelp" @onclick="() => OpenModal(student.student, false)"> Помоли за помощ</button>
-                                        <button class="btn btn-primary" disabled="@canOfferHelp" @onclick="() => OpenModal(student.student, true)">Предложи помощ</button>
+                                        <button class="btn btn-primary" disabled="@(!canRequestHelp)" @onclick="() => OpenModal(student.student, false)"> Помоли за помощ</button>
+                                        <button class="btn btn-primary" disabled="@(!canOfferHelp)" @onclick="() => OpenModal(student.student, true)">Предложи помощ</button>
                                     }
                                     else
                                     {
@@ -198,7 +198,7 @@ else
     private HashSet<SubjectEnum> selectedNeedsHelpWith = new();
 
     private List<Student> filteredStudents = new();
-    private List<(Student student, double compatibility, List<SubjectEnum> commonCan, List<SubjectEnum> commonNeeds)> filteredStudentsCompatib = new();
+    private List<(Student student, double compatibility, HashSet<SubjectEnum> commonCan, HashSet<SubjectEnum> commonNeeds)> filteredStudentsCompatib = new();
 
     // private bool isAlreadyRequested = false;
     // private SwapModel? swap;
@@ -235,7 +235,7 @@ else
         filteredStudentsCompatib.Clear();
         foreach (var student in filteredStudents)
         {
-            var compatibility = CalculateCompatibility(student, out List<SubjectEnum> commonCan, out List<SubjectEnum> commonNeeds);
+            var compatibility = CalculateCompatibility(student, out HashSet<SubjectEnum> commonCan, out HashSet<SubjectEnum> commonNeeds);
             filteredStudentsCompatib.Add((student, compatibility, commonCan, commonNeeds));
         }
         filteredStudentsCompatib = filteredStudentsCompatib.OrderByDescending(s => s.compatibility).ToList();
@@ -303,10 +303,10 @@ else
         ApplyFilter();
     }
 
-    private double CalculateCompatibility(Student student, out List<SubjectEnum> commonCan, out List<SubjectEnum> commonNeeds)
+    private double CalculateCompatibility(Student student, out HashSet<SubjectEnum> commonCan, out HashSet<SubjectEnum> commonNeeds)
     {
-        commonCan = student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedCanHelpWith).ToList();
-        commonNeeds = student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedNeedsHelpWith).ToList();
+        commonCan = student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedCanHelpWith).ToHashSet();
+        commonNeeds = student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedNeedsHelpWith).ToHashSet();
 
         if (selectedCanHelpWith.Count == 0 && selectedNeedsHelpWith.Count == 0)
             return 0;

@@ -7,10 +7,11 @@ namespace BlazorApp6.Services
     {
         private readonly string connectionString;
         private List<Student> students = new List<Student>();
-
         private readonly SubjectsManager subjectsManager;
+
         public string? DbError { get; private set; } = string.Empty;
-        public StudentManager(IConfiguration config)
+
+        public StudentManager(IConfiguration config, SubjectsManager subjectsManager)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
             this.subjectsManager = subjectsManager;
