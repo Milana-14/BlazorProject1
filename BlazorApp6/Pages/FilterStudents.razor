@@ -104,8 +104,8 @@ else
             {
                 bool isAlreadyRequested = SwapManager.FindSwapByStudents(student.student.Id, currentStudent.Id) != null;
                 SwapModel? swap = SwapManager.FindSwapByStudents(student.student.Id, currentStudent.Id);
-                bool canRequestHelp = student.commonCan.Count > 0;
-                bool canOfferHelp = student.commonNeeds.Count > 0;
+                bool canRequestHelp = student.student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.NeedsHelpWith).ToHashSet().Count > 0;
+                bool canOfferHelp = student.student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.CanHelpWith).ToHashSet().Count > 0;
                 <div class="col-12 col-md-6">
                     <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
 
@@ -200,8 +200,6 @@ else
     private List<Student> filteredStudents = new();
     private List<(Student student, double compatibility, HashSet<SubjectEnum> commonCan, HashSet<SubjectEnum> commonNeeds)> filteredStudentsCompatib = new();
 
-    // private bool isAlreadyRequested = false;
-    // private SwapModel? swap;
     private SubjectEnum selectedSubjectForSwap = SubjectEnum.NotSpecified;
 
     private bool modalOpen = false;
