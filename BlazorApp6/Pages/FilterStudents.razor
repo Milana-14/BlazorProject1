@@ -26,7 +26,8 @@ else
                 @foreach (var grade in allGrades.OrderBy(g => g))
                 {
                     <div class="form-check">
-                        <input id=@($"grade_{grade}") type="checkbox"
+                        <input class="form-check-input" 
+                               id=@($"grade_{grade}") type="checkbox"
                                checked=@(selectedGrades.Contains(grade))
                                @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))" />
                         <label class="form-check-label" for=@($"grade_{grade}")>@grade</label>
@@ -103,6 +104,8 @@ else
             {
                 bool isAlreadyRequested = SwapManager.FindSwapByStudents(student.student.Id, currentStudent.Id) != null;
                 SwapModel? swap = SwapManager.FindSwapByStudents(student.student.Id, currentStudent.Id);
+                bool canRequestHelp = student.commonCan.Count > 0;
+                bool canOfferHelp = student.commonNeeds.Count > 0;
                 <div class="col-12 col-md-6">
                     <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
 
@@ -148,8 +151,8 @@ else
                                 {
                                     @if (!isAlreadyRequested)
                                     {
-                                        <button class="btn btn-primary" @onclick="() => OpenModal(student.student, false)"> Помоли за помощ</button>
-                                        <button class="btn btn-primary" @onclick="() => OpenModal(student.student, true)">Предложи помощ</button>
+                                        <button class="btn btn-primary" disabled="@canRequestHelp" @onclick="() => OpenModal(student.student, false)"> Помоли за помощ</button>
+                                        <button class="btn btn-primary" disabled="@canOfferHelp" @onclick="() => OpenModal(student.student, true)">Предложи помощ</button>
                                     }
                                     else
                                     {
@@ -176,7 +179,6 @@ else
 }
 
 
-<!-- Модальное окно (один экземпляр на странице) -->
 <ModalRequestSwap IsOpen="@modalOpen"
               student="@modalTargetStudent"
               otherStudent="@currentStudent"

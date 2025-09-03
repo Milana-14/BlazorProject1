@@ -10,7 +10,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
 
-builder.Services.AddSingleton<AppState>();
+builder.Services.AddScoped<AppState>();
 builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<StudentManager>();
 builder.Services.AddScoped<SwapManager>();

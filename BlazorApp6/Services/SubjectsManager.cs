@@ -16,7 +16,7 @@ namespace BlazorApp6.Services
         {
             if (student == null)
             {
-                DbError = "Ученик с това ID не е намерен.";
+                DbError = "Този ученик не е намерен.";
                 return false;
             }
             if (student.CanHelpWith.Contains(newSubject) || student.NeedsHelpWith.Contains(newSubject))
@@ -34,7 +34,7 @@ namespace BlazorApp6.Services
         {
             if (student == null)
             {
-                DbError = "Ученик с това ID не е намерен.";
+                DbError = "Този ученик не е намерен.";
                 return false;
             }
             if (!student.CanHelpWith.Contains(subjectToRemove) && !student.NeedsHelpWith.Contains(subjectToRemove))
@@ -53,7 +53,7 @@ namespace BlazorApp6.Services
         {
             if (student == null)
             {
-                DbError = "Ученик с това ID не е намерен.";
+                DbError = "Този ученик не е намерен.";
                 return new List<StudentSubject>();
             }
             if (!LoadSubjectsForStudentFromDb(out List<StudentSubject> canHelpSubjectsFromDb, out List<StudentSubject> needsHelpSubjectsFromDb, student))
@@ -88,7 +88,7 @@ namespace BlazorApp6.Services
         {
             if (student == null)
             {
-                DbError = "Ученик с това ID не е намерен.";
+                DbError = "Този ученик не е намерен.";
                 return false;
             }
 
@@ -98,9 +98,8 @@ namespace BlazorApp6.Services
                 connection.Open();
 
                 var currentSubjects = new List<StudentSubject>();
-                using (var cmd = new NpgsqlCommand(
-                    @"SELECT ""Subject"", ""CanHelp"" FROM ""StudentSubjects"" WHERE ""StudentId""=@StudentId",
-                    connection))
+                using (var cmd = new NpgsqlCommand(@"SELECT ""Subject"", ""CanHelp"" FROM ""StudentSubjects"" 
+                                                     WHERE ""StudentId""=@StudentId",connection))
                 {
                     cmd.Parameters.AddWithValue("@StudentId", student.Id);
                     using var reader = cmd.ExecuteReader();
@@ -129,10 +128,8 @@ namespace BlazorApp6.Services
 
                 foreach (var sub in toAdd)
                 {
-                    using var cmd = new NpgsqlCommand(
-                        @"INSERT INTO ""StudentSubjects"" (""StudentId"", ""Subject"", ""CanHelp"")
-                  VALUES (@StudentId, @Subject, @CanHelp)",
-                        connection);
+                    using var cmd = new NpgsqlCommand(@"INSERT INTO ""StudentSubjects"" (""StudentId"", ""Subject"", ""CanHelp"") 
+                                                        VALUES (@StudentId, @Subject, @CanHelp)", connection);
                     cmd.Parameters.AddWithValue("@StudentId", student.Id);
                     cmd.Parameters.AddWithValue("@Subject", (int)sub.Subject);
                     cmd.Parameters.AddWithValue("@CanHelp", sub.CanHelp);
@@ -141,17 +138,12 @@ namespace BlazorApp6.Services
 
                 // За изтриване
                 var toRemove = currentSubjects
-                    .Where(cs => cs.CanHelp
-                                 ? !student.CanHelpWith.Contains(cs.Subject)
-                                 : !student.NeedsHelpWith.Contains(cs.Subject))
-                    .ToList();
+                    .Where(cs => cs.CanHelp ? !student.CanHelpWith.Contains(cs.Subject) : !student.NeedsHelpWith.Contains(cs.Subject)).ToList();
 
                 foreach (var sub in toRemove)
                 {
-                    using var cmd = new NpgsqlCommand(
-                        @"DELETE FROM ""StudentSubjects"" 
-                  WHERE ""StudentId""=@StudentId AND ""Subject""=@Subject AND ""CanHelp""=@CanHelp",
-                        connection);
+                    using var cmd = new NpgsqlCommand(@"DELETE FROM ""StudentSubjects"" 
+                                                       WHERE ""StudentId""=@StudentId AND ""Subject""=@Subject AND ""CanHelp""=@CanHelp", connection);
                     cmd.Parameters.AddWithValue("@StudentId", student.Id);
                     cmd.Parameters.AddWithValue("@Subject", (int)sub.Subject);
                     cmd.Parameters.AddWithValue("@CanHelp", sub.CanHelp);

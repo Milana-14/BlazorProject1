@@ -40,12 +40,13 @@
             <div class="filter-row">
                 <h5>Избери предмет:</h5>
                 <div class="radio-group">
-                    @foreach (var subject in ((isRequiringHelp) ? student.NeedsHelpWith.Where(s => otherStudent.CanHelpWith.Contains(s))
-                                    : student.CanHelpWith.Where(s => otherStudent.NeedsHelpWith.Contains(s))).Where(s => s != SubjectEnum.NotSpecified))
+                    @foreach (var subject in ((isRequiringHelp) ? student.NeedsHelpWith.Where(s => otherStudent.CanHelpWith.Contains(s) && s != SubjectEnum.NotSpecified)
+                                    : student.CanHelpWith.Where(s => otherStudent.NeedsHelpWith.Contains(s) && s != SubjectEnum.NotSpecified)))
                     {
                         <div class="form-check">
                             <input class="form-check-input" type="radio"  name="subjectChoice"
-                                   checked="@(SelectedSubject == subject)"
+                                   checked="@(SelectedSubject == subject || ((isRequiringHelp) ? student.NeedsHelpWith.Where(s => otherStudent.CanHelpWith.Contains(s) && s != SubjectEnum.NotSpecified)
+                                                                       : student.CanHelpWith.Where(s => otherStudent.NeedsHelpWith.Contains(s) && s != SubjectEnum.NotSpecified)).Count() == 1)"
                                    @onchange="() => ChooseSubject(subject)" />
                             <label class="form-check-label">@subject.GetDisplayName()</label>
                         </div>
@@ -56,7 +57,7 @@
 
 
             <div class="modal-actions mt-3">
-                <button class="btn btn-primary" disabled="@( !isChosen )" @onclick="SendRequest">Изпрати заявка</button>
+                <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="SendRequest">Изпрати заявка</button>
                 <button class="btn btn-secondary" @onclick="Cancel">Назад</button>
             </div>
         </div>
@@ -130,4 +131,9 @@
         cursor: pointer;
     }
 
+    .badge-match {
+        background-color: #e6f0ff;
+        color: #003366; /* 555 */
+        font-weight: 600;
+    }
 </style>

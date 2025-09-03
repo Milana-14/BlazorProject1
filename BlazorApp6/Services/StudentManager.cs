@@ -7,10 +7,13 @@ namespace BlazorApp6.Services
     {
         private readonly string connectionString;
         private List<Student> students = new List<Student>();
+
+        private readonly SubjectsManager subjectsManager;
         public string? DbError { get; private set; } = string.Empty;
         public StudentManager(IConfiguration config)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
+            this.subjectsManager = subjectsManager;
 
             if (!LoadStudentsFromDb(out List<Student> studentsFromDb))
             {
@@ -59,13 +62,28 @@ namespace BlazorApp6.Services
                 return false;
             }
         }
+
         public List<Student> GetAllStudents()
         {
+            foreach (var student in students)
+            {
+                var subjects = subjectsManager.GetSubjectsByStudent(student);
+                student.CanHelpWith = subjects.Where(s => s.CanHelp).Select(s => s.Subject).ToHashSet();
+                student.NeedsHelpWith = subjects.Where(s => !s.CanHelp).Select(s => s.Subject).ToHashSet();
+            }
             return students;
         }
         public Student? FindStudent(Func<Student, bool> predicate)
         {
-            return students.FirstOrDefault(predicate);
+            Student? student = students.FirstOrDefault(predicate);
+
+            if (student == null) return null;
+
+            var subjects = subjectsManager.GetSubjectsByStudent(student);
+            student.CanHelpWith = subjects.Where(s => s.CanHelp).Select(s => s.Subject).ToHashSet();
+            student.NeedsHelpWith = subjects.Where(s => !s.CanHelp).Select(s => s.Subject).ToHashSet();
+
+            return student;
         }
 
         public string GetAvatarUrl(Student student)
