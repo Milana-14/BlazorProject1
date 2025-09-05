@@ -13,11 +13,20 @@
 }
 else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 {
+    SwapModel? swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, currentStudent.Id);
+
+    bool isAlreadyRequested = swap?.Status == SwapStatus.Pending;
+    bool isAlreadySwapped = swap?.Status == SwapStatus.Confirmed;
+
+    bool canRequestHelp = otherStudent.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.NeedsHelpWith).ToHashSet().Count > 0;
+    bool canOfferHelp = otherStudent.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.CanHelpWith).ToHashSet().Count > 0;
+
+
     <p><strong>Име:</strong> @otherStudent.FirstName @otherStudent.SecName</p>
     @* <p><strong>Възраст:</strong> @otherStudent.Age</p> *@ // нз дали да се показва възрастта
     <p><strong>Клас:</strong> @otherStudent.Grade</p>
 
-    @if (currentStatus == Status.Swapped)
+    @if (!isAlreadyRequested && isAlreadySwapped)
     {
         <p><strong>Имейл:</strong> @otherStudent.Email</p>
     }
@@ -32,20 +41,19 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
         <p><strong>Търси помощ по:</strong> @string.Join(", ", otherStudent.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
     }
 
-    @if (currentStatus == Status.NotRequested)
+    @if (!isAlreadyRequested && !isAlreadySwapped)
     {
-        bool canRequestHelp = otherStudent.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.NeedsHelpWith).ToHashSet().Count > 0;
-        bool canOfferHelp = otherStudent.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.CanHelpWith).ToHashSet().Count > 0;
-        <button class="btn btn-primary" disabled="@(!canRequestHelp && swapRequestCount <= 10 && swapActiveCount <= 5)" @onclick="() => OpenModal(otherStudent, false)"> Помоли за помощ</button>
-        <button class="btn btn-primary" disabled="@(!canOfferHelp && swapRequestCount <= 10 && swapActiveCount <= 5)" @onclick="() => OpenModal(otherStudent, true)">Предложи помощ</button>
+        <button class="btn btn-primary" disabled="@(!canRequestHelp && swapRequestCount > 10 && swapActiveCount > 3)" @onclick="() => OpenModal(otherStudent, false)"> Помоли за помощ</button>
+        <button class="btn btn-primary" disabled="@(!canOfferHelp && swapRequestCount > 10 && swapActiveCount > 3)" @onclick="() => OpenModal(otherStudent, true)">Предложи помощ</button>
     }
-    else if (currentStatus == Status.Requested)
+    else if (isAlreadyRequested && !isAlreadySwapped)
     {
+        <p>Очаква се приемане на заявката ти</p>
         <button class="btn btn-outline-secondary" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
     }
-    else if (currentStatus == Status.Swapped)
+    else if (!isAlreadyRequested && isAlreadySwapped)
     {
-        <button class="btn btn-outline-danger" @onclick="() => GoToSwapDetails(otherStudent)">Към свапа</button>
+        <button class="btn btn-primary" @onclick="() => GoToSwapDetails(swap)">Виж свапа</button>
     }
 }
 else
@@ -78,8 +86,6 @@ else
         Requested,
         Swapped
     }
-    private Status currentStatus = Status.NotRequested;
-    private SwapModel? swap;
 
     private string errorMessage = string.Empty;
 
@@ -106,17 +112,6 @@ else
         {
             errorMessage = ex.Message;
         }
-
-        List<SwapModel> allSwaps = SwapManager.GetAllSwaps();
-        if (allSwaps.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == SwapStatus.Pending))
-        {
-            currentStatus = Status.Requested;
-        }
-        else if (allSwaps.Any(m => ((m.Student1Id == currentStudent.Id && m.Student2Id == otherStudent.Id) || (m.Student1Id == otherStudent.Id && m.Student2Id == currentStudent.Id)) && m.Status == SwapStatus.Confirmed))
-        {
-            currentStatus = Status.Swapped;
-        }
-        else currentStatus = Status.NotRequested;
     }
 
 
@@ -158,8 +153,8 @@ else
         InvokeAsync(StateHasChanged);
     }
 
-    private void GoToSwapDetails(Student studentYouSwappedWith)
+    private void GoToSwapDetails(SwapModel swap)
     {
-        NavigationManager.NavigateTo($"/SwapDetails/{otherStudent.Id}");
+        NavigationManager.NavigateTo($"/SwapDetails/{swap.Id}");
     }
 }
