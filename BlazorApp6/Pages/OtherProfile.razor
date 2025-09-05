@@ -36,8 +36,8 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
     {
         bool canRequestHelp = otherStudent.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.NeedsHelpWith).ToHashSet().Count > 0;
         bool canOfferHelp = otherStudent.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.CanHelpWith).ToHashSet().Count > 0;
-        <button class="btn btn-primary" disabled="@(!canRequestHelp)" @onclick="() => OpenModal(otherStudent, false)"> Помоли за помощ</button>
-        <button class="btn btn-primary" disabled="@(!canOfferHelp)" @onclick="() => OpenModal(otherStudent, true)">Предложи помощ</button>
+        <button class="btn btn-primary" disabled="@(!canRequestHelp && swapRequestCount <= 10 && swapActiveCount <= 5)" @onclick="() => OpenModal(otherStudent, false)"> Помоли за помощ</button>
+        <button class="btn btn-primary" disabled="@(!canOfferHelp && swapRequestCount <= 10 && swapActiveCount <= 5)" @onclick="() => OpenModal(otherStudent, true)">Предложи помощ</button>
     }
     else if (currentStatus == Status.Requested)
     {
@@ -64,6 +64,9 @@ else
     private Student? otherStudent;
 
     private Student? currentStudent;
+
+    private int swapRequestCount;
+    private int swapActiveCount;
 
     private bool modalOpen = false;
     private Student? modalTargetStudent;
@@ -146,6 +149,9 @@ else
                 newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject);
             }
         }
+
+        swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+        swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
 
         modalTargetStudent = null;
 

@@ -102,8 +102,8 @@ else
         <div class="row g-3">
             @foreach (var student in filteredStudentsCompatib)
             {
-                bool isAlreadyRequested = SwapManager.FindSwapByStudents(student.student.Id, currentStudent.Id) != null;
-                SwapModel? swap = SwapManager.FindSwapByStudents(student.student.Id, currentStudent.Id);
+                bool isAlreadyRequested = SwapManager.FindSwapByStudentsId(student.student.Id, currentStudent.Id) != null;
+                SwapModel? swap = SwapManager.FindSwapByStudentsId(student.student.Id, currentStudent.Id);
                 bool canRequestHelp = student.student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.NeedsHelpWith).ToHashSet().Count > 0;
                 bool canOfferHelp = student.student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.CanHelpWith).ToHashSet().Count > 0;
                 <div class="col-12 col-md-6">
@@ -151,8 +151,8 @@ else
                                 {
                                     @if (!isAlreadyRequested)
                                     {
-                                        <button class="btn btn-primary" disabled="@(!canRequestHelp)" @onclick="() => OpenModal(student.student, false)"> Помоли за помощ</button>
-                                        <button class="btn btn-primary" disabled="@(!canOfferHelp)" @onclick="() => OpenModal(student.student, true)">Предложи помощ</button>
+                                        <button class="btn btn-primary" disabled="@(!canRequestHelp && swapRequestCount <= 10 && swapActiveCount <= 5)" @onclick="() => OpenModal(student.student, false)"> Помоли за помощ</button>
+                                        <button class="btn btn-primary" disabled="@(!canOfferHelp && swapRequestCount <= 10 && swapActiveCount <= 5)" @onclick="() => OpenModal(student.student, true)">Предложи помощ</button>
                                     }
                                     else
                                     {
@@ -188,6 +188,9 @@ else
 
 @code {
     private Student? currentStudent;
+
+    private int swapRequestCount;
+    private int swapActiveCount;
 
     private HashSet<int> allGrades = new();
     private HashSet<SubjectEnum> allSubjects = new();
@@ -362,6 +365,9 @@ else
                 newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject);
             }
         }
+
+        swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+        swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
 
         modalTargetStudent = null;
 
