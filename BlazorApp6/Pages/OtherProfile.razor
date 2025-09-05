@@ -43,8 +43,8 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 
     @if (!isAlreadyRequested && !isAlreadySwapped)
     {
-        <button class="btn btn-primary" disabled="@(!canRequestHelp && swapRequestCount > 10 && swapActiveCount > 3)" @onclick="() => OpenModal(otherStudent, false)"> Помоли за помощ</button>
-        <button class="btn btn-primary" disabled="@(!canOfferHelp && swapRequestCount > 10 && swapActiveCount > 3)" @onclick="() => OpenModal(otherStudent, true)">Предложи помощ</button>
+        <button class="btn btn-primary" disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3)" @onclick="() => OpenModal(otherStudent, false)"> Помоли за помощ</button>
+        <button class="btn btn-primary" disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3)" @onclick="() => OpenModal(otherStudent, true)">Предложи помощ</button>
     }
     else if (isAlreadyRequested && !isAlreadySwapped)
     {
