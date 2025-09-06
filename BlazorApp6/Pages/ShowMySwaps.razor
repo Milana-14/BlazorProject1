@@ -229,7 +229,7 @@ else
     private List<SwapModel> incomingSwaps = new();
     private List<SwapModel> outgoingSwaps = new();
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
         currentStudent = AppState.CurrentUser;
         if (currentStudent == null) return;

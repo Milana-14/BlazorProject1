@@ -42,7 +42,7 @@
                 <h5>Избери предмет:</h5>
                 <div class="radio-group">
                     @foreach (var subject in ((isRequiringHelp) ? student.NeedsHelpWith.Intersect(otherStudent.CanHelpWith).Where(s => s != SubjectEnum.NotSpecified)
-                                    : student.CanHelpWith.Intersect(otherStudent.NeedsHelpWith).Where(s => s != SubjectEnum.NotSpecified)))
+                                    : student.CanHelpWith.Intersect(otherStudent.NeedsHelpWith).Where(s => s != SubjectEnum.NotSpecified))) // why the hell this shi doesnt work properly
                     {
                         <div class="form-check">
                             <input class="form-check-input" type="radio"  name="subjectChoice"
