@@ -1,5 +1,6 @@
 ﻿@using BlazorApp6.Models
 @inject StudentManager StudentManager
+@inject SwapManager SwapManager
 
 @if (IsOpen)
 {
@@ -40,20 +41,19 @@
             <div class="filter-row">
                 <h5>Избери предмет:</h5>
                 <div class="radio-group">
-                    @foreach (var subject in ((isRequiringHelp) ? student.NeedsHelpWith.Where(s => otherStudent.CanHelpWith.Contains(s) && s != SubjectEnum.NotSpecified)
-                                    : student.CanHelpWith.Where(s => otherStudent.NeedsHelpWith.Contains(s) && s != SubjectEnum.NotSpecified)))
+                    @foreach (var subject in ((isRequiringHelp) ? student.NeedsHelpWith.Intersect(otherStudent.CanHelpWith).Where(s => s != SubjectEnum.NotSpecified)
+                                    : student.CanHelpWith.Intersect(otherStudent.NeedsHelpWith).Where(s => s != SubjectEnum.NotSpecified)))
                     {
                         <div class="form-check">
                             <input class="form-check-input" type="radio"  name="subjectChoice"
-                                   checked="@(SelectedSubject == subject || ((isRequiringHelp) ? student.NeedsHelpWith.Where(s => otherStudent.CanHelpWith.Contains(s) && s != SubjectEnum.NotSpecified)
-                                                                       : student.CanHelpWith.Where(s => otherStudent.NeedsHelpWith.Contains(s) && s != SubjectEnum.NotSpecified)).Count() == 1)"
+                                   checked="@(SelectedSubject == subject || ((isRequiringHelp) ? student.NeedsHelpWith.Intersect(otherStudent.CanHelpWith).Where(s => s != SubjectEnum.NotSpecified)
+                                                                       : student.CanHelpWith.Intersect(otherStudent.NeedsHelpWith).Where(s => s != SubjectEnum.NotSpecified)).Count() == 1)"
                                    @onchange="() => ChooseSubject(subject)" />
                             <label class="form-check-label">@subject.GetDisplayName()</label>
                         </div>
                     }
                 </div>
             </div>
-
 
 
             <div class="modal-actions mt-3">
@@ -83,6 +83,10 @@
     private void SendRequest()
     {
         OnClose.InvokeAsync(SelectedSubject);
+        if (isRequiringHelp)
+            SwapManager.RequestHelp(student, otherStudent, SelectedSubject);
+        else
+            SwapManager.OfferHelp(otherStudent, student, SelectedSubject);
         SelectedSubject = SubjectEnum.NotSpecified;
     }
 

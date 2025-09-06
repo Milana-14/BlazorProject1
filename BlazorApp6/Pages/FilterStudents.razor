@@ -155,8 +155,8 @@ else
                                 {
                                     @if (!isAlreadyRequested && !isAlreadySwapped)
                                     {
-                                        <button class="btn btn-primary" disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3)" @onclick="() => OpenModal(student.student, false)"> Помоли за помощ</button>
-                                        <button class="btn btn-primary" disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3)" @onclick="() => OpenModal(student.student, true)">Предложи помощ</button>
+                                        <button class="btn btn-primary" disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3)" @onclick="() => OpenModal(student.student, true)"> Помоли за помощ</button>
+                                        <button class="btn btn-primary" disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3)" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
                                     }
                                     else if (isAlreadyRequested && !isAlreadySwapped)
                                     {
@@ -361,17 +361,11 @@ else
 
         if (selectedSubject.HasValue && modalTargetStudent != null && currentStudent != null)
         {
-            SubjectEnum subject = selectedSubject.Value;
-
             SwapModel? newSwap;
-            if (modalIsHelping)
-            {
-                newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, subject);
-            }
-            else
-            {
-                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject);
-            }
+            if 
+                (modalIsHelping) newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, selectedSubject.Value);
+            else 
+                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, selectedSubject.Value);
         }
 
         swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
