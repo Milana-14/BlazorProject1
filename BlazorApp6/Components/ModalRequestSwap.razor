@@ -46,8 +46,7 @@
                     {
                         <div class="form-check">
                             <input class="form-check-input" type="radio"  name="subjectChoice"
-                                   checked="@(SelectedSubject == subject || ((isRequiringHelp) ? student.NeedsHelpWith.Intersect(otherStudent.CanHelpWith).Where(s => s != SubjectEnum.NotSpecified)
-                                                                       : student.CanHelpWith.Intersect(otherStudent.NeedsHelpWith).Where(s => s != SubjectEnum.NotSpecified)).Count() == 1)"
+                                   checked="@(SelectedSubject == subject)"
                                    @onchange="() => ChooseSubject(subject)" />
                             <label class="form-check-label">@subject.GetDisplayName()</label>
                         </div>
