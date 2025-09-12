@@ -51,21 +51,22 @@ else
                                 <hr />
 
                                 @* Предмет *@
-                                <div class="d-flex flex-column flex-grow-1">
-                                    @if (currentStHelps)
-                                    {
-                                        <p class="text small mb-2 fw-semibold">Помагаш по </p>
-                                    }
-                                    else
-                                    {
-                                        <p class="text small mb-2 fw-semibold">Помага ти по </p>
-                                    }
-                                    <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@swap.SubjectForHelp.GetDisplayName()</span>
+                                <div class="d-flex align-items-center justify-content-between flex-nowrap mb-2">
+                                    <div class="d-flex align-items-center flex-nowrap">
+                                        @if (currentStHelps)
+                                        {
+                                            <span class="text small fw-semibold me-2">Помагаш по: </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text small fw-semibold me-2">Помага ти по: </span>
+                                        }
+                                        <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@swap.SubjectForHelp.GetDisplayName()</span>
+                                    </div>
 
                                     @* Бутони *@
-                                    <div class="mt-auto d-flex gap-2">
+                                    <div class="ms-3">
                                         <button class="btn btn-outline-secondary flex-fill" @onclick="() => GoToSwap(swap)">Виж детайли</button>
-                                        
                                     </div>
                                 </div>
                             </div>
@@ -239,17 +240,11 @@ else
 
     private void LoadData()
     {
-        List<SwapModel> allSwaps = SwapManager.GetAllSwaps();
+        List<SwapModel> swaps = SwapManager.FindSwapsByStudentId(currentStudent.Id);
 
-        pairs = allSwaps.Where(m =>
-            (m.Student1Id == currentStudent.Id || m.Student2Id == currentStudent.Id)
-            && (m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted)).ToList();
-
-        incomingSwaps = allSwaps
-            .Where(m => m.Student2Id == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
-
-        outgoingSwaps = allSwaps
-            .Where(m => m.Student1Id == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
+        pairs = swaps.Where(m => m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted).ToList();
+        incomingSwaps = swaps.Where(m => m.Student2Id == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
+        outgoingSwaps = swaps.Where(m => m.Student1Id == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
     }
 
     private void SelectTab(string tab)
@@ -299,3 +294,34 @@ else
         return "_content/YourAppNamespace/images/default-avatar.png";
     }
 }
+
+
+<style>
+    .match-subjects-scroll {
+        overflow-x: auto;
+        display: flex;
+        gap: 0.5rem;
+        scrollbar-width: thin;
+    }
+
+        .match-subjects-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .match-subjects-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.15);
+            border-radius: 3px;
+        }
+
+    .badge-match {
+        background-color: #a8d0ff; /* более яркий светло-синий */
+        color: #003366;
+        font-weight: 600;
+    }
+
+    .badge-nonmatch {
+        background-color: #e6f0ff; /* более бледный */
+        color: #555;
+        font-weight: 400;
+    }
+</style>
