@@ -332,11 +332,11 @@ else
 
     private void RequestHelp(Student student1, Student student2, SubjectEnum subject)
     {
-        SwapModel newSwap = SwapManager.RequestHelp(student1, student2, subject);
+        SwapModel newSwap = SwapManager.RequestHelp(student1, student2, subject, currentStudent);
     }
     private void OfferHelp(Student student1, Student student2, SubjectEnum subject)
     {
-        SwapModel newSwap = SwapManager.OfferHelp(student1, student2, subject);
+        SwapModel newSwap = SwapManager.OfferHelp(student1, student2, subject, currentStudent);
     }
     private void CancelSwapRequest(SwapModel swap)
     {
@@ -363,9 +363,9 @@ else
         {
             SwapModel? newSwap;
             if 
-                (modalIsHelping) newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, selectedSubject.Value);
+                (modalIsHelping) newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, selectedSubject.Value, currentStudent);
             else 
-                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, selectedSubject.Value);
+                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, selectedSubject.Value, currentStudent);
         }
 
         swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();

@@ -138,11 +138,11 @@ else
             SwapModel? newSwap;
             if (modalIsHelping)
             {
-                newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, subject);
+                newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, subject, currentStudent);
             }
             else
             {
-                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject);
+                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject, currentStudent);
             }
         }
 

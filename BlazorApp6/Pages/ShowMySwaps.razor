@@ -95,7 +95,7 @@ else
                 <div class="row g-3">
                     @foreach (var swap in incomingSwaps)
                     {
-                        var student = StudentManager.FindStudent(s => s.Id == swap.Student1Id);
+                        var student = StudentManager.FindStudent(s => s.Id == swap.RequesterId);
                         if (student == null) continue;
 
                         <div class="col-12 col-md-6">
@@ -119,7 +119,7 @@ else
                                     <div class="match-subjects-scroll mb-2">
                                         @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
-                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
+                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
                                                 @subj.GetDisplayName()
                                             </span>
@@ -130,7 +130,7 @@ else
                                     <div class="match-subjects-scroll mb-2">
                                         @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
-                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
+                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
                                                 @subj.GetDisplayName()
                                             </span>
@@ -165,7 +165,7 @@ else
                 <div class="row g-3">
                     @foreach (var swap in outgoingSwaps)
                     {
-                        var student = StudentManager.FindStudent(s => s.Id == swap.Student2Id);
+                        var student = StudentManager.FindStudent(s => (s.Id == swap.Student1Id || s.Id == swap.Student2Id) && s.Id != currentStudent.Id);
                         if (student == null) continue;
 
                         <div class="col-12 col-md-6">
@@ -189,7 +189,7 @@ else
                                     <div class="match-subjects-scroll mb-2">
                                         @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
-                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
+                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
                                                 @subj.GetDisplayName()
                                             </span>
@@ -200,7 +200,7 @@ else
                                     <div class="match-subjects-scroll mb-2">
                                         @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                                         {
-                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
+                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
                                             <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
                                                 @subj.GetDisplayName()
                                             </span>
@@ -243,8 +243,8 @@ else
         List<SwapModel> swaps = SwapManager.FindSwapsByStudentId(currentStudent.Id);
 
         pairs = swaps.Where(m => m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted).ToList();
-        incomingSwaps = swaps.Where(m => m.Student2Id == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
-        outgoingSwaps = swaps.Where(m => m.Student1Id == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
+        incomingSwaps = swaps.Where(m => m.RequesterId != currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
+        outgoingSwaps = swaps.Where(m => m.RequesterId == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
     }
 
     private void SelectTab(string tab)

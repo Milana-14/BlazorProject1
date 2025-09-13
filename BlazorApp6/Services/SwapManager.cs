@@ -28,7 +28,7 @@ namespace BlazorApp6.Services
             history = historyFromDb;
         }
 
-        public Swap? RequestHelp(Student requestingSt, Student helpingSt, SubjectEnum subject)
+        public Swap? RequestHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester)
         {
             if (swaps.FirstOrDefault(m =>
                 (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
@@ -38,6 +38,7 @@ namespace BlazorApp6.Services
             {
                 Student1Id = requestingSt.Id,
                 Student2Id = helpingSt.Id,
+                RequesterId = requester.Id,
                 SubjectForHelp = subject,
                 DateRequested = DateTime.Now,
                 Status = SwapStatus.Pending
@@ -47,7 +48,7 @@ namespace BlazorApp6.Services
             SaveSwapToDb(swap);
             return swap;
         }
-        public Swap? OfferHelp(Student requestingSt, Student helpingSt, SubjectEnum subject)
+        public Swap? OfferHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester)
         {
             if (swaps.FirstOrDefault(m =>
                 (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
@@ -57,6 +58,7 @@ namespace BlazorApp6.Services
             {
                 Student1Id = requestingSt.Id,
                 Student2Id = helpingSt.Id,
+                RequesterId = requester.Id,
                 SubjectForHelp = subject,
                 DateRequested = DateTime.Now,
                 Status = SwapStatus.Pending
