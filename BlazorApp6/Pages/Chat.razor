@@ -1,17 +1,89 @@
 ﻿@page "/chat/{SwapId:guid}" // страница за чат
-@inject AppState AppState
 @inject NavigationManager NavigationManager
+@inject AppState AppState
 @inject StudentManager StudentManager
 @inject SwapManager SwapManager
 @rendermode InteractiveServer
+@using SwapModel = BlazorApp6.Models.Swap
+@using Microsoft.AspNetCore.SignalR.Client;
 
-<h3>Chat</h3>
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p>@errorMessage</p>
+}
+else
+{
+    <h3>Чат за свап между теб (@currentStudent.FirstName) и @otherStudent.FirstName</h3>
+    <p>Тук ще се показва чатът за свапа с ID: @SwapId</p>
+    <p>Статус на свапа: @swap?.Status</p>
+
+
+}
 
 @code {
     [Parameter] public Guid SwapId { get; set; }
+    private SwapModel? swap;
 
-    protected override void OnParametersSet()
+    private Student? currentStudent;
+    private Student? otherStudent;
+
+    private HubConnection? hubConnection;
+    private List<(string sender, string message)> messages = new();
+    private string newMessage = string.Empty;
+
+    private string? errorMessage = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
     {
-        var swap = SwapManager.FindSwapById(SwapId);
+        swap = SwapManager.FindSwapById(SwapId);
+        if (swap == null)
+        {
+            errorMessage = "Свапът не е намерен.";
+        }
+
+        currentStudent = AppState.CurrentUser;
+        if (currentStudent == null)
+        {
+            errorMessage = "Моля, влезте в профила си.";
+            return;
+        }
+        otherStudent = (swap.Student1Id == currentStudent.Id) ? StudentManager.FindStudent(s => s.Id == swap.Student2Id) : StudentManager.FindStudent(s => s.Id == swap.Student1Id);
+        if (otherStudent == null)
+        {
+            errorMessage = "Другият ученик не е намерен.";
+            return;
+        }
+
+        hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.ToAbsoluteUri("/chathub")).WithAutomaticReconnect().Build();
+
+
+        hubConnection.On<string>("UserJoined", (username) =>
+        {
+        messages.Add((string.Empty, $"** {username} влезе в чата **"));
+        StateHasChanged();
+        });
+
+        hubConnection.On<string, string>("ReceiveMessage", (username, message) =>
+        {
+            messages.Add((username, message));
+            StateHasChanged();
+        });
+
+
+        await hubConnection.StartAsync();
+
+        if (currentStudent != null)
+        {
+            await hubConnection.SendAsync("JoinChat", new UserConnection(SwapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrEmpty(newMessage) && hubConnection != null)
+        {
+            await hubConnection.SendAsync("SendMessage", new UserConnection(SwapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)), newMessage);
+            newMessage = string.Empty;
+        }
     }
 }

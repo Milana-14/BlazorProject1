@@ -33,5 +33,6 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+app.MapHub<ChatMessages>("/chathub");
 
 app.Run();
