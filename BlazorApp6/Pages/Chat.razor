@@ -1,0 +1,17 @@
+﻿@page "/chat/{SwapId:guid}" // страница за чат
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+@inject StudentManager StudentManager
+@inject SwapManager SwapManager
+@rendermode InteractiveServer
+
+<h3>Chat</h3>
+
+@code {
+    [Parameter] public Guid SwapId { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var swap = SwapManager.FindSwapById(SwapId);
+    }
+}

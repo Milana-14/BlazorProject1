@@ -13,7 +13,8 @@ builder.Services.AddMudServices();
 builder.Services.AddScoped<AppState>();
 builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<StudentManager>();
-builder.Services.AddSingleton<SwapManager>();
+builder.Services.AddScoped<SwapManager>();
+builder.Services.AddScoped<ChatManager>();
 
 var app = builder.Build();
 

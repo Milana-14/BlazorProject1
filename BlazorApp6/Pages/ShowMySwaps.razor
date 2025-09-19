@@ -30,7 +30,7 @@ else
             {
                 <p>Текущите ви свапове: @pairs.Count</p>
                 <div class="row g-3">
-                    @foreach (var swap in pairs)
+                    @foreach (SwapModel swap in pairs)
                     {
                         var student = StudentManager.FindStudent(s => s.Id == ((swap.Student1Id == currentStudent.Id) ? swap.Student2Id : swap.Student1Id));
                         bool currentStHelps = swap.Student1Id == currentStudent.Id;
@@ -66,7 +66,7 @@ else
 
                                     @* Бутони *@
                                     <div class="ms-3">
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => GoToSwap(swap)">Виж детайли</button>
+                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => GoToSwap(swap.Id)">Виж детайли</button>
                                     </div>
                                 </div>
                             </div>
@@ -93,7 +93,7 @@ else
                     <p>@incomingSwaps.Count ученика ти преложиха помощ.</p>
                 }
                 <div class="row g-3">
-                    @foreach (var swap in incomingSwaps)
+                    @foreach (SwapModel swap in incomingSwaps)
                     {
                         var student = StudentManager.FindStudent(s => s.Id == swap.RequesterId);
                         if (student == null) continue;
@@ -163,7 +163,7 @@ else
             {
                 <p>Намерени ученици: @outgoingSwaps.Count</p>
                 <div class="row g-3">
-                    @foreach (var swap in outgoingSwaps)
+                    @foreach (SwapModel swap in outgoingSwaps)
                     {
                         var student = StudentManager.FindStudent(s => (s.Id == swap.Student1Id || s.Id == swap.Student2Id) && s.Id != currentStudent.Id);
                         if (student == null) continue;
@@ -280,9 +280,9 @@ else
         LoadData();
     }
 
-    private void GoToSwap(SwapModel swap)
+    private void GoToSwap(Guid Id)
     {
-        Navigation.NavigateTo($"/swap/{swap.Id}");
+        Navigation.NavigateTo($"/chat/{Id}");
     }
     private void ViewProfile(Student student)
     {
