@@ -22,7 +22,7 @@ namespace BlazorApp6.Services
         public async Task JoinChat(UserConnection connection)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, connection.SwapId.ToString());
-            await Clients.Group(connection.SwapId.ToString()).UserJoined($"{connection.Student.FirstName} {connection.Student.SecName} е в разговора.");
+            await Clients.Group(connection.SwapId.ToString()).UserJoined($"{connection.Student.FirstName} {connection.Student.SecName}");
         }
 
         public async Task SendMessage(UserConnection connection, string message)

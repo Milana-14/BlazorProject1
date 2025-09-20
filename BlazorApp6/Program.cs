@@ -15,6 +15,7 @@ builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<StudentManager>();
 builder.Services.AddScoped<SwapManager>();
 builder.Services.AddScoped<ChatManager>();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
