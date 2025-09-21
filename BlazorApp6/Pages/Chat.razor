@@ -4,6 +4,7 @@
 @inject AppState AppState
 @inject StudentManager StudentManager
 @inject SwapManager SwapManager
+@inject ChatManager ChatManager
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.SignalR.Client
 @using SwapModel = BlazorApp6.Models.Swap
@@ -15,21 +16,23 @@
 else
 {
     <h3>Чат за свап между теб (@currentStudent.FirstName) и @otherStudent.FirstName</h3>
-    <p>Тук ще се показва чатът за свапа с ID: @SwapId</p>
+    <p>Тук ще се показва чатът за свапа с ID: @swapId</p>
     <p>Статус на свапа: @swap?.Status</p>
 
     <div class="chat-window mb-3">
-        @foreach (var m in messages)
+        @foreach (var m in messagesForChat)
         {
             <div>
-                @if (string.IsNullOrEmpty(m.sender))
+                @if (string.IsNullOrEmpty(m.SenderName))
                 {
-                    <i>@m.message</i>
+                    <i>@m.Content</i>
+                    <time>@m.Timestamp</time>
                 }
                 else
                 {
-                    <b>@m.sender:</b> 
-                    @m.message
+                    <b>@m.SenderName:</b> 
+                    @m.Content
+                    <time>@m.Timestamp</time>
                 }
             </div>
         }
@@ -42,21 +45,22 @@ else
 }
 
 @code {
-    [Parameter] public Guid SwapId { get; set; }
+    [Parameter] public Guid swapId { get; set; }
     private SwapModel? swap;
 
     private Student? currentStudent;
     private Student? otherStudent;
 
     private HubConnection? hubConnection;
-    private List<(string sender, string message)> messages = new();
+    private List<Message> messages = new();
+    private List<MessageForChat> messagesForChat = new();
     private string newMessage = string.Empty;
 
     private string? errorMessage = string.Empty;
 
     protected override async Task OnParametersSetAsync()
     {
-        swap = SwapManager.FindSwapById(SwapId);
+        swap = SwapManager.FindSwapById(swapId);
         if (swap == null)
         {
             errorMessage = "Свапът не е намерен.";
@@ -74,34 +78,43 @@ else
             return;
         }
 
+        messages = ChatManager.GetMessagesFromDb(swapId);
+        messagesForChat = messages.Select(m => new MessageForChat(
+            m.SenderId == currentStudent.Id 
+            ? $"{currentStudent.FirstName} {currentStudent.SecName}" 
+            : $"{otherStudent.FirstName} {otherStudent.SecName}"
+            , m.Content)).ToList();
+
         if (hubConnection != null) return;
 
         hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.ToAbsoluteUri("/chathub")).WithAutomaticReconnect().Build();
 
         hubConnection.Reconnected += async (id) =>
         {
-            await hubConnection.SendAsync("JoinChat", new UserConnection(SwapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
+            await hubConnection.SendAsync("JoinChat", new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
         };
 
         hubConnection.On<string>("UserJoined", (username) =>
         {
-            messages.Add((string.Empty, $"{username} влезе в чата"));
+            messages.Add(new Message(swapId, Guid.Empty, $"{username} влезе в чата"));
+            messagesForChat.Add(new MessageForChat(string.Empty, $"{username} влезе в чата"));
             InvokeAsync(StateHasChanged);
         });
-        hubConnection.On<string, string>("ReceiveMessage", (username, message) =>
+        hubConnection.On<Guid, string, string>("ReceiveMessage", (studentId, username, message) =>
         {
-            messages.Add((username, message));
+            messages.Add(new Message(swapId, studentId, message));
+            messagesForChat.Add(new MessageForChat(username, message));
             InvokeAsync(StateHasChanged);
         });
 
         try
         {
             await hubConnection.StartAsync();
-            await hubConnection.SendAsync("JoinChat", new UserConnection(SwapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
+            await hubConnection.SendAsync("JoinChat", new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
         }
         catch (Exception ex)
         {
-            errorMessage = "Не успяхме да се свържеш с чата: " + ex.Message;
+            errorMessage = "Не успяхме да се свържем с чата: " + ex.Message;
         }
     }
 
@@ -109,7 +122,7 @@ else
     {
         if (!string.IsNullOrEmpty(newMessage) && hubConnection != null)
         {
-            await hubConnection.SendAsync("SendMessage", new UserConnection(SwapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)), newMessage);
+            await hubConnection.SendAsync("SendMessage", new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)), newMessage);
             newMessage = string.Empty;
         }
     }
@@ -118,7 +131,7 @@ else
     {
         if (hubConnection != null && currentStudent != null)
         {
-            await hubConnection.SendAsync("LeaveChat", new UserConnection(SwapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
+            await hubConnection.SendAsync("LeaveChat", new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
             await hubConnection.DisposeAsync();
         }
     }

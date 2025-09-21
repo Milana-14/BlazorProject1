@@ -27,7 +27,7 @@
                 throw new InvalidOperationException("Свапът вече е обработен.");
 
             Status = SwapStatus.Confirmed;
-            DateConfirmed = DateTime.Now;
+            DateConfirmed = DateTime.UtcNow;
         }
 
         public void Reject()

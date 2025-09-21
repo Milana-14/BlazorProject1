@@ -40,7 +40,7 @@ namespace BlazorApp6.Services
                 Student2Id = helpingSt.Id,
                 RequesterId = requester.Id,
                 SubjectForHelp = subject,
-                DateRequested = DateTime.Now,
+                DateRequested = DateTime.UtcNow,
                 Status = SwapStatus.Pending
             };
 
@@ -60,7 +60,7 @@ namespace BlazorApp6.Services
                 Student2Id = helpingSt.Id,
                 RequesterId = requester.Id,
                 SubjectForHelp = subject,
-                DateRequested = DateTime.Now,
+                DateRequested = DateTime.UtcNow,
                 Status = SwapStatus.Pending
             };
             swaps.Add(swap);
