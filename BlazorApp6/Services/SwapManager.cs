@@ -140,10 +140,11 @@ namespace BlazorApp6.Services
                     swap.Id = reader.GetGuid(0);
                     swap.Student1Id = reader.GetGuid(1);
                     swap.Student2Id = reader.GetGuid(2);
-                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(3);
-                    swap.Status = (SwapStatus)reader.GetInt32(4);
-                    swap.DateRequested = reader.GetDateTime(5);
-                    swap.DateConfirmed = reader.IsDBNull(6) ? null : reader.GetDateTime(5);
+                    swap.Status = (SwapStatus)reader.GetInt32(3);
+                    swap.DateRequested = reader.GetDateTime(4);
+                    swap.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
+                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(6);
+                    swap.RequesterId = reader.GetGuid(7);
 
                     loadedSwapsFromDb.Add(swap);
                 }
@@ -171,10 +172,12 @@ namespace BlazorApp6.Services
                     swap.Id = reader.GetGuid(0);
                     swap.Student1Id = reader.GetGuid(1);
                     swap.Student2Id = reader.GetGuid(2);
-                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(3);
-                    swap.Status = (SwapStatus)reader.GetInt32(4);
-                    swap.DateRequested = reader.GetDateTime(5);
-                    swap.DateConfirmed = reader.IsDBNull(6) ? null : reader.GetDateTime(6);
+                    swap.Status = (SwapStatus)reader.GetInt32(3);
+                    swap.DateRequested = reader.GetDateTime(4);
+                    swap.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
+                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(6);
+                    swap.RequesterId = reader.GetGuid(7);
+
 
                     historyFromDb.Add(swap);
                 }
@@ -191,8 +194,8 @@ namespace BlazorApp6.Services
             {
                 connection.Open();
 
-                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""SubjectForHelp"", ""Status"", ""DateRequested"", ""DateConfirmed"") 
-                                VALUES (@Id, @Student1Id, @Student2Id, @SubjectForHelp, @Status, @DateRequested, @DateConfirmed)";
+                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"", ""SubjectForHelp"", ""RequesterId"") 
+                                VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed, @SubjectForHelp, @RequesterId)";
 
 
                 using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
@@ -200,10 +203,11 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@Id", swap.Id);
                 cmd.Parameters.AddWithValue("@Student1Id", swap.Student1Id);
                 cmd.Parameters.AddWithValue("@Student2Id", swap.Student2Id);
-                cmd.Parameters.AddWithValue("@SubjectForHelp", (int)swap.SubjectForHelp);
                 cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
                 cmd.Parameters.AddWithValue("@DateRequested", swap.DateRequested);
                 cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@SubjectForHelp", (int)swap.SubjectForHelp);
+                cmd.Parameters.AddWithValue("@RequesterId", swap.RequesterId);
 
                 cmd.ExecuteNonQuery();
             }
