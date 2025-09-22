@@ -110,6 +110,12 @@ else
                 bool canRequestHelp = student.student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.NeedsHelpWith).ToHashSet().Count > 0;
                 bool canOfferHelp = student.student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.CanHelpWith).ToHashSet().Count > 0;
 
+                int swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+                int swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+
+                int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(student.student.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+                int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(student.student.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+
                 <div class="col-12 col-md-6">
                     <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
 
@@ -155,8 +161,8 @@ else
                                 {
                                     @if (!isAlreadyRequested && !isAlreadySwapped)
                                     {
-                                        <button class="btn btn-primary" disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3)" @onclick="() => OpenModal(student.student, true)"> Помоли за помощ</button>
-                                        <button class="btn btn-primary" disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3)" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
+                                        <button class="btn btn-primary" disabled="@(!canRequestHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(student.student, true)"> Помоли за помощ</button>
+                                        <button class="btn btn-primary" disabled="@(!canOfferHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
                                     }
                                     else if (isAlreadyRequested && !isAlreadySwapped)
                                     {
@@ -196,9 +202,6 @@ else
 
 @code {
     private Student? currentStudent;
-
-    private int swapRequestCount;
-    private int swapActiveCount;
 
     private HashSet<int> allGrades = new();
     private HashSet<SubjectEnum> allSubjects = new();
@@ -367,9 +370,6 @@ else
             else 
                 newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, selectedSubject.Value, currentStudent);
         }
-
-        swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
-        swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
 
         modalTargetStudent = null;
 

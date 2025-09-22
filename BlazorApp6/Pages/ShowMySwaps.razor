@@ -96,6 +96,13 @@ else
                     @foreach (SwapModel swap in incomingSwaps)
                     {
                         var student = StudentManager.FindStudent(s => s.Id == swap.RequesterId);
+
+                        int swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+                        int swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+
+                        int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(student.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+                        int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(student.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+
                         if (student == null) continue;
 
                         <div class="col-12 col-md-6">
@@ -139,7 +146,7 @@ else
 
                                     @* Бутони "Приеми/откажи заявката" и "Виж профила" *@
                                     <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-primary" @onclick="() => ConfirmSwap(swap)">Приеми заявката</button>
+                                        <button class="btn btn-primary" disabled="@((swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => ConfirmSwap(swap)">Приеми заявката</button>
                                         <button class="btn btn-danger" @onclick="() => RejectSwap(swap)">Откажи заявката</button>
                                         <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
                                     </div>
