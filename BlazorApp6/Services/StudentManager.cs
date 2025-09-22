@@ -87,12 +87,6 @@ namespace BlazorApp6.Services
             return student;
         }
 
-        public string GetAvatarUrl(Student student)
-        {
-            // Вернуть URL аватарки, пока заглушка
-            return "_content/YourAppNamespace/images/default-avatar.png";
-        }
-
 
 
 
@@ -107,7 +101,7 @@ namespace BlazorApp6.Services
                 using var connection = new NpgsqlConnection(connectionString);
                 connection.Open();
 
-                using NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT ""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"" FROM ""Students""", connection);
+                using NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT ""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"", ""AvatarName"" FROM ""Students""", connection);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -119,7 +113,8 @@ namespace BlazorApp6.Services
                         phoneNumber: reader.IsDBNull(5) ? "" : reader.GetString(5),
                         username: reader.GetString(6),
                         password: reader.GetString(7),
-                        grade: reader.GetInt32(8)
+                        grade: reader.GetInt32(8),
+                        avatarName: reader.IsDBNull(9) ? null : reader.GetString(9)
                     );
                     student.Id = reader.GetGuid(0);
 
@@ -142,8 +137,8 @@ namespace BlazorApp6.Services
                     connection.Open();
 
                     string sql = @"INSERT INTO ""Students"" 
-                           (""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"")
-                           VALUES (@Id, @FirstName, @SecName, @Age, @Email, @PhoneNumber, @Username, @Password, @Grade)";
+                           (""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"", ""AvatarName"")
+                           VALUES (@Id, @FirstName, @SecName, @Age, @Email, @PhoneNumber, @Username, @Password, @Grade, @AvatarName)";
 
                     using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
                     cmd.Parameters.AddWithValue("@Id", student.Id);
@@ -155,6 +150,7 @@ namespace BlazorApp6.Services
                     cmd.Parameters.AddWithValue("@Username", student.Username);
                     cmd.Parameters.AddWithValue("@Password", student.Password);
                     cmd.Parameters.AddWithValue("@Grade", student.Grade);
+                    cmd.Parameters.AddWithValue("@AvatarName", (object?)student.AvatarName ?? DBNull.Value);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -174,8 +170,8 @@ namespace BlazorApp6.Services
                 connection.Open();
 
                 string sql = @"UPDATE ""Students""
-                               SET ""FirstName""=@FirstName, ""SecName""=@SecName, ""Age""=@Age, ""Email""=@Email,
-                                   ""PhoneNumber""=@PhoneNumber, ""Username""=@Username, ""Password""=@Password, ""Grade""=@Grade
+                               SET ""FirstName""=@FirstName, ""SecName""=@SecName, ""Age""=@Age, ""Email""=@Email, ""PhoneNumber""=@PhoneNumber, 
+                                   ""Username""=@Username, ""Password""=@Password, ""Grade""=@Grade, ""AvatarName""=@AvatarName
                                WHERE ""Id""=@Id";
 
 
@@ -190,6 +186,7 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@Username", student.Username);
                 cmd.Parameters.AddWithValue("@Password", student.Password);
                 cmd.Parameters.AddWithValue("@Grade", student.Grade);
+                cmd.Parameters.AddWithValue("@AvatarName", (object?)student.AvatarName ?? DBNull.Value);
 
                 cmd.ExecuteNonQuery();
             }

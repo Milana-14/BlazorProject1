@@ -35,6 +35,8 @@ public class Student
     [MinLength(6, ErrorMessage = "Паролата трябва да е поне 6 символа")]
     public string Password { get; set; }
 
+    public string? AvatarName { get; set; }
+
     public HashSet<SubjectEnum> CanHelpWith { get; set; } = new();
     public HashSet<SubjectEnum> NeedsHelpWith { get; set; } = new();
 
@@ -42,7 +44,7 @@ public class Student
     {
         Id = Guid.NewGuid();
     }
-    public Student(string firstName, string secName, int age, int grade, string username, string password, string email, string phoneNumber = "")
+    public Student(string firstName, string secName, int age, int grade, string username, string password, string email, string phoneNumber, string? avatarName = "default.png")
     {
         Id = Guid.NewGuid();
         FirstName = firstName;
@@ -53,6 +55,7 @@ public class Student
         Password = password;
         Email = email;
         PhoneNumber = phoneNumber;
+        AvatarName = avatarName;
     }
 
     public void ChangePassword(string password)

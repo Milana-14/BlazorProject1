@@ -2,6 +2,7 @@
 @inject AppState AppState
 @inject NavigationManager NavigationManager
 @inject StudentManager StudentManager
+@inject AvatarService AvatarService
 @inject SwapManager SwapManager
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
@@ -28,6 +29,7 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
     int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(otherStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
     int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(otherStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
 
+    <img src="@AvatarService.GetAvatarUrl(otherStudent.AvatarName)" alt="Avatar" />
     <p><strong>Име:</strong> @otherStudent.FirstName @otherStudent.SecName</p>
     @* <p><strong>Възраст:</strong> @otherStudent.Age</p> *@ // нз дали да се показва възрастта
     <p><strong>Клас:</strong> @otherStudent.Grade</p>

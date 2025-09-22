@@ -2,6 +2,7 @@
 @inject NavigationManager Navigation
 @inject AppState AppState
 @inject StudentManager StudentManager
+@inject AvatarService AvatarService
 @inject SubjectsManager SubjectsManager
 @rendermode InteractiveServer
 
@@ -15,6 +16,7 @@ else if (student is not null)
 {
     @if (!isEditing)
     {
+        <img src="@AvatarService.GetAvatarUrl(student.AvatarName)" alt="Avatar" />
         <p><strong>Име:</strong> @student.FirstName</p>
         <p><strong>Фамилия:</strong> @student.SecName</p>
         <p><strong>Възраст:</strong> @student.Age</p>
@@ -33,6 +35,14 @@ else if (student is not null)
         <EditForm Model="@student" OnValidSubmit="SaveChanges">
             <DataAnnotationsValidator />
             <ValidationSummary />
+
+            <div class="mb-3">
+                <label>Аватар:</label>
+                <InputFile @*OnChange="e =>
+                {
+                    var avatarName = AvatarService.UploadAvatar(e, student);
+                    student.AvatarName = avatarName;
+                }"*@ /> </div>
 
             <div class="mb-3">
                 <label>Име:</label>
