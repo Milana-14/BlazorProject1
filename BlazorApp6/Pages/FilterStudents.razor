@@ -2,7 +2,7 @@
 @inject AppState AppState
 @inject NavigationManager Navigation
 @inject StudentManager StudentManager
-@inject AvatarService AvatarService
+@inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
@@ -122,7 +122,7 @@ else
 
                         @* Профилна, име и клас *@
                         <div class="d-flex align-items-center gap-3 mb-3">
-                            <img src="@AvatarService.GetAvatarUrl(student.student.AvatarName)" alt="Avatar" />
+                            <img src="@AvatarManager.GetAvatarUrl(student.student.AvatarName)" alt="Avatar"
                                  class="rounded-circle avatar-lg" />
                             <div>
                                 <h5 class="fw-semibold mb-1">@student.student.FirstName @student.student.SecName</h5>

@@ -2,7 +2,7 @@
 @inject NavigationManager Navigation
 @inject AppState AppState
 @inject StudentManager StudentManager
-@inject AvatarService AvatarService
+@inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
@@ -42,7 +42,7 @@ else
 
                                 @* Профилна, име и клас *@
                                 <div class="d-flex align-items-center gap-3 mb-3">
-                                    <img src="@AvatarService.GetAvatarUrl(student.AvatarName)" alt="Avatar" />
+                                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar"
                                          class="rounded-circle avatar-lg" />
                                     <div>
                                         <h5 class="fw-semibold mb-1">@student.FirstName @student.SecName</h5>
@@ -111,7 +111,7 @@ else
 
                                 @* Профилна, име и клас *@
                                 <div class="d-flex align-items-center gap-3 mb-3">
-                                    <img src="@AvatarService.GetAvatarUrl(student.AvatarName)" alt="Avatar" />
+                                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar"
                                          class="rounded-circle avatar-lg" />
                                     <div>
                                         <h5 class="fw-semibold mb-1">@student.FirstName @student.SecName</h5>
@@ -181,7 +181,7 @@ else
 
                                 @* Профилна, име и клас *@
                                 <div class="d-flex align-items-center gap-3 mb-3">
-                                    <img src="@AvatarService.GetAvatarUrl(student.AvatarName)" alt="Avatar" />
+                                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar"
                                          class="rounded-circle avatar-lg" />
                                     <div>
                                         <h5 class="fw-semibold mb-1">@student.FirstName @student.SecName</h5>

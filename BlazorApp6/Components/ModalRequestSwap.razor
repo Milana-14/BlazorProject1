@@ -1,5 +1,5 @@
 ﻿@using BlazorApp6.Models
-@inject StudentManager StudentManager
+@inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
 
 @if (IsOpen)
@@ -7,7 +7,7 @@
     <div class="modal">
         <div class="modal-content">
             <div class="d-flex align-items-center gap-3 mb-3">
-                <img src="@StudentManager.GetAvatarUrl(student)" alt="Avatar" class="rounded-circle avatar-lg" />
+                <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="rounded-circle avatar-lg" />
                 <div>
                     <h4 class="fw-semibold mb-1">@student.FirstName @student.SecName</h4>
                     <p class="text-muted small mb-0">Клас: @student.Grade</p>
@@ -104,7 +104,6 @@
 }
 
 <style>
-    /* Контейнер для модалки */
     .modal {
         position: fixed;
         top: 0;
@@ -114,23 +113,21 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        backdrop-filter: blur(6px); /* размытие фона */
-        -webkit-backdrop-filter: blur(6px); /* поддержка Safari */
-        z-index: 999; /* поверх всего */
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 999;
     }
 
-    /* Само модальное окно */
     .modal-content {
-        background: #fff; /* белый фон окна */
+        background: #fff;
         padding: 20px;
         border-radius: 12px;
         max-width: 500px;
         width: 100%;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        z-index: 1000; /* поверх размытия */
+        z-index: 1000;
     }
 
-    /* Кнопка закрытия */
     .close {
         position: absolute;
         top: 10px;
@@ -143,7 +140,7 @@
 
     .badge-match {
         background-color: #e6f0ff;
-        color: #003366; /* 555 */
+        color: #003366;
         font-weight: 600;
     }
 </style>

@@ -12,7 +12,7 @@ builder.Services.AddMudServices();
 
 builder.Services.AddScoped<AppState>();
 builder.Services.AddScoped<StudentManager>();
-builder.Services.AddScoped<AvatarService>();
+builder.Services.AddScoped<AvatarManager>();
 builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<SwapManager>();
 builder.Services.AddScoped<ChatManager>();

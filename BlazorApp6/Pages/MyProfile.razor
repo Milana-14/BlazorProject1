@@ -2,7 +2,7 @@
 @inject NavigationManager Navigation
 @inject AppState AppState
 @inject StudentManager StudentManager
-@inject AvatarService AvatarService
+@inject AvatarManager AvatarManager
 @inject SubjectsManager SubjectsManager
 @rendermode InteractiveServer
 
@@ -16,7 +16,7 @@ else if (student is not null)
 {
     @if (!isEditing)
     {
-        <img src="@AvatarService.GetAvatarUrl(student.AvatarName)" alt="Avatar" />
+        <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="rounded-circle avatar-lg" />
         <p><strong>Име:</strong> @student.FirstName</p>
         <p><strong>Фамилия:</strong> @student.SecName</p>
         <p><strong>Възраст:</strong> @student.Age</p>

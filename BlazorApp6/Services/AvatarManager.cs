@@ -6,11 +6,11 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace BlazorApp6.Services
 {
-    public class AvatarService
+    public class AvatarManager
     {
         private readonly IWebHostEnvironment env;
         private readonly StudentManager studentManager;
-        public AvatarService(IWebHostEnvironment env, StudentManager studentManager)
+        public AvatarManager(IWebHostEnvironment env, StudentManager studentManager)
         {
             this.env = env;
             this.studentManager = studentManager;
@@ -18,7 +18,7 @@ namespace BlazorApp6.Services
 
         public string UploadAvatar(IBrowserFile avatarFile, Student student)
         {
-            string extension = System.IO.Path.GetExtension(avatarFile.Name);
+            string extension = Path.GetExtension(avatarFile.Name);
             string newAvatarName = Guid.NewGuid().ToString() + extension;
             if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
                 throw new InvalidOperationException("Този файлов формат не се поддържа (само .jpg, .jpeg, .png).");
@@ -57,13 +57,12 @@ namespace BlazorApp6.Services
         }
         public string GetAvatarUrl(string? avatarName = null)
         {
-            if (avatarName == null) return "/avatars/default.jpg";
+            if (string.IsNullOrEmpty(avatarName)) return "/avatars/default.jpg";
             else return $"/avatars/{avatarName}";
         }
         public void DeleteAvatar(Student student)
         {
-            string avatarsPath = Path.Combine(env.WebRootPath, "avatars");
-            string fullPath = Path.Combine(avatarsPath, student.AvatarName);
+            string fullPath = Path.Combine(env.WebRootPath, "avatars", student.AvatarName);
             if (student.AvatarName != null && student.AvatarName != "default.jpg" && File.Exists(fullPath))
             {
                 File.Delete(fullPath);
