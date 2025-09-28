@@ -1,6 +1,4 @@
-﻿using BlazorApp6.Services;
-
-namespace BlazorApp6.Models
+﻿namespace BlazorApp6.Models
 {
     public class Message
     {

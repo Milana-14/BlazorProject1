@@ -296,11 +296,6 @@ else
     {
         Navigation.NavigateTo($"/other-profile/{student.Id}");
     }
-    private string GetAvatarUrl(Student student)
-    {
-        // Вернуть URL аватарки, пока заглушка
-        return "_content/YourAppNamespace/images/default-avatar.png";
-    }
 }
 
 
@@ -322,13 +317,13 @@ else
         }
 
     .badge-match {
-        background-color: #a8d0ff; /* более яркий светло-синий */
+        background-color: #a8d0ff;
         color: #003366;
         font-weight: 600;
     }
 
     .badge-nonmatch {
-        background-color: #e6f0ff; /* более бледный */
+        background-color: #e6f0ff;
         color: #555;
         font-weight: 400;
     }

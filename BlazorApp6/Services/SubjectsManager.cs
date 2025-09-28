@@ -157,7 +157,7 @@ namespace BlazorApp6.Services
                 DbError = "Грешка при синхронизацията на предметите: " + ex.Message;
                 return false;
             }
-        } // Най-доброто нещо, което съм създавала някога (4 часаааа)
+        }
         public bool LoadSubjectsForStudentFromDb(out List<StudentSubject> canHelpSubjectsFromDb, out List<StudentSubject> needsHelpSubjectsFrOmDb, Student student)
         {
             canHelpSubjectsFromDb = new();

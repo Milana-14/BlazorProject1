@@ -1,5 +1,4 @@
-﻿using BlazorApp6.Services;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 
 namespace BlazorApp6.Models;
