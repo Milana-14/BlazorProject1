@@ -29,7 +29,7 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
     int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(otherStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
     int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(otherStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
 
-    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" alt="Avatar" class="rounded-circle avatar-lg" />
+    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" alt="Avatar" class="rounded-circle avatar-xl" />
     <p><strong>Име:</strong> @otherStudent.FirstName @otherStudent.SecName</p>
     @* <p><strong>Възраст:</strong> @otherStudent.Age</p> *@ // нз дали да се показва възрастта
     <p><strong>Клас:</strong> @otherStudent.Grade</p>
@@ -153,3 +153,13 @@ else
         NavigationManager.NavigateTo($"/SwapDetails/{swap.Id}");
     }
 }
+
+<style>
+    .avatar-xl {
+        width: 160px;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+    }
+</style>
