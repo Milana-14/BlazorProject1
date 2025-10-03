@@ -38,12 +38,28 @@
             Status = SwapStatus.Rejected;
         }
 
-        public void CompleteSwap()
+        public void ProposeCompletion()
         {
             if (Status != SwapStatus.Confirmed)
-                throw new InvalidOperationException("Този свап още не существува.");
+                throw new InvalidOperationException("Този свап още не съществува.");
+
+            Status = SwapStatus.PendingCompleted;
+        }
+
+        public void CompleteSwap()
+        {
+            if (Status != SwapStatus.PendingCompleted)
+                throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\".");
 
             Status = SwapStatus.Completed;
+        }
+
+        public void RejectCompletion()  
+        {
+            if (Status != SwapStatus.PendingCompleted)
+                throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\".");
+
+            Status = SwapStatus.Confirmed;
         }
     }
 }

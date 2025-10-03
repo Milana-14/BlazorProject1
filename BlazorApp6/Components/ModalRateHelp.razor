@@ -1,0 +1,9 @@
+﻿<h3>ModalRateHelp</h3>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<SubjectEnum?> OnClose { get; set; }
+
+    [Parameter] public Student student { get; set; }
+    [Parameter] public Student StudentToRate { get; set; }
+}

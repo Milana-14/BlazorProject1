@@ -88,6 +88,12 @@ namespace BlazorApp6.Services
             DeleteSwapFromDb(swap);
         }
 
+        public void ProposeCompletingSwap(Swap swap)
+        {
+            swap.ProposeCompletion();
+            UpdateSwapInDb(swap);
+        }
+
         public void CompleteSwap(Swap swap)
         {
             swaps.Remove(swap);
@@ -97,6 +103,13 @@ namespace BlazorApp6.Services
 
             UpdateSwapInDb(swap);
         }
+
+        public void RejectCompletion(Swap swap)
+        {
+            swap.RejectCompletion();
+            UpdateSwapInDb(swap);
+        }
+
         public List<Swap> FindSwapsByStudentId(Guid studentId)
         {
             return swaps.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();

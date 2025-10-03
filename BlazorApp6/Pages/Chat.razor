@@ -16,15 +16,47 @@
 }
 else
 {
-    <h3>Чат за свап между теб (@currentStudent.FirstName) и @otherStudent.FirstName</h3>
-    <p>Тук ще се показва чатът за свапа с ID: @swapId</p>
-    <p>Статус на свапа: @swap?.Status</p>
+    <div class="chat-page d-flex">
 
-    @code{ DateTime? lastDate = null; }
-    <div class="chat-window mb-3">
-        @foreach (var m in messagesForChat)
+
+    <div class="sidebar p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5>@otherStudent.FirstName @otherStudent.SecName</h5>
+            <button class="btn btn-sm btn-danger" @onclick="ReportPartner">Репортни</button>
+        </div>
+        <p><strong>Предмет:</strong> @swap.SubjectForHelp</p>
+        <p><strong>Статус свапа:</strong> @swap.Status</p>
+        @if (swap.Status == SwapStatus.PendingCompleted) // ако другият ученик е предложил да завърши свапа, ами ако това бях аз? 
         {
-            DateTime date = m.Timestamp.Date;
+            @if (swap.CompletionProposedByStudentId != currentStudent.Id)
+            {
+                <div class="alert alert-warning p-2">
+                    <p>@otherStudent.FirstName е предложил(a) да завърши свапа</p>
+                    <button class="btn btn-sm btn-success ms-2" @onclick="() => AcceptCompletion(StudentManager.FindStudent(s => s.Id == swap.Student2Id))">Завърши</button>
+                    <button class="btn btn-sm btn-secondary ms-1" @onclick="RejectCompletion">Продължи свапа</button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info p-2">
+                    <p>Вие предложихте да завършите свапа. Очаква се потвърждението на @otherStudent.FirstName.</p>
+                </div>
+            }
+        }
+        else
+        {
+            <button class="btn btn-sm btn-primary" @onclick="ProposeCompletion">Предложи завършване</button>
+        }
+    </div>
+
+
+
+    <div class="chat-container d-flex flex-column flex-grow-1">
+        <div class="chat-window flex-grow-1 overflow-auto">
+            @code { DateTime? lastDate = null; }
+            @foreach (var m in messagesForChat)
+            {
+                DateTime date = m.Timestamp.Date;
             if (lastDate == null || lastDate.Value != date)
             {
                 <div class="chat-date-separator">
@@ -40,12 +72,13 @@ else
                 </div>
                 <div class="my-message">
                     @m.Content
-                <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
+                    <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
                 </div>
             }
             else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
             {
                 <div class="other-message-sender">
+                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="avatar me-2" />
                     <small>@m.SenderName:</small>
                 </div>
                 <div class="other-message">
@@ -68,14 +101,22 @@ else
                     }
                 </div>
             }
-        }
+                        }
+
+            <div class="input-container mt-2 d-flex gap-2">
+                <input class="form-control" @bind="newMessage" placeholder="Напиши..." />
+                <button class="btn btn-primary" @onclick="SendMessage">Изпрати</button>
+            </div>
+        </div>
     </div>
 
-    <div class="d-flex gap-2">
-        <input class="form-control" @bind="newMessage" placeholder="Напиши..." />
-        <button class="btn btn-primary" @onclick="SendMessage">Изпрати</button>
-    </div>
+</div>
 }
+
+<ModalRateHelp IsOpen="@modalOpen"
+               student="@currentStudent"
+               StudentToRate="@modalStudentToRate"
+               OnClose="RateTheStudentAndCompleteSwap" />
 
 @code {
     [Parameter] public Guid swapId { get; set; }
@@ -88,6 +129,9 @@ else
     private List<Message> messages = new();
     private List<MessageForChat> messagesForChat = new();
     private string newMessage = string.Empty;
+
+    private bool modalOpen = false;
+    private Student modalStudentToRate;
 
     private string? errorMessage = string.Empty;
 
@@ -168,15 +212,80 @@ else
             await hubConnection.DisposeAsync();
         }
     }
+
+    private void ProposeCompletion()
+    {
+        SwapManager.ProposeCompletingSwap(swap);
+        StateHasChanged();
+    }
+    private void AcceptCompletion(Student studentToRate)
+    {
+        modalStudentToRate = studentToRate;
+        modalOpen = true;
+    }
+    private void RejectCompletion()
+    {
+        SwapManager.RejectCompletion(swap);
+        StateHasChanged();
+    }
+
+    private void RateTheStudentAndCompleteSwap() // трябва да се добави система за оценяване
+    {
+        modalOpen = false;
+
+        if (modalStudentToRate != null && currentStudent != null)
+        {
+            SwapManager.CompleteSwap(swap);
+            StateHasChanged();
+        }
+
+        modalStudentToRate = null;
+
+        SwapManager.CompleteSwap(swap);
+        StateHasChanged();
+
+        NavigationManager.NavigateTo("/my-swaps");
+    }
+
+    private async Task ReportPartner()
+    {
+        // логика за репортване на другия ученик
+        // SwapManager.ReportStudent(otherStudent.Id, swapId);
+    }
 }
 
 <style>
+    .chat-page {
+        display: flex;
+        height: 90vh;
+        gap: 15px;
+    }
+
+    .sidebar {
+        width: 300px;
+        flex-shrink: 0;
+        border-right: 1px solid #ccc;
+        overflow-y: auto;
+    }
+
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
     .chat-window {
+        padding: 10px;
         display: flex;
         flex-direction: column;
         gap: 6px;
-        padding: 10px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f8f9fa;
+        flex-grow: 1;
     }
+
 
     .chat-date-separator {
         text-align: center;
@@ -220,4 +329,10 @@ else
         font-size: 0.85rem;
     }
 
+    .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
 </style>
