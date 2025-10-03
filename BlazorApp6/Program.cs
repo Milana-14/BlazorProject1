@@ -16,7 +16,10 @@ builder.Services.AddScoped<AvatarManager>();
 builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<SwapManager>();
 builder.Services.AddScoped<ChatManager>();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.MaximumReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
+});
 
 var app = builder.Build();
 

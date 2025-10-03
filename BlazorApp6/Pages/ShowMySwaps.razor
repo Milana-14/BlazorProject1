@@ -13,10 +13,12 @@
 }
 else
 {
-    <div class="tabs">
-        <button class="@GetTabClass("pairs")" @onclick='@(() => SelectTab("pairs"))'>Моите свапове</button>
-        <button class="@GetTabClass("incoming")" @onclick='@(() => SelectTab("incoming"))'>Заявки към мен</button>
-        <button class="@GetTabClass("outgoing")" @onclick='@(() => SelectTab("outgoing"))'>Моите заявки</button>
+    <div class="top-row px-4">
+        <div class="tabs">
+            <button class="@GetTabClass("pairs")" @onclick='@(() => SelectTab("pairs"))'>Моите свапове</button>
+            <button class="@GetTabClass("incoming")" @onclick='@(() => SelectTab("incoming"))'>Заявки към мен</button>
+            <button class="@GetTabClass("outgoing")" @onclick='@(() => SelectTab("outgoing"))'>Моите заявки</button>
+        </div>
     </div>
 
     <div class="tab-content mb-3">

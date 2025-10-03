@@ -16,7 +16,7 @@ namespace BlazorApp6.Services
             this.studentManager = studentManager;
         }
 
-        public string UploadAvatar(IBrowserFile avatarFile, Student student)
+        public async Task<string> UploadAvatar(IBrowserFile avatarFile, Student student)
         {
             string extension = Path.GetExtension(avatarFile.Name);
             string newAvatarName = Guid.NewGuid().ToString() + extension;
@@ -33,9 +33,9 @@ namespace BlazorApp6.Services
             }
 
             string newFullPath = Path.Combine(avatarsPath, newAvatarName);
-            using (var memoryStream = new MemoryStream())
+            await using (var memoryStream = new MemoryStream())
             {
-                avatarFile.OpenReadStream(2 * 1024 * 1024).CopyTo(memoryStream);
+                await avatarFile.OpenReadStream(2 * 1024 * 1024).CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
 
                 using (var image = Image.Load(memoryStream))
@@ -46,13 +46,12 @@ namespace BlazorApp6.Services
                         Size = new Size(1024, 1024)
                     }));
 
-                    image.Save(newFullPath, new JpegEncoder { Quality = 85 });
+                    await image.SaveAsync(newFullPath, new JpegEncoder { Quality = 85 });
                 }
             }
 
             student.AvatarName = newAvatarName;
             studentManager.UpdateStudent(student);
-
             return newAvatarName;
         }
         public string GetAvatarUrl(string? avatarName = null)

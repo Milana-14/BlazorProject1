@@ -36,13 +36,11 @@ else if (student is not null)
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <div class="mb-3">
+            <div>
                 <label>Аватар:</label>
-                <InputFile @*OnChange="e =>
-                {
-                    var avatarName = AvatarService.UploadAvatar(e, student);
-                    student.AvatarName = avatarName;
-                }"*@ /> </div>
+                <InputFile OnChange="(e) => SelectFile(e.File)" accept=".jpg,.jpeg,.png" />
+                <button type="button" class="btn btn-danger" @onclick="() => AvatarManager.DeleteAvatar(student)">Изтрий аватара</button>
+            </div>
 
             <div class="mb-3">
                 <label>Име:</label>
@@ -138,6 +136,15 @@ else if (student is not null)
         isEditing = false;
 
         allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
+    }
+
+    private async Task SelectFile(IBrowserFile file)
+    {
+        if (file != null)
+        {
+            await AvatarManager.UploadAvatar(file, student);
+            StateHasChanged();
+        }
     }
 
     private void ToggleCanHelpSubject(SubjectEnum subject, bool isChecked)
