@@ -59,7 +59,7 @@ namespace BlazorApp6.Services
             }
             catch (Exception ex)
             {
-                DbError = "Обновяването на данните за ученик не беше успешно.";
+                DbError = "Обновяването на данните за ученик не беше успешно: " + ex;
                 return false;
             }
         }
@@ -101,7 +101,7 @@ namespace BlazorApp6.Services
                 using var connection = new NpgsqlConnection(connectionString);
                 connection.Open();
 
-                using NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT ""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"", ""AvatarName"" FROM ""Students""", connection);
+                using NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT * FROM ""Students""", connection);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -117,6 +117,8 @@ namespace BlazorApp6.Services
                         avatarName: reader.IsDBNull(9) ? null : reader.GetString(9)
                     );
                     student.Id = reader.GetGuid(0);
+                    student.HelpGivenCount = reader.GetInt32(10);
+                    student.HelpRatings = reader.GetFieldValue<List<int>>(11);
 
                     studentsFromDb.Add(student);
                 }
@@ -137,8 +139,8 @@ namespace BlazorApp6.Services
                     connection.Open();
 
                     string sql = @"INSERT INTO ""Students"" 
-                           (""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"", ""AvatarName"")
-                           VALUES (@Id, @FirstName, @SecName, @Age, @Email, @PhoneNumber, @Username, @Password, @Grade, @AvatarName)";
+                           (""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"", ""AvatarName"", ""HelpGivenCount"", ""HelpRatings"")
+                           VALUES (@Id, @FirstName, @SecName, @Age, @Email, @PhoneNumber, @Username, @Password, @Grade, @AvatarName, @HelpGivenCount, @HelpRatings)";
 
                     using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
                     cmd.Parameters.AddWithValue("@Id", student.Id);
@@ -151,6 +153,8 @@ namespace BlazorApp6.Services
                     cmd.Parameters.AddWithValue("@Password", student.Password);
                     cmd.Parameters.AddWithValue("@Grade", student.Grade);
                     cmd.Parameters.AddWithValue("@AvatarName", (object?)student.AvatarName ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HelpGivenCount", student.HelpGivenCount);
+                    cmd.Parameters.AddWithValue("@HelpRatings", (object?)student.HelpRatings ?? new int[] { });
 
                     cmd.ExecuteNonQuery();
                 }
@@ -171,7 +175,8 @@ namespace BlazorApp6.Services
 
                 string sql = @"UPDATE ""Students""
                                SET ""FirstName""=@FirstName, ""SecName""=@SecName, ""Age""=@Age, ""Email""=@Email, ""PhoneNumber""=@PhoneNumber, 
-                                   ""Username""=@Username, ""Password""=@Password, ""Grade""=@Grade, ""AvatarName""=@AvatarName
+                                   ""Username""=@Username, ""Password""=@Password, ""Grade""=@Grade, ""AvatarName""=@AvatarName, 
+                                   ""HelpGivenCount""=@HelpGivenCount, ""HelpRatings""=@HelpRatings
                                WHERE ""Id""=@Id";
 
 
@@ -187,6 +192,8 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@Password", student.Password);
                 cmd.Parameters.AddWithValue("@Grade", student.Grade);
                 cmd.Parameters.AddWithValue("@AvatarName", (object?)student.AvatarName ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@HelpGivenCount", student.HelpGivenCount);
+                cmd.Parameters.AddWithValue("@HelpRatings", (object?)student.HelpRatings ?? new int[] { });
 
                 cmd.ExecuteNonQuery();
             }

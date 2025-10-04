@@ -88,12 +88,11 @@ namespace BlazorApp6.Services
             DeleteSwapFromDb(swap);
         }
 
-        public void ProposeCompletingSwap(Swap swap)
+        public void ProposeCompletingSwap(Swap swap, Guid proposerId)
         {
-            swap.ProposeCompletion();
+            swap.ProposeCompletion(proposerId);
             UpdateSwapInDb(swap);
         }
-
         public void CompleteSwap(Swap swap)
         {
             swaps.Remove(swap);
@@ -103,12 +102,12 @@ namespace BlazorApp6.Services
 
             UpdateSwapInDb(swap);
         }
-
         public void RejectCompletion(Swap swap)
         {
             swap.RejectCompletion();
             UpdateSwapInDb(swap);
         }
+
 
         public List<Swap> FindSwapsByStudentId(Guid studentId)
         {
@@ -158,6 +157,7 @@ namespace BlazorApp6.Services
                     swap.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
                     swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(6);
                     swap.RequesterId = reader.GetGuid(7);
+                    swap.CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8);
 
                     loadedSwapsFromDb.Add(swap);
                 }
@@ -190,6 +190,7 @@ namespace BlazorApp6.Services
                     swap.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
                     swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(6);
                     swap.RequesterId = reader.GetGuid(7);
+                    swap.CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8);
 
 
                     historyFromDb.Add(swap);
@@ -207,8 +208,8 @@ namespace BlazorApp6.Services
             {
                 connection.Open();
 
-                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"", ""SubjectForHelp"", ""RequesterId"") 
-                                VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed, @SubjectForHelp, @RequesterId)";
+                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"", ""SubjectForHelp"", ""RequesterId"", ""CompletionProposedByStudentId"") 
+                                VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed, @SubjectForHelp, @RequesterId, @CompletionProposedByStudentId)";
 
 
                 using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
@@ -221,6 +222,7 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@SubjectForHelp", (int)swap.SubjectForHelp);
                 cmd.Parameters.AddWithValue("@RequesterId", swap.RequesterId);
+                cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
 
                 cmd.ExecuteNonQuery();
             }
@@ -231,13 +233,14 @@ namespace BlazorApp6.Services
             connection.Open();
 
             string sql = @"UPDATE ""Swaps""
-                            SET ""Status"" = @Status, ""DateConfirmed"" = @DateConfirmed WHERE ""Id""=@Id";
+                            SET ""Status"" = @Status, ""DateConfirmed"" = @DateConfirmed, ""CompletionProposedByStudentId"" = @CompletionProposedByStudentId WHERE ""Id""=@Id";
 
             using var cmd = new NpgsqlCommand(sql, connection);
 
             cmd.Parameters.AddWithValue("@Id", swap.Id);
             cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
             cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
 
             cmd.ExecuteNonQuery();
         }

@@ -26,7 +26,7 @@ else
         </div>
         <p><strong>Предмет:</strong> @swap.SubjectForHelp</p>
         <p><strong>Статус свапа:</strong> @swap.Status</p>
-        @if (swap.Status == SwapStatus.PendingCompleted) // ако другият ученик е предложил да завърши свапа, ами ако това бях аз? 
+        @if (swap.Status == SwapStatus.PendingCompleted)
         {
             @if (swap.CompletionProposedByStudentId != currentStudent.Id)
             {
@@ -114,6 +114,7 @@ else
 }
 
 <ModalRateHelp IsOpen="@modalOpen"
+               swap="@swap"
                student="@currentStudent"
                StudentToRate="@modalStudentToRate"
                OnClose="RateTheStudentAndCompleteSwap" />
@@ -215,7 +216,7 @@ else
 
     private void ProposeCompletion()
     {
-        SwapManager.ProposeCompletingSwap(swap);
+        SwapManager.ProposeCompletingSwap(swap, currentStudent.Id);
         StateHasChanged();
     }
     private void AcceptCompletion(Student studentToRate)

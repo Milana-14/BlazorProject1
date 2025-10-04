@@ -39,21 +39,24 @@ public class Student
     public HashSet<SubjectEnum> CanHelpWith { get; set; } = new();
     public HashSet<SubjectEnum> NeedsHelpWith { get; set; } = new();
 
+    public int HelpGivenCount { get; set; } = 0;
+    public List<int> HelpRatings { get; set; } = new();
+
     public Student() 
     {
         Id = Guid.NewGuid();
     }
-    public Student(string firstName, string secName, int age, int grade, string username, string password, string email, string phoneNumber, string? avatarName = "default.png")
+    public Student(string firstName, string secName, int age, string email, string phoneNumber, string username, string password, int grade, string? avatarName = "default.png")
     {
         Id = Guid.NewGuid();
         FirstName = firstName;
         SecName = secName;
         Age = age;
-        Grade = grade;
-        Username = username;
-        Password = password;
         Email = email;
         PhoneNumber = phoneNumber;
+        Username = username;
+        Password = password;
+        Grade = grade;
         AvatarName = avatarName;
     }
 
