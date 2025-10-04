@@ -56,14 +56,7 @@
 
 
             <div class="modal-actions mt-3">
-                @if (isRequiringHelp)
-                {
-                    <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="SendRequest">Изпрати заявка</button>
-                }
-                else
-                {
-                    <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="SendRequest">Изпрати заявка</button>
-                }
+                <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="SendRequest">Изпрати заявка</button>
                 <button class="btn btn-secondary" @onclick="Cancel">Назад</button>
             </div>
         </div>
@@ -89,9 +82,9 @@
     private async Task SendRequest()
     {
         if (isRequiringHelp)
-            SwapManager.RequestHelp(student, otherStudent, SelectedSubject, student);
+            SwapManager.RequestHelp(student, otherStudent, SelectedSubject, otherStudent);
         else
-            SwapManager.OfferHelp(otherStudent, student, SelectedSubject, student);
+            SwapManager.OfferHelp(otherStudent, student, SelectedSubject, otherStudent);
         SelectedSubject = SubjectEnum.NotSpecified;
 
         await OnClose.InvokeAsync(SelectedSubject);

@@ -25,28 +25,40 @@ else
             <button class="btn btn-sm btn-danger" @onclick="ReportPartner">Репортни</button>
         </div>
         <p><strong>Предмет:</strong> @swap.SubjectForHelp</p>
-        <p><strong>Статус свапа:</strong> @swap.Status</p>
-        @if (swap.Status == SwapStatus.PendingCompleted)
-        {
-            @if (swap.CompletionProposedByStudentId != currentStudent.Id)
+        <p><strong>Статус на свапа:</strong> @swap.Status</p>
+
+            @if (swap.Status == SwapStatus.PendingCompleted)
             {
-                <div class="alert alert-warning p-2">
-                    <p>@otherStudent.FirstName е предложил(a) да завърши свапа</p>
-                    <button class="btn btn-sm btn-success ms-2" @onclick="() => AcceptCompletion(StudentManager.FindStudent(s => s.Id == swap.Student2Id))">Завърши</button>
-                    <button class="btn btn-sm btn-secondary ms-1" @onclick="RejectCompletion">Продължи свапа</button>
-                </div>
+                if (swap.CompletionProposedByStudentId.HasValue && swap.CompletionProposedByStudentId.Value != currentStudent.Id)
+                {
+                    <div class="alert alert-warning p-2">
+                        <p>@otherStudent.FirstName иска да завърши свапа</p>
+                        <button class="btn btn-sm btn-success ms-2" @onclick="AcceptCompletion">Завърши</button>
+                        <button class="btn btn-sm btn-secondary ms-1" @onclick="RejectCompletion">Продължи свапа</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info p-2">
+                        <p>Вие предложихте да завършите свапа. Очаква се потвърждението на @otherStudent.FirstName.</p>
+                    </div>
+                }
+            }
+            else if (swap.Status == SwapStatus.CompletedNotRated)
+            {
+                if (isStudentToRate)
+                {
+                    <p>Очаква се @otherStudent.FirstName да оцени Вашата помощ.</p>
+                }
+                else
+                {
+                    <p>Моля, оставете оценка за помощта (ще се отвори прозорец автоматично).</p>
+                }
             }
             else
             {
-                <div class="alert alert-info p-2">
-                    <p>Вие предложихте да завършите свапа. Очаква се потвърждението на @otherStudent.FirstName.</p>
-                </div>
+                <button class="btn btn-sm btn-primary" @onclick="ProposeCompletion">Предложи завършване</button>
             }
-        }
-        else
-        {
-            <button class="btn btn-sm btn-primary" @onclick="ProposeCompletion">Предложи завършване</button>
-        }
     </div>
 
 
@@ -134,6 +146,8 @@ else
     private bool modalOpen = false;
     private Student modalStudentToRate;
 
+    private bool isStudentToRate;
+
     private string? errorMessage = string.Empty;
 
     protected override async Task OnParametersSetAsync()
@@ -162,6 +176,27 @@ else
             ? $"{currentStudent.FirstName} {currentStudent.SecName}" 
             : $"{otherStudent.FirstName} {otherStudent.SecName}"
             , m.Content)).ToList();
+
+
+        if (swap.Status == SwapStatus.CompletedNotRated)
+        {
+            if (swap.CompletionProposedByStudentId.HasValue)
+            {
+                if (currentStudent.Id == swap.Student2Id)
+                {
+                    isStudentToRate = true;
+                }
+                else
+                {
+                    if (!modalOpen)
+                    {
+                        modalStudentToRate = otherStudent;
+                        modalOpen = true;
+                    }
+                }
+            }
+        }
+
 
         if (hubConnection != null) return;
 
@@ -219,10 +254,18 @@ else
         SwapManager.ProposeCompletingSwap(swap, currentStudent.Id);
         StateHasChanged();
     }
-    private void AcceptCompletion(Student studentToRate)
+    private void AcceptCompletion()
     {
-        modalStudentToRate = studentToRate;
-        modalOpen = true;
+        if (currentStudent.Id == swap.Student2Id)
+        {
+            isStudentToRate = true;
+        }
+        else
+        {
+            modalStudentToRate = StudentManager.FindStudent(s => s.Id == swap.Student2Id);
+            modalOpen = true;
+        }
+
     }
     private void RejectCompletion()
     {
@@ -241,9 +284,6 @@ else
         }
 
         modalStudentToRate = null;
-
-        SwapManager.CompleteSwap(swap);
-        StateHasChanged();
 
         NavigationManager.NavigateTo("/my-swaps");
     }
