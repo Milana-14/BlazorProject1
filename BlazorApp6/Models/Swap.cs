@@ -16,7 +16,7 @@
         public Guid Student1Id { get; set; } // този, който иска помощ
         public Guid Student2Id { get; set; } // този, който ще помогне
         public Guid RequesterId { get; set; } // този, който е направил заявката за свап
-        public Guid? CompletionProposedByStudentId { get; set; } = Guid.Empty; // този, който е предложил завършването
+        public Guid? CompletionProposedByStudentId { get; set; } = null; // този, който е предложил завършването
         public SubjectEnum SubjectForHelp { get; set; }
         public SwapStatus Status { get; set; }
         public DateTime DateRequested { get; set; }
