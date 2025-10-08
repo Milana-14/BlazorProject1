@@ -20,11 +20,6 @@
     </div>
 
     <div class="mb-3">
-        <label>Възраст:</label>
-        <InputNumber class="form-control" @bind-Value="registeredStudent.Age" />
-    </div>
-
-    <div class="mb-3">
         <label>Клас:</label>
         <InputNumber class="form-control" @bind-Value="registeredStudent.Grade" />
     </div>
@@ -32,11 +27,6 @@
     <div class="mb-3">
         <label>Имейл:</label>
         <InputText class="form-control" @bind-Value="registeredStudent.Email" />
-    </div>
-
-    <div class="mb-3">
-        <label>Телефон:</label>
-        <InputText class="form-control" @bind-Value="registeredStudent.PhoneNumber" />
     </div>
 
     <div class="mb-3">
@@ -57,7 +47,7 @@
 @if (registeredSuccessfully)
 {
     <div class="alert alert-success mt-3">
-        Добре дошъл, @registeredStudent.FirstName! Възраст: @registeredStudent.Age, Клас: @registeredStudent.Grade.
+        Добре дошъл, @registeredStudent.FirstName! Клас: @registeredStudent.Grade.
     </div>
 }
 
@@ -102,9 +92,7 @@
             Student newStudent = new Student(
                 registeredStudent.FirstName,
                 registeredStudent.SecName,
-                registeredStudent.Age,
                 registeredStudent.Email,
-                registeredStudent.PhoneNumber,
                 registeredStudent.Username,
                 registeredStudent.Password,
                 registeredStudent.Grade

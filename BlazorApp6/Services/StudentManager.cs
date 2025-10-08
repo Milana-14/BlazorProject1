@@ -108,17 +108,15 @@ namespace BlazorApp6.Services
                     Student student = new Student(
                         firstName: reader.IsDBNull(1) ? "" : reader.GetString(1),
                         secName: reader.IsDBNull(2) ? "" : reader.GetString(2),
-                        age: reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
-                        email: reader.GetString(4),
-                        phoneNumber: reader.IsDBNull(5) ? "" : reader.GetString(5),
-                        username: reader.GetString(6),
-                        password: reader.GetString(7),
-                        grade: reader.GetInt32(8),
-                        avatarName: reader.IsDBNull(9) ? null : reader.GetString(9)
+                        email: reader.GetString(3),
+                        username: reader.GetString(4),
+                        password: reader.GetString(5),
+                        grade: reader.GetInt32(6),
+                        avatarName: reader.IsDBNull(7) ? null : reader.GetString(7)
                     );
                     student.Id = reader.GetGuid(0);
-                    student.HelpGivenCount = reader.GetInt32(10);
-                    student.HelpRatings = reader.GetFieldValue<List<int>>(11);
+                    student.HelpGivenCount = reader.GetInt32(8);
+                    student.HelpRatings = reader.GetFieldValue<List<int>>(9);
 
                     studentsFromDb.Add(student);
                 }
@@ -139,16 +137,14 @@ namespace BlazorApp6.Services
                     connection.Open();
 
                     string sql = @"INSERT INTO ""Students"" 
-                           (""Id"", ""FirstName"", ""SecName"", ""Age"", ""Email"", ""PhoneNumber"", ""Username"", ""Password"", ""Grade"", ""AvatarName"", ""HelpGivenCount"", ""HelpRatings"")
-                           VALUES (@Id, @FirstName, @SecName, @Age, @Email, @PhoneNumber, @Username, @Password, @Grade, @AvatarName, @HelpGivenCount, @HelpRatings)";
+                           (""Id"", ""FirstName"", ""SecName"", ""Email"", ""Username"", ""Password"", ""Grade"", ""AvatarName"", ""HelpGivenCount"", ""HelpRatings"")
+                           VALUES (@Id, @FirstName, @SecName, @Email, @Username, @Password, @Grade, @AvatarName, @HelpGivenCount, @HelpRatings)";
 
                     using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
                     cmd.Parameters.AddWithValue("@Id", student.Id);
                     cmd.Parameters.AddWithValue("@FirstName", student.FirstName ?? "");
                     cmd.Parameters.AddWithValue("@SecName", student.SecName ?? "");
-                    cmd.Parameters.AddWithValue("@Age", student.Age);
                     cmd.Parameters.AddWithValue("@Email", student.Email ?? "");
-                    cmd.Parameters.AddWithValue("@PhoneNumber", student.PhoneNumber ?? "");
                     cmd.Parameters.AddWithValue("@Username", student.Username);
                     cmd.Parameters.AddWithValue("@Password", student.Password);
                     cmd.Parameters.AddWithValue("@Grade", student.Grade);
@@ -174,9 +170,8 @@ namespace BlazorApp6.Services
                 connection.Open();
 
                 string sql = @"UPDATE ""Students""
-                               SET ""FirstName""=@FirstName, ""SecName""=@SecName, ""Age""=@Age, ""Email""=@Email, ""PhoneNumber""=@PhoneNumber, 
-                                   ""Username""=@Username, ""Password""=@Password, ""Grade""=@Grade, ""AvatarName""=@AvatarName, 
-                                   ""HelpGivenCount""=@HelpGivenCount, ""HelpRatings""=@HelpRatings
+                               SET ""FirstName""=@FirstName, ""SecName""=@SecName, ""Email""=@Email, ""Username""=@Username, ""Password""=@Password, 
+                                   ""Grade""=@Grade, ""AvatarName""=@AvatarName, ""HelpGivenCount""=@HelpGivenCount, ""HelpRatings""=@HelpRatings
                                WHERE ""Id""=@Id";
 
 
@@ -185,9 +180,7 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@Id", student.Id);
                 cmd.Parameters.AddWithValue("@FirstName", student.FirstName ?? "");
                 cmd.Parameters.AddWithValue("@SecName", student.SecName ?? "");
-                cmd.Parameters.Add("@Age", NpgsqlTypes.NpgsqlDbType.Integer).Value = student.Age;
                 cmd.Parameters.AddWithValue("@Email", student.Email ?? "");
-                cmd.Parameters.AddWithValue("@PhoneNumber", student.PhoneNumber ?? "");
                 cmd.Parameters.AddWithValue("@Username", student.Username);
                 cmd.Parameters.AddWithValue("@Password", student.Password);
                 cmd.Parameters.AddWithValue("@Grade", student.Grade);

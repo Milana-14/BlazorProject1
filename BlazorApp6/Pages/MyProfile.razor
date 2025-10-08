@@ -19,10 +19,8 @@ else if (student is not null)
         <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="rounded-circle avatar-xl" />
         <p><strong>Име:</strong> @student.FirstName</p>
         <p><strong>Фамилия:</strong> @student.SecName</p>
-        <p><strong>Възраст:</strong> @student.Age</p>
         <p><strong>Клас:</strong> @student.Grade</p>
         <p><strong>Имейл:</strong> @student.Email</p>
-        <p><strong>Телефон:</strong> @student.PhoneNumber</p>
 
         <p><strong>Мога да помогне с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
         <p><strong>Нуждая се от помощ по:</strong> @string.Join(", ", student.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
@@ -53,11 +51,6 @@ else if (student is not null)
             </div>
 
             <div class="mb-3">
-                <label>Възраст:</label>
-                <InputNumber class="form-control" @bind-Value="student.Age" />
-            </div>
-
-            <div class="mb-3">
                 <label>Клас:</label>
                 <InputNumber class="form-control" @bind-Value="student.Grade" />
             </div>
@@ -65,11 +58,6 @@ else if (student is not null)
             <div class="mb-3">
                 <label>Имейл:</label>
                 <InputText class="form-control" @bind-Value="student.Email" />
-            </div>
-
-            <div class="mb-3">
-                <label>Телефон:</label>
-                <InputText class="form-control" @bind-Value="student.PhoneNumber" />
             </div>
 
             <div class="filter-row">
