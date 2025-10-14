@@ -52,7 +52,7 @@ else
                 }
                 else
                 {
-                    <p>Моля, оставете оценка за помощта (ще се отвори прозорец автоматично).</p>
+                    <p>Моля, оставете оценка за помощта (прозорецът ще се отвори автоматично).</p>
                 }
             }
             else
@@ -191,7 +191,6 @@ else
                     if (!modalOpen)
                     {
                         modalStudentToRate = otherStudent;
-                        modalOpen = true;
                     }
                 }
             }
@@ -256,6 +255,7 @@ else
     }
     private void AcceptCompletion()
     {
+        swap.Status = SwapStatus.CompletedNotRated;
         if (currentStudent.Id == swap.Student2Id)
         {
             isStudentToRate = true;
