@@ -82,9 +82,9 @@
     private async Task SendRequest()
     {
         if (isRequiringHelp)
-            SwapManager.RequestHelp(student, otherStudent, SelectedSubject, otherStudent);
+            SwapManager.RequestHelp(otherStudent, student, SelectedSubject, otherStudent);
         else
-            SwapManager.OfferHelp(otherStudent, student, SelectedSubject, otherStudent);
+            SwapManager.OfferHelp(student, otherStudent, SelectedSubject, otherStudent);
         SelectedSubject = SubjectEnum.NotSpecified;
 
         await OnClose.InvokeAsync(SelectedSubject);

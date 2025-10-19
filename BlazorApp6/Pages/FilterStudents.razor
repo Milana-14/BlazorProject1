@@ -326,16 +326,16 @@ else
         commonNeeds = student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedNeedsHelpWith).ToHashSet();
 
         if (selectedCanHelpWith.Count == 0 && selectedNeedsHelpWith.Count == 0)
-            return 0;
+            return 0 + ((student.HelpGivenCount == 0) ? 0 : (student.HelpRatings.Sum() / student.HelpGivenCount));
 
         else if (selectedCanHelpWith.Count == 0 && selectedNeedsHelpWith.Count > 0)
-            return ((double)commonNeeds.Count / selectedNeedsHelpWith.Count) * 100;
+            return ((double)commonNeeds.Count / selectedNeedsHelpWith.Count) * 100 + ((student.HelpGivenCount == 0) ? 0 : (student.HelpRatings.Sum() / student.HelpGivenCount));
 
         else if (selectedCanHelpWith.Count > 0 && selectedNeedsHelpWith.Count == 0)
-            return ((double)commonCan.Count / selectedCanHelpWith.Count) * 100;
+            return ((double)commonCan.Count / selectedCanHelpWith.Count) * 100 + ((student.HelpGivenCount == 0) ? 0 : (student.HelpRatings.Sum() / student.HelpGivenCount));
 
         else
-            return (((double)commonCan.Count / selectedCanHelpWith.Count) + ((double)commonNeeds.Count / selectedNeedsHelpWith.Count)) / 2 * 100;
+            return (((double)commonCan.Count / selectedCanHelpWith.Count) + ((double)commonNeeds.Count / selectedNeedsHelpWith.Count)) / 2 * 100 + ((student.HelpGivenCount == 0) ? 0 : (student.HelpRatings.Sum() / student.HelpGivenCount));
     }
 
     private void RequestHelp(Student student1, Student student2, SubjectEnum subject)

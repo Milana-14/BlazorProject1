@@ -36,7 +36,7 @@ else
                     @foreach (SwapModel swap in pairs)
                     {
                         var student = StudentManager.FindStudent(s => s.Id == ((swap.Student1Id == currentStudent.Id) ? swap.Student2Id : swap.Student1Id));
-                        bool currentStHelps = swap.Student1Id == currentStudent.Id;
+                        bool currentStHelps = swap.Student2Id == currentStudent.Id;
                         @if (student == null) continue;
 
                         <div class="col-12 col-md-6">

@@ -31,8 +31,15 @@ else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
 
     <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" alt="Avatar" class="rounded-circle avatar-xl" />
     <p><strong>Име:</strong> @otherStudent.FirstName @otherStudent.SecName</p>
-    @* <p><strong>Възраст:</strong> @otherStudent.Age</p> *@ // нз дали да се показва възрастта
     <p><strong>Клас:</strong> @otherStudent.Grade</p>
+
+    allSwaps = SwapManager.FindSwapsByStudentId(otherStudent.Id);
+    averageRating = (otherStudent.HelpGivenCount == 0) ? 0 : otherStudent.HelpRatings.Sum() / otherStudent.HelpGivenCount;
+
+    <p>Активни свапове: @allSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
+    <p>Общо свапове: @allSwaps.Count()</p>
+    <p>Рейтинг: @Math.Round(averageRating, 1)</p>
+    <p>Монети: @otherStudent.Coins</p>
 
     @if (!isAlreadyRequested && isAlreadySwapped)
     {
@@ -78,6 +85,9 @@ else
 @code {
     [Parameter] public Guid Id { get; set; }
     private Student? otherStudent;
+
+    private List<Swap> allSwaps = new();
+    private double averageRating = 0.0;
 
     private Student? currentStudent;
 

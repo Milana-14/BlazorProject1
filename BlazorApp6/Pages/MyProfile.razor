@@ -4,6 +4,7 @@
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
 @inject SubjectsManager SubjectsManager
+@inject SwapManager SwapManager
 @rendermode InteractiveServer
 
 <h3>Мой профил</h3>
@@ -22,7 +23,15 @@ else if (student is not null)
         <p><strong>Клас:</strong> @student.Grade</p>
         <p><strong>Имейл:</strong> @student.Email</p>
 
-        <p><strong>Мога да помогне с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
+        allSwaps = SwapManager.FindSwapsByStudentId(student.Id);
+        averageRating = (student.HelpGivenCount == 0) ? 0 : student.HelpRatings.Sum() / student.HelpGivenCount;
+
+        <p>Активни свапове: @allSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
+        <p>Общо свапове: @allSwaps.Count()</p>
+        <p>Рейтинг: @Math.Round(averageRating, 1)</p>
+        <p>Монети: @student.Coins</p>
+
+        <p><strong>Мога да помогна с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
         <p><strong>Нуждая се от помощ по:</strong> @string.Join(", ", student.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
 
         <button class="btn btn-primary" @onclick="() => isEditing = true">Редактиране</button>
@@ -113,6 +122,8 @@ else if (student is not null)
 @code {
     private Student? student;
     private List<SubjectEnum> allSubjects = new();
+    private List<Swap> allSwaps = new();
+    private double averageRating = 0.0;
     private bool successMessageShown = false;
     private string errorMessage = string.Empty;
     private bool isEditing = false;

@@ -16,8 +16,7 @@
 }
 else
 {
-    <div class="chat-page d-flex">
-
+<div class="chat-page d-flex">
 
     <div class="sidebar p-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -52,7 +51,7 @@ else
                 }
                 else
                 {
-                    <p>Моля, оставете оценка за помощта (прозорецът ще се отвори автоматично).</p>
+                    <p>Моля, оставете отзив за помощта на @otherStudent.FirstName @otherStudent.SecName.</p>
                 }
             }
             else
@@ -62,20 +61,21 @@ else
     </div>
 
 
-
+        @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted)
+    {
     <div class="chat-container d-flex flex-column flex-grow-1">
         <div class="chat-window flex-grow-1 overflow-auto">
             @code { DateTime? lastDate = null; }
             @foreach (var m in messagesForChat)
-            {
-                DateTime date = m.Timestamp.Date;
-            if (lastDate == null || lastDate.Value != date)
-            {
-                <div class="chat-date-separator">
-                    @date.ToString("dd MMMM yyyy")
-                </div>
-                lastDate = date;
-            }
+                        {
+                        DateTime date = m.Timestamp.Date;
+                        if (lastDate == null || lastDate.Value != date)
+                        {
+            <div class="chat-date-separator">
+                @date.ToString("dd MMMM yyyy")
+            </div>
+                        lastDate = date;
+                        }
 
             @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
             {
@@ -121,15 +121,34 @@ else
             </div>
         </div>
     </div>
+    }
+    else if (swap.Status == SwapStatus.CompletedNotRated)
+    {
+        if (isStudentToRate)
+        {
+            <p>Очаква се @otherStudent.FirstName да оцени Вашата помощ.</p>
+        }
+        else
+        {
+            <div class="stars-container mb-3">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <span class="star @(SelectedRating >= i ? "selected" : "")" @onclick="() => ChooseRating(i)">&#9733;</span>
+                }
+            </div>
 
+
+            <div class="modal-actions mt-3 d-flex gap-2">
+                <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="RateStudentsHelp">Изпрати</button>
+            </div>
+        }
+    }
+    else if (swap.Status == SwapStatus.Completed)
+    {
+        <p>Този свап е завършен.</p>
+    }
 </div>
 }
-
-<ModalRateHelp IsOpen="@modalOpen"
-               swap="@swap"
-               student="@currentStudent"
-               StudentToRate="@modalStudentToRate"
-               OnClose="RateTheStudentAndCompleteSwap" />
 
 @code {
     [Parameter] public Guid swapId { get; set; }
@@ -143,12 +162,15 @@ else
     private List<MessageForChat> messagesForChat = new();
     private string newMessage = string.Empty;
 
-    private bool modalOpen = false;
-    private Student modalStudentToRate;
-
     private bool isStudentToRate;
 
     private string? errorMessage = string.Empty;
+
+    private Student? StudentToRate;
+    private List<int> stars = new() { 1, 2, 3, 4, 5 };
+    private int? SelectedRating { get; set; } = null;
+    private bool isChosen => SelectedRating != null;
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -176,25 +198,6 @@ else
             ? $"{currentStudent.FirstName} {currentStudent.SecName}" 
             : $"{otherStudent.FirstName} {otherStudent.SecName}"
             , m.Content)).ToList();
-
-
-        if (swap.Status == SwapStatus.CompletedNotRated)
-        {
-            if (swap.CompletionProposedByStudentId.HasValue)
-            {
-                if (currentStudent.Id == swap.Student2Id)
-                {
-                    isStudentToRate = true;
-                }
-                else
-                {
-                    if (!modalOpen)
-                    {
-                        modalStudentToRate = otherStudent;
-                    }
-                }
-            }
-        }
 
 
         if (hubConnection != null) return;
@@ -256,16 +259,9 @@ else
     private void AcceptCompletion()
     {
         swap.Status = SwapStatus.CompletedNotRated;
-        if (currentStudent.Id == swap.Student2Id)
-        {
-            isStudentToRate = true;
-        }
-        else
-        {
-            modalStudentToRate = StudentManager.FindStudent(s => s.Id == swap.Student2Id);
-            modalOpen = true;
-        }
-
+        SwapManager.UpdateSwapInDb(swap);
+        if (currentStudent.Id.ToString() == swap.Student2Id.ToString()) isStudentToRate = true;
+        else if (currentStudent.Id.ToString() == swap.Student1Id.ToString()) isStudentToRate = false;
     }
     private void RejectCompletion()
     {
@@ -273,17 +269,24 @@ else
         StateHasChanged();
     }
 
-    private void RateTheStudentAndCompleteSwap()
+    private void ChooseRating(int rating)
     {
-        modalOpen = false;
+        SelectedRating = rating;
+    }
 
-        if (modalStudentToRate != null && currentStudent != null)
-        {
-            SwapManager.CompleteSwap(swap);
-            StateHasChanged();
-        }
+    private async Task RateStudentsHelp()
+    {
+        if (SelectedRating == null) return;
 
-        modalStudentToRate = null;
+        otherStudent.HelpGivenCount += 1;
+        otherStudent.HelpRatings.Add(SelectedRating.Value);
+        otherStudent.Coins += 1;
+        StudentManager.UpdateStudent(otherStudent);
+
+        currentStudent.Coins -= 1;
+        StudentManager.UpdateStudent(currentStudent);
+
+        SwapManager.CompleteSwap(swap);
 
         NavigationManager.NavigateTo("/my-swaps");
     }
@@ -375,5 +378,29 @@ else
         height: 32px;
         border-radius: 50%;
         object-fit: cover;
+    }
+
+    .stars-container {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 5px;
+        font-size: 32px;
+        cursor: pointer;
+    }
+
+    .star {
+        color: #ccc;
+        transition: color 0.2s;
+    }
+
+        .star.selected,
+        .star:hover,
+        .star:hover ~ .star {
+            color: #ffc107;
+        }
+
+    .modal-actions button {
+        min-width: 100px;
     }
 </style>
