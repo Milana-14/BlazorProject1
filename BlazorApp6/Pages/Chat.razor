@@ -67,53 +67,53 @@ else
         <div class="chat-window flex-grow-1 overflow-auto">
             @code { DateTime? lastDate = null; }
             @foreach (var m in messagesForChat)
-                        {
-                        DateTime date = m.Timestamp.Date;
-                        if (lastDate == null || lastDate.Value != date)
-                        {
-            <div class="chat-date-separator">
-                @date.ToString("dd MMMM yyyy")
-            </div>
-                        lastDate = date;
-                        }
-
-            @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
-            {
-                <div class="my-message-sender">
-                    <small>@m.SenderName:</small>
-                </div>
-                <div class="my-message">
-                    @m.Content
-                    <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
-                </div>
-            }
-            else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
-            {
-                <div class="other-message-sender">
-                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="avatar me-2" />
-                    <small>@m.SenderName:</small>
-                </div>
-                <div class="other-message">
-                    @m.Content
-                    <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
-                </div>
-            }
-            else
-            {
-                <div class="system-message">
-                    @if (string.IsNullOrEmpty(m.SenderName))
+                {
+                    DateTime date = m.Timestamp.Date;
+                    if (lastDate == null || lastDate.Value != date)
                     {
-                        <i>@m.Content</i>
-                        <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
+                        <div class="chat-date-separator">
+                        @date.ToString("dd MMMM yyyy")
+                        </div>
+                        lastDate = date;
+                    }
+
+                    @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
+                    {
+                        <div class="my-message-sender">
+                            <small>@m.SenderName:</small>
+                        </div>
+                        <div class="my-message">
+                            @m.Content
+                            <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
+                        </div>
+                    }
+                    else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
+                    {
+                        <div class="other-message-sender">
+                            <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="avatar me-2" />
+                            <small>@m.SenderName:</small>
+                        </div>
+                        <div class="other-message">
+                            @m.Content
+                            <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
+                        </div>
                     }
                     else
                     {
-                        <i>@m.SenderName: @m.Content</i>
-                        <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
+                        <div class="system-message">
+                            @if (string.IsNullOrEmpty(m.SenderName))
+                            {
+                                <i>@m.Content</i>
+                                <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
+                            }
+                            else
+                            {
+                                <i>@m.SenderName: @m.Content</i>
+                                <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
+                            }
+                        </div>
                     }
-                </div>
-            }
-                        }
+                }
 
             <div class="input-container mt-2 d-flex gap-2">
                 <input class="form-control" @bind="newMessage" placeholder="Напиши..." />
