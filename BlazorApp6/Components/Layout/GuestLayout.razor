@@ -1,0 +1,36 @@
+﻿@inherits LayoutComponentBase
+
+<MudDialogProvider>
+    <MudSnackbarProvider>
+        <div class="page">
+            <div class="sidebar">
+                <GuestNavMenu />
+            </div>
+
+            <main>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
+        </div>
+    </MudSnackbarProvider>
+</MudDialogProvider>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<style>
+    .page {
+        display: flex;
+        flex-direction: row;
+        min-height: 100vh;
+    }
+
+    main {
+        flex: 1;
+        padding: 20px;
+    }
+</style>

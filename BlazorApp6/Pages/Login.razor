@@ -1,40 +1,41 @@
 ﻿@page "/login" // страница за вход в профила си
+@layout GuestLayout
 @inject NavigationManager Navigation
 @inject AppState AppState
 @inject StudentManager StudentManager
 @rendermode InteractiveServer
 
-<h3>Влезте в профила си</h3>
+<div class="login-page">
+    <div class="login-card">
+        <h3>Влез в профила си</h3>
+        
+        <EditForm Model="@loginModel" OnValidSubmit="LoginUser">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="login-form">
+                <InputText id="username" @bind-Value="loginModel.Username" placeholder="Юзърнейм" />
+            </div>
 
-<EditForm Model="@loginModel" OnValidSubmit="LoginUser">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <div class="mb-3">
-        <label class="form-label">Потребителско име:</label>
-        <InputText class="form-control" @bind-Value="loginModel.Username"></InputText>
+            <div class="login-form">
+                <InputText id="password" type="password" @bind-Value="loginModel.Password" placeholder="Парола" />
+            </div>
+
+            <button type="submit" class="btn-login">Вход</button>
+        </EditForm>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Парола:</label>
-        <InputText type="password" class="form-control" @bind-Value="loginModel.Password"></InputText>
-    </div>
+    @if (loginFailed)
+    {
+        <div class="alert alert-danger mt-3">
+            Невалиден юзърнейм или парола.
+        </div>
+    }
 
-    <div class="mb-3">
-        <button type="submit" class="btn btn-primary">Вход</button>
-    </div>
-</EditForm>
-
-@if (loginFailed)
-{
-    <div class="alert alert-danger mt-3">
-        Невалидно потребителско име или парола.
-    </div>
-}
-
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger mt-3">@errorMessage</div>
-}
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
 
 
 @code {

@@ -1,74 +1,56 @@
 ﻿@page "/register" // страница за регистрация на нов ученик
+@layout GuestLayout
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject StudentManager StudentManager
 
-<h3>Регистрация</h3>
+<div class="register-page">
+    <div class="register-card">
+        <h3>Регистрация</h3>
 
-<EditForm Model="@registeredStudent" OnValidSubmit="Submit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+        <EditForm Model="@registeredStudent" OnValidSubmit="Submit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-    <div class="mb-3">
-        <label>Име:</label>
-        <InputText class="form-control" @bind-Value="registeredStudent.FirstName" />
+            <div class="register-form">
+                <InputText class="register-form input" placeholder="Име" @bind-Value="registeredStudent.FirstName" />
+                <InputText class="register-form input" placeholder="Фамилия" @bind-Value="registeredStudent.SecName" />
+                <InputNumber class="register-from input" placeholder="Клас" @bind-Value="registeredStudent.Grade" />
+                <InputText class="register-form input" placeholder="Имейл" @bind-Value="registeredStudent.Email" />
+                <InputText class="register-form input" placeholder="Юзърнейм" @bind-Value="registeredStudent.Username" />
+                <InputText type="password" class="register-form input" placeholder="Парола" @bind-Value="registeredStudent.Password" />
+            </div>
+
+            <button type="submit" class="btn-register">Регистрирай се</button>
+        </EditForm>
+
+        @if (registeredSuccessfully)
+        {
+            <div class="alert alert-success">
+                Добре дошъл, @registeredStudent.FirstName!
+            </div>
+        }
+
+        @if (alreadyExists)
+        {
+            <div class="alert alert-danger">
+                Ученик с това потребителско име вече съществува.
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(StudentManager.DbError))
+        {
+            <div class="alert alert-danger">
+                Грешка при зареждането на данните: @StudentManager.DbError
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
     </div>
-
-    <div class="mb-3">
-        <label>Фамилия:</label>
-        <InputText class="form-control" @bind-Value="registeredStudent.SecName" />
-    </div>
-
-    <div class="mb-3">
-        <label>Клас:</label>
-        <InputNumber class="form-control" @bind-Value="registeredStudent.Grade" />
-    </div>
-
-    <div class="mb-3">
-        <label>Имейл:</label>
-        <InputText class="form-control" @bind-Value="registeredStudent.Email" />
-    </div>
-
-    <div class="mb-3">
-        <label>Потребителско име:</label>
-        <InputText class="form-control" @bind-Value="registeredStudent.Username" />
-    </div>
-
-    <div class="mb-3">
-        <label>Парола:</label>
-        <InputText class="form-control" @bind-Value="registeredStudent.Password" />
-    </div>
-
-    <div class="mb-3">
-        <button type="submit" class="btn btn-primary">Регистрирай се</button>
-    </div>
-</EditForm>
-
-@if (registeredSuccessfully)
-{
-    <div class="alert alert-success mt-3">
-        Добре дошъл, @registeredStudent.FirstName! Клас: @registeredStudent.Grade.
-    </div>
-}
-
-@if (alreadyExists)
-{
-    <div class="alert alert-danger mt-3">
-        Ученик с това потребителско име вече съществува.
-    </div>
-}
-
-@if (!string.IsNullOrEmpty(StudentManager.DbError))
-{
-    <div class="alert alert-danger mt-3">
-        Грешка при зареждането на данните: @StudentManager.DbError
-    </div>
-}
-
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger mt-3">@errorMessage</div>
-}
+</div>
 
 @code {
     private Student? registeredStudent = new Student();

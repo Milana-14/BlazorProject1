@@ -1,2 +1,23 @@
-﻿body {
+﻿:root {
+    /* Фонове */
+    --bg-light: #FFFDFB;
+    --bg-light2: #FAF7F3;
+    --bg-accent: #F0EDE9;
+    --bg-profile: #F2EFEA;
+
+    /* Сайдбар */
+    --sb-light: #8B6D86;
+    --sb-dark: #3E363D;
+
+    /* Основни цветове */
+    --color-primary: #70646E;
+    --color-secondary: #B8AEB6;
+
+    /* Текст */
+    --text-dark: #787878;
+    --text-light: #FFFFFF;
+}
+
+body {
+
 }

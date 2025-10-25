@@ -1,2 +1,86 @@
-﻿body {
+﻿/* ---------- ОБЩ ФОН ---------- */
+body {
+    background-color: var(--bg-light);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: var(--text-dark);
+}
+
+.register-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: var(--bg-light);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: var(--text-dark);
+}
+
+/* ---------- КАРТИЧКА ---------- */
+.register-card {
+    background-color: var(--bg-accent);
+    width: 440px;
+    padding: 40px 50px;
+    border-radius: 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ---------- ЗАГЛАВИЕ ---------- */
+.register-card h3 {
+    font-size: 32px;
+    margin-bottom: 30px;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* ---------- ИНПУТ ---------- */
+.register-form {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.register-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.register-form input {
+    width: 400px;
+    height: 41px;
+    border-radius: 12px;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-size: 1rem;
+    padding-left: 12px;
+}
+
+/* ---------- БУТОН ---------- */
+.btn-register {
+    width: 400px;
+    height: 45px;
+    background-color: var(--color-primary);
+    color: var(--text-light);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-top: 6px;
+}
+
+@media (max-width: 480px) {
+    .register-card {
+        width: 90%;
+        padding: 30px 25px;
+    }
+
+    .register-input,
+    .btn-register {
+        width: 90%;
+    }
 }
