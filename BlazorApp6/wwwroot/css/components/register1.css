@@ -9,10 +9,11 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
     background-color: var(--bg-light);
     font-family: 'Inter', 'Segoe UI', sans-serif;
     color: var(--text-dark);
+    padding: 80px;
+/*    height: 100vh;*/
 }
 
 /* ---------- КАРТИЧКА ---------- */
@@ -40,18 +41,34 @@ body {
 .register-form {
     text-align: left;
     margin-bottom: 20px;
-}
-
-.register-form {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 20px;
 }
 
-.register-form input {
+/* Ред за име + фамилия */
+.name-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.name-row .register-input {
+    width: 100%;
+    height: 40px;
+    border-radius: 12px;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-size: 1rem;
+    padding-left: 12px;
+}
+
+
+.register-input {
     width: 400px;
-    height: 41px;
+    height: 40px;
     border-radius: 12px;
     background-color: var(--bg-light);
     color: var(--text-dark);
@@ -70,7 +87,7 @@ body {
     cursor: pointer;
     font-weight: 600;
     font-size: 1rem;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 @media (max-width: 480px) {

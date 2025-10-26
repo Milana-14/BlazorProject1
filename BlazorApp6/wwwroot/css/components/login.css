@@ -11,7 +11,6 @@ body {
     align-items: center;
     justify-content: center;
     padding: 165px;
-/*    height: 100vh;*/
 }
 
 /* ---------- КАРТИЧКА ---------- */
@@ -41,13 +40,6 @@ body {
     margin-bottom: 20px;
 }
 
-/*.login-form label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: var(--color-primary);
-}*/
-
 .login-form input {
     width: 400px;
     height: 41px;
@@ -69,7 +61,7 @@ body {
     cursor: pointer;
     font-weight: 600;
     font-size: 1rem;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 /* ---------- СООБЩЕНИЯ ЗА ГРЕШКИ ---------- */

@@ -1,0 +1,274 @@
+﻿/* ---------- ФИЛЬТР ---------- */
+.filter-all-container {
+    display: flex;
+    gap: 22px;
+}
+
+.filter-subject-container {
+    display: grid;
+    gap: 10px;
+}
+
+.filter-section-grade {
+    background-color: var(--bg-light2);
+    border-radius: 16px;
+    padding: 5px 10px;
+}
+
+.filter-section {
+    background-color: var(--bg-light2);
+    border-radius: 16px;
+    padding: 10px 5px;
+}
+
+.filter-legend {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.text-found-students {
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 20px;
+    color: #757575;
+}
+
+/* ---------- КОНТЕЙНЕР УЧЕНИКОВ ---------- */
+.students-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* ---------- КАРТОЧКА УЧЕНИКА ---------- */
+.student-card {
+    flex: 0 0 calc(50% - 0.5rem);
+    background-color: var(--bg-accent);
+    border-radius: 16px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-sizing: border-box;
+}
+
+/* ---------- ШАПКА УЧЕНИКА ---------- */
+.student-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.avatar-lg {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+}
+
+.student-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-name {
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--color-primary);
+}
+
+.student-grade {
+    font-size: 16px;
+    color: #A0A0A0;
+}
+
+/* ---------- ПРЕДМЕТЫ ---------- */
+.student-subjects p {
+    margin: 0.25rem 0;
+    font-weight: 500;
+}
+
+.subjects-scroll {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+}
+
+    .subjects-scroll::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .subjects-scroll::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0.2);
+        border-radius: 3px;
+    }
+
+/* ---------- БЕЙДЖИ ---------- */
+.badge {
+    padding: 2px 5px;
+    border-radius: 8px;
+}
+
+.badge-match {
+    padding: 2px 5px;
+    background-color: var(--color-secondary);
+    color: var(--bg-light);
+    font-weight: 500;
+}
+
+.badge-nonmatch {
+    padding: 2px 5px;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-weight: 400;
+}
+
+/* ---------- КНОПКИ ---------- */
+.sf-btn-row {
+    display: flex;
+    gap: 12px; /* расстояние между кнопками */
+    flex-wrap: wrap; /* чтобы при маленьком экране кнопки переносились */
+}
+
+.sf-btn-row button {
+    flex: 1; /*кнопки одинаковой ширины */
+    min-width: 120px; /* минимальная ширина */
+}
+
+.sf-btn-row-noflex button {
+    flex: none;
+}
+
+
+
+.btn-filter-primary {
+    width: 190px;
+    height: 42px;
+    background-color: var(--color-primary);
+    color: var(--text-light);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 17px;
+    margin-top: 8px;
+    margin-right: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.btn-filter-secondary {
+    width: 190px;
+    height: 42px;
+    background-color: var(--bg-accent);
+    color: var(--color-primary);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 18px;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.btn-primary {
+    width: 100%;
+    height: 40px;
+    background-color: var(--color-primary);
+    color: var(--text-light);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 16px;
+    margin-top: 6px;
+}
+
+.btn-secondary {
+    width: 100%;
+    height: 40px;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 16px;
+    margin-top: 6px;
+}
+
+.btn-secondary-warn {
+    width: 100%;
+    height: 40px;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 16px;
+    margin-top: 6px;
+}
+
+/* ---------- КОНТЕЙНЕР ДЛЯ КНОПОК ---------- */
+.student-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: auto;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*.student-card {
+    background-color: var(--bg-accent);*/ /* здесь выбираешь свой цвет */
+    /*border-radius: 16px;*/ /* можно настроить скругление */
+    /*padding: 1rem;*/ /* внутренние отступы */
+    /*display: flex;
+    flex-direction: column;
+    gap: 0.5rem;*/ /* расстояние между элементами */
+/*}*/
+
+/* ---------- БЕЙДЖИ ---------- */
+/*.badge-match {
+    padding: 2px 5px;
+    background-color: var(--color-secondary);
+    color: var(--bg-light);
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+.badge-nonmatch {
+    padding: 2px 5px;
+    background-color: var(--bg-light);
+    color: #787878;
+    font-weight: 400;
+    border-radius: 8px;
+}*/

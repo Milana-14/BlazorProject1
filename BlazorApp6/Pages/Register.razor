@@ -13,13 +13,17 @@
             <ValidationSummary />
 
             <div class="register-form">
-                <InputText class="register-form input" placeholder="Име" @bind-Value="registeredStudent.FirstName" />
-                <InputText class="register-form input" placeholder="Фамилия" @bind-Value="registeredStudent.SecName" />
-                <InputNumber class="register-from input" placeholder="Клас" @bind-Value="registeredStudent.Grade" />
-                <InputText class="register-form input" placeholder="Имейл" @bind-Value="registeredStudent.Email" />
-                <InputText class="register-form input" placeholder="Юзърнейм" @bind-Value="registeredStudent.Username" />
-                <InputText type="password" class="register-form input" placeholder="Парола" @bind-Value="registeredStudent.Password" />
+                <div class="name-row">
+                    <InputText class="register-input" placeholder="Име" @bind-Value="registeredStudent.FirstName" />
+                    <InputText class="register-input" placeholder="Фамилия" @bind-Value="registeredStudent.SecName" />
+                </div>
+
+                <InputNumber class="register-input" placeholder="Клас" @bind-Value="registeredStudent.Grade" />
+                <InputText class="register-input" placeholder="Имейл" @bind-Value="registeredStudent.Email" />
+                <InputText class="register-input" placeholder="Юзърнейм" @bind-Value="registeredStudent.Username" />
+                <InputText type="password" class="register-input" placeholder="Парола" @bind-Value="registeredStudent.Password" />
             </div>
+
 
             <button type="submit" class="btn-register">Регистрирай се</button>
         </EditForm>

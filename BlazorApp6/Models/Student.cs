@@ -14,7 +14,7 @@ public class Student
     public string SecName { get; set; }
 
     [Required(ErrorMessage = "Класът е задължителен")]
-    [Range(1, 12, ErrorMessage = "Класът трябва да е от 1 до 12")]
+    [Range(4, 12, ErrorMessage = "Класът трябва да е от 4 до 12")]
     public int Grade { get; set; }
 
     [Required(ErrorMessage = "Имейлът е задължителен")]

@@ -15,92 +15,80 @@
 }
 else
 {
-    @* Филтър за клас *@
-    <fieldset>
-        <div class="buttons-row d-flex flex-wrap mb-1 gap-2">
-            <button class="btn btn-sm btn-link" @onclick="SelectAllGrades">Избери всички</button>
-            <button class="btn btn-sm btn-link" @onclick="ClearAllGrades">Изтрий</button>
-        </div>
-        <div class="filter-row">
-            <div class="filter-label">Клас:</div>
-            <div class="checkbox-group">
-                @foreach (var grade in allGrades.OrderBy(g => g))
-                {
-                    <div class="form-check">
-                        <input class="form-check-input" 
-                               id=@($"grade_{grade}") type="checkbox"
-                               checked=@(selectedGrades.Contains(grade))
-                               @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))" />
-                        <label class="form-check-label" for=@($"grade_{grade}")>@grade</label>
-                    </div>
-                }
-            </div>
+    @* Филтри *@
+
+    @* Клас *@
+
+    <div class="filter-all-container">
+    <fieldset class="filter-section-grade">
+        <legend class="filter-legend">Клас:</legend>
+        <div class="checkbox-group">
+            @foreach (var grade in allGrades.OrderBy(g => g))
+            {
+                <label class="checkbox-item">
+                    <input type="checkbox"
+                           checked=@selectedGrades.Contains(grade)
+                           @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))" />
+                    @grade
+                </label>
+            }
         </div>
     </fieldset>
 
-    @* Филтри за предметите *@
-    @* Може да помогне с: *@
-    <fieldset>
-        <div class="buttons-row d-flex flex-wrap mb-1 gap-2">
-            <button class="btn btn-sm btn-link" @onclick="() => SelectAllSubjects(selectedCanHelpWith)">Избери всички</button>
-            <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedCanHelpWith)">Изтрий</button>
-        </div>
-        <div class="filter-row">
-            <div class="filter-label">Може да помогне с:</div>
-            <div class="checkbox-group">
-                @foreach (var subject in allSubjects)
-                {
-                    <div class="form-check" @key="subject">
-                        <input class="form-check-input"
-                               id=@($"can_{subject}")
-                               type="checkbox"
-                               checked=@(selectedCanHelpWith.Contains(subject))
-                               @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedCanHelpWith)" />
-                        <label class="form-check-label" for=@($"can_{subject}")>@subject.GetDisplayName()</label>
-                    </div>
-                }
-            </div>
+    @* Предмети *@
+    <div class="filter-subject-container">
+    <fieldset class="filter-section">
+        <legend class="filter-legend">Може да помогне с:</legend>
+        <div class="checkbox-group">
+            @foreach (var subject in allSubjects)
+            {
+                <label class="checkbox-item">
+                    <input type="checkbox"
+                           checked=@selectedCanHelpWith.Contains(subject)
+                           @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedCanHelpWith)" />
+                    @subject.GetDisplayName()
+                </label>
+            }
         </div>
     </fieldset>
 
-    @* Търси помощ по: *@
-    <fieldset>
-        <div class="buttons-row d-flex flex-wrap mb-1 gap-2">
-            <button class="btn btn-sm btn-link" @onclick="() => SelectAllSubjects(selectedNeedsHelpWith)">Избери всички</button>
-            <button class="btn btn-sm btn-link" @onclick="() => ClearAllSubjects(selectedNeedsHelpWith)">Изтрий</button>
-        </div>
-        <div class="filter-row">
-            <div class="filter-label">Търси помощ по:</div>
-            <div class="checkbox-group">
-                @foreach (var subject in allSubjects)
-                {
-                    <div class="form-check" @key="subject">
-                        <input class="form-check-input"
-                               id="@($"need_{subject}")"
-                               type="checkbox"
-                               checked=@selectedNeedsHelpWith.Contains(subject)
-                               @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedNeedsHelpWith)" />
-                        <label class="form-check-label" for=@($"need_{subject}")>@subject.GetDisplayName()</label>
-                    </div>
-                }
-            </div>
+    <fieldset class="filter-section">
+        <legend class="filter-legend">Търси помощ по:</legend>
+        <div class="checkbox-group">
+            @foreach (var subject in allSubjects)
+            {
+                <label class="checkbox-item">
+                    <input type="checkbox"
+                           checked=@selectedNeedsHelpWith.Contains(subject)
+                           @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedNeedsHelpWith)" />
+                    @subject.GetDisplayName()
+                </label>
+            }
         </div>
     </fieldset>
+    </div>
+    </div>
 
-    <button class="btn btn-primary me-2 mb-3" @onclick="AutoFilter">Автоматичен избор</button>
-    <button class="btn btn-secondary mb-3" @onclick="ResetFilters">Махни филтрите</button>
+    <div class="mt-auto sf-btn-row-noflex">
+        <button class="btn-filter-primary" @onclick="AutoFilter">Автоматичен избор</button>
+        <button class="btn-filter-secondary" @onclick="ResetFilters">Махни филтрите</button>
+    </div>
 
     <hr />
 
-    @* Списък с намерени ученици *@
+    @* Списък с ученици *@
     @if (filteredStudents.Count == 0)
     {
-        <p>Няма намерени ученици.</p>
+        <div class="text-found-students"> 
+            <p>Няма намерени ученици.</p>
+        </div>
     }
     else
     {
-        <p>Намерени ученици: @filteredStudents.Count</p>
-        <div class="row g-3">
+        <div class="text-found-students">
+            <p>Намерени ученици: @filteredStudents.Count</p>
+        </div>
+        <div class="students-container">
             @foreach (var student in filteredStudentsCompatib)
             {
                 SwapModel? swap = SwapManager.FindSwapByStudentsId(student.student.Id, currentStudent.Id);
@@ -118,93 +106,80 @@ else
                 int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(student.student.Id).Where(s => s.Status == SwapStatus.Pending).Count();
                 int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(student.student.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
 
-                <div class="col-12 col-md-6">
-                    <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
-
-                        @* Профилна, име и клас *@
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <img src="@AvatarManager.GetAvatarUrl(student.student.AvatarName)" alt="Avatar"
-                                 class="rounded-circle avatar-lg" />
-                            <div>
-                                <h5 class="fw-semibold mb-1">@student.student.FirstName @student.student.SecName</h5>
-                                <p class="text-muted small mb-0">Клас: @student.student.Grade</p>
-                            </div>
-                        </div>
-                        <hr />
-
-                        @* Списък с предмети *@
-                        <div class="d-flex flex-column flex-grow-1">
-
-                            <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
-                            <div class="match-subjects-scroll mb-2">
-                                @foreach (var subj in student.student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
-                                {
-                                    var isMatch = selectedCanHelpWith.Contains(subj);
-                                    <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                        @subj.GetDisplayName()
-                                    </span>
-                                }
-                            </div>
-
-                            <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
-                            <div class="match-subjects-scroll mb-2">
-                                @foreach (var subj in student.student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
-                                {
-                                    var isMatch = selectedNeedsHelpWith.Contains(subj);
-                                    <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                        @subj.GetDisplayName()
-                                    </span>
-                                }
-                            </div>
-
-                            @* Бутони *@
-                            <div class="mt-auto d-flex gap-2">
-                                @if (student.student.Grade == currentStudent?.Grade)
-                                {
-                                    @if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && !isAlreadySwapped)
-                                    {
-                                        <button class="btn btn-primary" disabled="@(!canRequestHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(student.student, true)"> Помоли за помощ</button>
-                                        <button class="btn btn-primary" disabled="@(!canOfferHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
-                                    }
-                                    else if (isAlreadyRequestedByMe && !isAlreadyRequestedByOther && !isAlreadySwapped)
-                                    {
-                                        <p>Очаква се приемане на заявката ти</p>
-                                        <button class="btn btn-outline-secondary" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
-                                    }
-                                    else if (!isAlreadyRequestedByMe && isAlreadyRequestedByOther && !isAlreadySwapped)
-                                    {
-                                        <p>Очаква да приемеш заявката</p>
-                                        <button class="btn btn-primary" @onclick="() => ConfirmSwaps(swap)">Приеми заявката</button>
-                                    }
-                                    else if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && isAlreadySwapped)
-                                    {
-                                        <button class="btn btn-primary" @onclick="() => GoToSwapDetails(swap)">Виж свапа</button>
-                                    }
-                                    <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student.student)">Виж профила</button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-outline-secondary flex-fill w-100" @onclick="() => ViewProfile(student.student)">Виж профила</button>
-                                }
-                            </div>
+                <div class="student-card">
+                    @* Профилна, име и клас *@
+                    <div class="student-header">
+                        <img src="@AvatarManager.GetAvatarUrl(student.student.AvatarName)" alt="Avatar" class="avatar-lg" />
+                        <div class="student-info">
+                            <h4 class="student-name">@student.student.FirstName @student.student.SecName</h4>
+                            <p class="student-grade">Клас: @student.student.Grade</p>
                         </div>
                     </div>
+
+                    @* Предмети *@
+                    <div class="student-subjects">
+                        <p>Може да помогне с:</p>
+                        <div class="subjects-scroll">
+                            @foreach (var subj in student.student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                            {
+                                var isMatch = selectedCanHelpWith.Contains(subj);
+                                <span class="badge @(isMatch ? "badge-match" : "badge-nonmatch")">@subj.GetDisplayName()</span>
+                            }
+                        </div>
+
+                        <p>Търси помощ по:</p>
+                        <div class="subjects-scroll">
+                            @foreach (var subj in student.student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                            {
+                                var isMatch = selectedNeedsHelpWith.Contains(subj);
+                                <span class="badge @(isMatch ? "badge-match" : "badge-nonmatch")">@subj.GetDisplayName()</span>
+                            }
+                        </div>
+                    </div>
+
+                    @* Бутони *@
+                    <div class="mt-auto sf-btn-row">
+                        @if (student.student.Grade == currentStudent?.Grade)
+                        {
+                            @if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && !isAlreadySwapped)
+                            {
+                                <button class="btn-primary" disabled="@(!canRequestHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(student.student, true)"> Помоли за помощ</button>
+                                <button class="btn-primary" disabled="@(!canOfferHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
+                            }
+                            else if (isAlreadyRequestedByMe && !isAlreadyRequestedByOther && !isAlreadySwapped)
+                            {
+                                <p>Очаква се приемане на заявката ти</p>
+                                <button class="btn-secondary-warn" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
+                            }
+                            else if (!isAlreadyRequestedByMe && isAlreadyRequestedByOther && !isAlreadySwapped)
+                            {
+                                <p>Очаква да приемеш заявката</p>
+                                <button class="btn-primary" @onclick="() => ConfirmSwaps(swap)">Приеми заявката</button>
+                                <button class="btn-secondary-warn" @onclick="() => RejectSwaps(swap)">Отхвърли заявката</button>
+                            }
+                            else if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && isAlreadySwapped)
+                            {
+                                <button class="btn btn-primary" @onclick="() => GoToSwapDetails(swap)">Виж свапа</button>
+                            }
+                            <button class="btn-secondary flex-fill" @onclick="() => ViewProfile(student.student)">Виж профила</button>
+                        }
+                        else
+                        {
+                            <button class="btn-secondary" @onclick="() => ViewProfile(student.student)">Виж профила</button>
+                        }
+                    </div>
                 </div>
-
-
-
             }
         </div>
-
     }
 }
 
-
 <ModalRequestSwap IsOpen="@modalOpen"
-              student="@modalTargetStudent"
-              otherStudent="@currentStudent"
-              isRequiringHelp="@modalIsHelping"
-              OnClose="SendRequestForSwapAndCloseModal" />
+                  student="@modalTargetStudent"
+                  otherStudent="@currentStudent"
+                  isRequiringHelp="@modalIsHelping"
+                  OnClose="SendRequestForSwapAndCloseModal" />
+
 
 
 @code {
@@ -235,7 +210,7 @@ else
 
 
             allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToHashSet();
-            allGrades = allStudents.Select(s => s.Grade).ToHashSet();
+            allGrades = Enumerable.Range(4, 9).ToHashSet();
 
             AutoFilter();
             ApplyFilter();
@@ -290,36 +265,6 @@ else
         ApplyFilter();
     }
 
-    private void SelectAllGrades()
-    {
-        selectedGrades.Clear();
-        foreach (int grade in allGrades)
-            selectedGrades.Add(grade);
-
-        ApplyFilter();
-    }
-
-    private void ClearAllGrades()
-    {
-        selectedGrades.Clear();
-        ApplyFilter();
-    }
-
-    private void SelectAllSubjects(HashSet<SubjectEnum> targetList)
-    {
-        targetList.Clear();
-        foreach (var subject in allSubjects)
-            targetList.Add(subject);
-
-        ApplyFilter();
-    }
-
-    private void ClearAllSubjects(HashSet<SubjectEnum> targetList)
-    {
-        targetList.Clear();
-        ApplyFilter();
-    }
-
     private double CalculateCompatibility(Student student, out HashSet<SubjectEnum> commonCan, out HashSet<SubjectEnum> commonNeeds)
     {
         commonCan = student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedCanHelpWith).ToHashSet();
@@ -349,6 +294,10 @@ else
     private void ConfirmSwaps(SwapModel swap)
     {
         SwapManager.ConfirmSwap(swap);
+    }
+    private void RejectSwaps(SwapModel swap)
+    {
+        SwapManager.RejectSwap(swap);
     }
     private void CancelSwapRequest(SwapModel swap)
     {
@@ -401,175 +350,3 @@ else
             || s.Equals("1");
     }
 }
-
-<style>
-    fieldset {
-        border: none;
-        padding: 0;
-        margin-bottom: 1.2rem;
-    }
-
-    legend.filter-legend {
-        font-size: 1.2rem;
-        font-weight: 500;
-        color: #333;
-    }
-
-    .filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.8rem;
-        align-items: flex-end;
-        margin-bottom: 1rem;
-    }
-
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-        .filter-group label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 0.2rem;
-        }
-
-        .filter-group select,
-        .filter-group input {
-            font-size: 0.9rem;
-            padding: 0.2rem 0.4rem;
-        }
-
-    .match-subjects-container {
-        padding-bottom: 0.5rem;
-    }
-
-    .match-subjects-row {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .match-subjects-label {
-        min-width: 110px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #555;
-        white-space: nowrap;
-    }
-
-    .match-subjects-scroll {
-        overflow-x: auto;
-        display: flex;
-        gap: 0.5rem;
-        scrollbar-width: thin;
-    }
-
-        .match-subjects-scroll::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .match-subjects-scroll::-webkit-scrollbar-thumb {
-            background-color: rgba(0,0,0,0.15);
-            border-radius: 3px;
-        }
-
-    .light-blue-badge {
-        background-color: #e6f0ff;
-        color: #003366;
-        font-weight: 400;
-    }
-
-    .light-red-badge {
-        background-color: #fce7e9;
-        color: #842029;
-        font-weight: 400;
-    }
-
-    .badge-match {
-        background-color: #a8d0ff;
-        color: #003366;
-        font-weight: 600;
-    }
-
-    .badge-nonmatch {
-        background-color: #e6f0ff;
-        color: #555;
-        font-weight: 400;
-    }
-
-    fieldset {
-        border: none;
-        padding: 0;
-        margin-bottom: 0.3rem;
-    }
-
-    .filter-row {
-        display: flex;
-        align-items: flex-start;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .filter-label {
-        flex: 0 0 130px;
-        font-weight: 600;
-        font-size: 1rem;
-        color: #333;
-        user-select: none;
-        padding-top: 0.25rem;
-        white-space: nowrap;
-    }
-
-
-    .checkbox-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        flex: 1 1 auto;
-    }
-
-        .checkbox-group > div {
-            flex: 0 0 auto;
-            min-width: 45px;
-        }
-
-    .form-check-label {
-        user-select: none;
-        font-size: 0.9rem;
-        white-space: nowrap;
-    }
-
-    .btn-link {
-        font-size: 0.85rem;
-        padding: 0 0.4rem;
-        margin-right: 0.5rem;
-    }
-
-    .buttons-row {
-        margin-bottom: 0.5rem;
-    }
-
-    .match-mode {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-        .match-mode label {
-            user-select: none;
-            font-size: 0.9rem;
-        }
-
-    .avatar-lg {
-        width: 64px;
-        height: 64px;
-        max-width: 100%;
-        object-fit: cover;
-        display: block;
-        border-radius: 50%;
-        overflow: hidden;
-    }
-</style>

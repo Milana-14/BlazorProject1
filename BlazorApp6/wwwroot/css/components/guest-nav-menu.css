@@ -1,0 +1,63 @@
+﻿body {
+    margin: 0;
+    padding: 0;
+}
+
+/* ---------- Сайдбар ---------- */
+.sidebar {
+    position: relative; /* важно: для абсолютного позиционирования внутри */
+    width: 240px;
+    height: 100vh;
+    background: linear-gradient(to bottom, var(--sb-light), var(--sb-dark));
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---------- Верхняя часть (EduSwaps) ---------- */
+.navbar-container {
+    height: 80px;
+    width: 100%;
+    background: linear-gradient(to left, #5E485A, var(--sb-dark));
+    display: flex;
+    align-items: center;
+    padding-left: var(--navbar-padding-left, 20px);
+}
+
+.top-row {
+    padding: 0;
+    margin: 0;
+}
+
+/* ---------- Заголовок EduSwaps ---------- */
+.navbar-brand {
+    color: white;
+    font-size: var(--navbar-font-size, 26px);
+    font-weight: 600;
+    margin: 0;
+    user-select: none;
+}
+
+/* ---------- Навигация ---------- */
+.nav-menu {
+    position: absolute;
+    top: var(--nav-top, 300px); /* регулируешь вертикальное положение */
+    left: var(--nav-left, 95px); /* регулируешь горизонтальное положение */
+}
+
+.nav-menu nav {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* расстояние между ссылками */
+}
+
+.nav-item {
+    width: 100%;
+    font-size: var(--nav-item-font-size, 14px);
+}
+
+.nav-link {
+    display: block;
+    color: white;
+    font-size: var(--nav-font-size, 18px);
+    font-weight: 450;
+}
