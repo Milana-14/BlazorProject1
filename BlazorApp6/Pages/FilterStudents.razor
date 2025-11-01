@@ -118,7 +118,7 @@ else
 
                     @* Предмети *@
                     <div class="student-subjects">
-                        <p>Може да помогне с:</p>
+                        <p class="text-label-help">Може да помогне с:</p>
                         <div class="subjects-scroll">
                             @foreach (var subj in student.student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                             {
@@ -127,7 +127,7 @@ else
                             }
                         </div>
 
-                        <p>Търси помощ по:</p>
+                        <p class="text-label-help">Търси помощ по:</p>
                         <div class="subjects-scroll">
                             @foreach (var subj in student.student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                             {
