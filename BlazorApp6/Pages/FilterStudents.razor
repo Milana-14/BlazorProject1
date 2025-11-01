@@ -7,8 +7,6 @@
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
 
-<h3>Филтър</h3>
-
 @if (currentStudent == null)
 {
     <p>Моля, влезте в профила си</p>
@@ -18,28 +16,30 @@ else
     @* Филтри *@
 
     @* Клас *@
-
     <div class="filter-all-container">
-    <fieldset class="filter-section-grade">
-        <legend class="filter-legend">Клас:</legend>
-        <div class="checkbox-group">
+    <fieldset class="filter-section-grade1">
+        <p class="filter-legend">Клас:</p>
+        <div class="checkbox-group1">
             @foreach (var grade in allGrades.OrderBy(g => g))
             {
-                <label class="checkbox-item">
-                    <input type="checkbox"
-                           checked=@selectedGrades.Contains(grade)
-                           @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))" />
-                    @grade
-                </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox"
+                               checked="@selectedGrades.Contains(grade)"
+                               @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))"
+                               class="hidden-checkbox" />
+                        <span class="circle @(selectedGrades.Contains(grade) ? "circle-active" : "circle-nonactive")">
+                            @grade
+                        </span>
+                    </label>
             }
         </div>
     </fieldset>
 
         @* Предмети *@
         <div class="filter-subject-container">
-            <fieldset class="filter-section">
-                <legend class="filter-legend">Може да помогне с:</legend>
-                <div class="checkbox-group">
+            <fieldset class="filter-section1">
+                <p class="filter-legend">Може да помогне с:</p>
+                <div class="checkbox-group2">
                     @foreach (var subject in allSubjects)
                     {
                         <label class="checkbox-item">
@@ -55,9 +55,9 @@ else
                 </div>
             </fieldset>
 
-            <fieldset class="filter-section">
-                <legend class="filter-legend">Търси помощ по:</legend>
-                <div class="checkbox-group">
+            <fieldset class="filter-section1">
+                <p class="filter-legend">Търси помощ по:</p>
+                <div class="checkbox-group2">
                     @foreach (var subject in allSubjects)
                     {
                         <label class="checkbox-item">
@@ -113,7 +113,7 @@ else
                 int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(student.student.Id).Where(s => s.Status == SwapStatus.Pending).Count();
                 int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(student.student.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
 
-                <div class="student-card">
+                <div class="student-card1">
                     @* Профилна, име и клас *@
                     <div class="student-header">
                         <img src="@AvatarManager.GetAvatarUrl(student.student.AvatarName)" alt="Avatar" class="filter-avatar" />
@@ -125,22 +125,26 @@ else
 
                     @* Предмети *@
                     <div class="student-subjects">
-                        <p class="text-label-help">Може да помогне с:</p>
-                        <div class="subjects-scroll">
-                            @foreach (var subj in student.student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
-                            {
-                                var isMatch = selectedCanHelpWith.Contains(subj);
-                                <span class="badge @(isMatch ? "badge-match1" : "badge-nonmatch")">@subj.GetDisplayName()</span>
-                            }
+                        <div class="subjects-and-label-container">
+                            <p class="text-label-help">Може да помогне с:</p>
+                            <div class="subjects-only-container">
+                                @foreach (var subj in student.student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                {
+                                    var isMatch = selectedCanHelpWith.Contains(subj);
+                                    <span class="badge @(isMatch ? "badge-match1" : "badge-nonmatch")">@subj.GetDisplayName()</span>
+                                }
+                            </div>
                         </div>
 
-                        <p class="text-label-help">Търси помощ по:</p>
-                        <div class="subjects-scroll">
-                            @foreach (var subj in student.student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
-                            {
-                                var isMatch = selectedNeedsHelpWith.Contains(subj);
-                                <span class="badge @(isMatch ? "badge-match1" : "badge-nonmatch")">@subj.GetDisplayName()</span>
-                            }
+                        <div class="subjects-and-label-container">
+                            <p class="text-label-help">Търси помощ по:</p>
+                            <div class="subjects-only-container">
+                                @foreach (var subj in student.student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                {
+                                    var isMatch = selectedNeedsHelpWith.Contains(subj);
+                                    <span class="badge @(isMatch ? "badge-match1" : "badge-nonmatch")">@subj.GetDisplayName()</span>
+                                }
+                            </div>
                         </div>
                     </div>
 
@@ -166,9 +170,9 @@ else
                             }
                             else if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && isAlreadySwapped)
                             {
-                                <button class="btn btn-primary" @onclick="() => GoToSwapDetails(swap)">Виж свапа</button>
+                                <button class="btn-primary" @onclick="() => GoToSwapDetails(swap)">Виж свапа</button>
                             }
-                            <button class="btn-secondary flex-fill" @onclick="() => ViewProfile(student.student)">Виж профила</button>
+                            <button class="btn-secondary" @onclick="() => ViewProfile(student.student)">Виж профила</button>
                         }
                         else
                         {

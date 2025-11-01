@@ -13,12 +13,11 @@ body {
     font-family: 'Inter', 'Segoe UI', sans-serif;
     color: var(--text-dark);
     padding: 80px;
-/*    height: 100vh;*/
 }
 
 /* ---------- КАРТИЧКА ---------- */
 .register-card {
-    background-color: var(--bg-accent);
+    background-color: #F0EDE9;
     width: 440px;
     padding: 40px 50px;
     border-radius: 24px;

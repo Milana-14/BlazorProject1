@@ -1,21 +1,21 @@
 ﻿/* ---------- ОБЩ ФОН ---------- */
-body {
+/*body {
     background-color: var(--bg-light);
     font-family: 'Inter', 'Segoe UI', sans-serif;
     color: var(--text-dark);
-}
+}*/
 
 /* ---------- СТРАНИЦА НА ВХОДА ---------- */
 .login-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 165px;
+    padding: 150px;
 }
 
 /* ---------- КАРТИЧКА ---------- */
 .login-card {
-    background-color: var(--bg-accent);
+    background-color: #F0EDE9;
     width: 440px;
     padding: 40px 50px 60px;
     border-radius: 24px;

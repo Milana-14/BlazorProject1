@@ -1,4 +1,11 @@
-﻿/* ---------- ФИЛЬТР ---------- */
+﻿/* ---------- ОБЩ ФОН ---------- */
+.body {
+    background-color: #F0EDE9;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: var(--text-dark);
+}
+
+/* ---------- ФИЛТЪР ---------- */
 .filter-all-container {
     display: flex;
     gap: 22px;
@@ -9,28 +16,43 @@
     gap: 10px;
 }
 
-.filter-section-grade {
-    background-color: var(--bg-light2);
+.filter-section-grade1 {
+    background-color: #FAF7F3;
+    width: 180px;
     border-radius: 16px;
-    padding: 5px 10px;
+    padding: 14px 16px;
 }
 
-.filter-section {
-    background-color: var(--bg-light2);
+.filter-section1 {
+    display: flex;
+    background-color: #FAF7F3;
     border-radius: 16px;
-    padding: 10px 5px;
+    padding: 12px 14px 4px 14px;
+    gap: 6px;
 }
 
 .filter-legend {
     font-size: 22px;
     font-weight: 600;
     color: var(--text-dark);
+    margin-bottom: 10px;
+    margin: 0;
+    white-space: nowrap;
 }
 
-.checkbox-group {
+.checkbox-group1 {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.checkbox-group2 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-left: 8px;
 }
 
 .checkbox-item {
@@ -62,16 +84,26 @@
     gap: 1rem;
 }
 
-/* ---------- КАРТОЧКА УЧЕНИКА ---------- */
-.student-card {
+/* ---------- КАРТИЧКА НА УЧЕНИКА ---------- */
+.student-card1 {
     flex: 0 0 calc(50% - 0.5rem);
-    background-color: var(--bg-accent);
+    background-color: #FAF7F3;
     border-radius: 16px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 12px;
     box-sizing: border-box;
+}
+
+.subjects-and-label-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.subjects-only-container {
+    margin-left: 4px;
 }
 
 /* ---------- ШАПКА УЧЕНИКА ---------- */
@@ -107,7 +139,7 @@
     color: #A0A0A0;
 }
 
-/* ---------- ПРЕДМЕТЫ ---------- */
+/* ---------- ПРЕДМЕТИ ---------- */
 .student-subjects p {
     margin: 0.25rem 0;
     font-weight: 500;
@@ -130,7 +162,31 @@
 
 /* ---------- БЕЙДЖИ ---------- */
 .hidden-checkbox {
-    display: none; /* скрываем стандартный чекбокс */
+    display: none;
+}
+
+.circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin: 3px;
+}
+
+.circle-nonactive {
+    background-color: #FFFDFB;
+    color: var(--text-dark);
+    font-weight: 420;
+}
+
+.circle-active {
+    background-color: var(--color-secondary);
+    color: var(--bg-light);
+    font-weight: 428;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .badge {
@@ -143,21 +199,26 @@
     background-color: var(--color-secondary);
     color: var(--bg-light);
     font-weight: 420;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    margin-left: 8px;
 }
 
 .badge-nonmatch {
     padding: 2px 5px;
-    background-color: var(--bg-light);
+    background-color: #FFFDFB;
     color: var(--text-dark);
     font-weight: 400;
+    margin-left: 8px;
 }
 
 .badge-filter-nonactive {
     padding: 4px 7px;
-    background-color: var(--bg-accent);
+    background-color: #FFFDFB;
     color: var(--text-dark);
     font-size: 16px;
     font-weight: 420;
+    margin-bottom: 6px;
+    margin-left: 8px;
 }
 
 .badge-filter-active {
@@ -166,10 +227,13 @@
     color: var(--bg-light);
     font-size: 16px;
     font-weight: 428;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    margin-bottom: 6px;
+    margin-left: 8px;
 }
 
 
-/* ---------- КНОПКИ ---------- */
+/* ---------- БУТОНИ ---------- */
 .sf-btn-row {
     display: flex;
     gap: 12px; /* расстояние между кнопками */
@@ -198,22 +262,22 @@
     font-size: 17px;
     margin-top: 8px;
     margin-right: 10px;
-    margin-bottom: 20px;
-    margin-top: 20px;
+    margin-bottom: 16px;
+    margin-top: 16px;
 }
 
 .btn-filter-secondary {
     width: 190px;
     height: 42px;
-    background-color: var(--bg-accent);
+    background-color: #FFFDFB;
     color: var(--color-primary);
     border-radius: 10px;
     cursor: pointer;
     font-weight: 470;
     font-size: 18px;
     margin-top: 8px;
-    margin-bottom: 20px;
-    margin-top: 20px;
+    margin-bottom: 16px;
+    margin-top: 16px;
 }
 
 .btn-primary {
@@ -231,12 +295,12 @@
 .btn-secondary {
     width: 100%;
     height: 40px;
-    background-color: var(--bg-light);
+    background-color: #FFFDFB;
     color: var(--text-dark);
     border-radius: 10px;
     cursor: pointer;
     font-weight: 470;
-    font-size: 16px;
+    font-size: 18px;
     margin-top: 6px;
 }
 
@@ -248,7 +312,7 @@
     border-radius: 10px;
     cursor: pointer;
     font-weight: 470;
-    font-size: 16px;
+    font-size: 18px;
     margin-top: 6px;
 }
 
@@ -260,44 +324,9 @@
     margin-top: auto;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*.student-card {
-    background-color: var(--bg-accent);*/ /* здесь выбираешь свой цвет */
-    /*border-radius: 16px;*/ /* можно настроить скругление */
-    /*padding: 1rem;*/ /* внутренние отступы */
-    /*display: flex;
-    flex-direction: column;
-    gap: 0.5rem;*/ /* расстояние между элементами */
-/*}*/
-
-/* ---------- БЕЙДЖИ ---------- */
-/*.badge-match {
-    padding: 2px 5px;
-    background-color: var(--color-secondary);
-    color: var(--bg-light);
-    font-weight: 500;
-    border-radius: 8px;
+hr {
+    border: none;
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.15);
+    margin-bottom: 20px;
 }
-
-.badge-nonmatch {
-    padding: 2px 5px;
-    background-color: var(--bg-light);
-    color: #787878;
-    font-weight: 400;
-    border-radius: 8px;
-}*/

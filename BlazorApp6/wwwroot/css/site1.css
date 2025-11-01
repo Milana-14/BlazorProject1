@@ -1,9 +1,8 @@
 ﻿:root {
     /* Фонове */
     --bg-light: #FFFDFB;
-    --bg-light2: #FAF7F3;
-    --bg-accent: #F0EDE9;
-    --bg-profile: #F2EFEA;
+    --bg-middle: #FAF7F3;
+    --bg-dark: #F0EDE9;
 
     /* Сайдбар */
     --sb-light: #8B6D86;
@@ -16,8 +15,4 @@
     /* Текст */
     --text-dark: #787878;
     --text-light: #FFFFFF;
-}
-
-body {
-
 }
