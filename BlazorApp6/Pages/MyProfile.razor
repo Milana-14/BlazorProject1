@@ -17,24 +17,41 @@ else if (student is not null)
 {
     @if (!isEditing)
     {
-        <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="rounded-circle avatar-xl" />
-        <p><strong>Име:</strong> @student.FirstName</p>
-        <p><strong>Фамилия:</strong> @student.SecName</p>
-        <p><strong>Клас:</strong> @student.Grade</p>
-        <p><strong>Имейл:</strong> @student.Email</p>
+        <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="profile-avatar" />
+        <p class="text-username">@student.FirstName @student.SecName</p>
+        <p class="text-grade">Клас: @student.Grade</p>
 
         allSwaps = SwapManager.FindSwapsByStudentId(student.Id);
         averageRating = (student.HelpGivenCount == 0) ? 0 : student.HelpRatings.Sum() / student.HelpGivenCount;
 
-        <p>Активни свапове: @allSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
-        <p>Общо свапове: @allSwaps.Count()</p>
-        <p>Рейтинг: @Math.Round(averageRating, 1)</p>
-        <p>Монети: @student.Coins</p>
+        <div class="profile-container-stats">
+            <p>Активни свапове: @allSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
+            <p>Общо свапове: @allSwaps.Count()</p>
+            <p>Рейтинг: @Math.Round(averageRating, 1)</p>
+            <p>Монети: @student.Coins</p>
+        </div>
 
-        <p><strong>Мога да помогна с:</strong> @string.Join(", ", student.CanHelpWith.Select(s => s.GetDisplayName()))</p>
-        <p><strong>Нуждая се от помощ по:</strong> @string.Join(", ", student.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
+        <div class="profile-container-persinfo">
+            <div>
+                <p class="text-help-with">Мога да помогна по:</p>
+                @foreach (var subj in student.CanHelpWith.Select(s => s.GetDisplayName()))
+                {
+                    <span class="badge-match">@subj</span>
+                }
+            </div>
+            <div>
+                <p class="text-help-with">Търся помощ по:</p>
+                @foreach (var subj in student.NeedsHelpWith.Select(s => s.GetDisplayName()))
+                {
+                    <span class="badge-match">@subj</span>
+                }
+            </div>
 
-        <button class="btn btn-primary" @onclick="() => isEditing = true">Редактиране</button>
+            <p><strong>Имейл:</strong> @student.Email</p>
+
+            <button class="btn btn-primary" @onclick="() => isEditing = true">Редактиране</button>
+        </div>
+
         <button class="btn btn-secondary" @onclick="ExitProfile">Изход</button>
     }
     else

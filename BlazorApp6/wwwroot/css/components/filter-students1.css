@@ -22,10 +22,9 @@
 }
 
 .filter-legend {
-    font-size: 1.2rem;
+    font-size: 22px;
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #333;
+    color: var(--text-dark);
 }
 
 .checkbox-group {
@@ -50,7 +49,7 @@
 }
 
 .text-label-help {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
     margin-top: 4px;
     color: var(--color-primary);
@@ -82,9 +81,9 @@
     gap: 0.75rem;
 }
 
-.avatar-lg {
-    width: 88px;
-    height: 88px;
+.filter-avatar {
+    width: 74px;
+    height: 74px;
     border-radius: 50%;
     object-fit: cover;
     margin-right: 8px;
@@ -96,13 +95,15 @@
 }
 
 .student-name {
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 500;
     color: var(--color-primary);
 }
 
 .student-grade {
     font-size: 16px;
+    font-weight: 350;
+    padding-top: 1px;
     color: #A0A0A0;
 }
 
@@ -128,16 +129,20 @@
     }
 
 /* ---------- БЕЙДЖИ ---------- */
+.hidden-checkbox {
+    display: none; /* скрываем стандартный чекбокс */
+}
+
 .badge {
     padding: 2px 5px;
     border-radius: 8px;
 }
 
-.badge-match {
+.badge-match1 {
     padding: 2px 5px;
     background-color: var(--color-secondary);
     color: var(--bg-light);
-    font-weight: 500;
+    font-weight: 420;
 }
 
 .badge-nonmatch {
@@ -146,6 +151,23 @@
     color: var(--text-dark);
     font-weight: 400;
 }
+
+.badge-filter-nonactive {
+    padding: 4px 7px;
+    background-color: var(--bg-accent);
+    color: var(--text-dark);
+    font-size: 16px;
+    font-weight: 420;
+}
+
+.badge-filter-active {
+    padding: 4px 7px;
+    background-color: var(--color-secondary);
+    color: var(--bg-light);
+    font-size: 16px;
+    font-weight: 428;
+}
+
 
 /* ---------- КНОПКИ ---------- */
 .sf-btn-row {
@@ -156,7 +178,7 @@
 
 .sf-btn-row button {
     flex: 1; /*кнопки одинаковой ширины */
-    min-width: 120px; /* минимальная ширина */
+    min-width: 110px; /* минимальная ширина */
 }
 
 .sf-btn-row-noflex button {

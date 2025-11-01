@@ -38,24 +38,25 @@
 }
 
 /* ---------- Навигация ---------- */
-.nav-menu {
+.logged-nav-menu {
     position: absolute;
-    top: var(--nav-top, 300px); /* регулируешь вертикальное положение */
-    left: var(--nav-left, 95px); /* регулируешь горизонтальное положение */
+    top: var(--nav-top, 100px); /* регулируешь вертикальное положение */
+    left: var(--nav-left, 60px); /* регулируешь горизонтальное положение */
 }
 
-.nav-menu nav {
+.logged-nav-menu nav {
     display: flex;
     flex-direction: column;
-    gap: 40px; /* расстояние между ссылками */
+    gap: 36px; /* расстояние между ссылками */
 }
 
-.nav-item {
+.logged-nav-item {
     width: 100%;
     font-size: var(--nav-item-font-size, 14px);
+    font-weight: 380;
 }
 
-.nav-link {
+.logged-nav-link {
     display: block;
     color: white;
     font-size: var(--nav-font-size, 18px);

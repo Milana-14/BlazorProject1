@@ -27,4 +27,8 @@
     <Folder Include="wwwroot\avatars\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\css\components\my-profile.css" />
+  </ItemGroup>
+
 </Project>
