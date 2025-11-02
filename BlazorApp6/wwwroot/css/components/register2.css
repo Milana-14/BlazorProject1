@@ -1,18 +1,19 @@
 ﻿/* ---------- ОБЩ ФОН ---------- */
-body {
-    background-color: var(--bg-light);
+/*body {
+    background-color: #FFFDFB;
     font-family: 'Inter', 'Segoe UI', sans-serif;
     color: var(--text-dark);
-}
+}*/
 
 .register-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--bg-light);
+    background-color: #FFFDFB;
     font-family: 'Inter', 'Segoe UI', sans-serif;
     color: var(--text-dark);
     padding: 80px;
+    margin: -100px;
 }
 
 /* ---------- КАРТИЧКА ---------- */
@@ -26,13 +27,15 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 15px;
+    box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.06), inset -3px -3px 6px rgba(255, 255, 255, 0.5);
 }
+
 
 /* ---------- ЗАГЛАВИЕ ---------- */
 .register-card h3 {
     font-size: 32px;
     margin-bottom: 30px;
-    color: var(--color-primary);
+    color: rgba(69, 61, 68, 0.8);
     font-weight: 600;
 }
 
@@ -54,39 +57,42 @@ body {
     width: 100%;
 }
 
-.name-row .register-input {
-    width: 100%;
-    height: 40px;
-    border-radius: 12px;
-    background-color: var(--bg-light);
-    color: var(--text-dark);
-    font-size: 1rem;
-    padding-left: 12px;
-}
+    .name-row .register-input {
+        width: 100%;
+        height: 40px;
+        border-radius: 12px;
+        background-color: #FFFDFB;
+        color: rgba(69, 61, 68, 0.7);
+        font-size: 1rem;
+        padding-left: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
 
 
 .register-input {
     width: 400px;
     height: 40px;
     border-radius: 12px;
-    background-color: var(--bg-light);
-    color: var(--text-dark);
+    background-color: #FFFDFB;
+    color: rgba(69, 61, 68, 0.7);
     font-size: 1rem;
     padding-left: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* ---------- БУТОН ---------- */
 .btn-register {
     width: 400px;
     height: 45px;
-    background-color: var(--color-primary);
-    color: var(--text-light);
+    background-color: #70646E;
+    color: #FFFDFB;
     border: none;
     border-radius: 12px;
     cursor: pointer;
     font-weight: 600;
     font-size: 1rem;
     margin-top: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 @media (max-width: 480px) {

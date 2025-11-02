@@ -2,8 +2,34 @@
 .body {
     background-color: #F0EDE9;
     font-family: 'Inter', 'Segoe UI', sans-serif;
-    color: var(--text-dark);
 }
+
+.filter-header-container {
+    display: grid;
+}
+
+.filter-header {
+    margin-bottom: 6px;
+/*    background-color: #FAF7F3;*/
+    padding: 4px 24px 16px 24px;
+/*    border-radius: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);*/
+}
+
+.filter-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: #453D44;
+    margin-bottom: 6px;
+}
+
+.filter-description {
+    font-size: 17px;
+    color: rgba(69, 61, 68, 0.8);
+    line-height: 1.5;
+    margin: 0;
+}
+
 
 /* ---------- ФИЛТЪР ---------- */
 .filter-all-container {
@@ -21,6 +47,7 @@
     width: 180px;
     border-radius: 16px;
     padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .filter-section1 {
@@ -29,12 +56,13 @@
     border-radius: 16px;
     padding: 12px 14px 4px 14px;
     gap: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .filter-legend {
     font-size: 22px;
     font-weight: 600;
-    color: var(--text-dark);
+    color: #453D44;
     margin-bottom: 10px;
     margin: 0;
     white-space: nowrap;
@@ -67,14 +95,14 @@
     font-size: 18px;
     font-weight: 400;
     margin-bottom: 20px;
-    color: #757575;
+    color: rgba(69, 61, 68, 0.7);
 }
 
 .text-label-help {
     font-size: 16px;
     font-weight: 400;
     margin-top: 4px;
-    color: var(--color-primary);
+    color: #453D44;
 }
 
 /* ---------- КОНТЕЙНЕР УЧЕНИКОВ ---------- */
@@ -94,6 +122,11 @@
     flex-direction: column;
     gap: 12px;
     box-sizing: border-box;
+/*        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);*/
+    /*    box-shadow: -3px -3px 6px rgba(255, 255, 255, 0.6), 3px 3px 6px rgba(0, 0, 0, 0.08);*/
+    /*    box-shadow: -4px -4px 8px rgba(255, 255, 255, 0.9), 4px 4px 8px rgba(0, 0, 0, 0.1);*/
+/*    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 3px 8px rgba(0, 0, 0, 0.1);*/
+    box-shadow: inset 0 1px 6px rgba(255, 255, 255, 0.8), 0 4px 10px rgba(0, 0, 0, 0.06);
 }
 
 .subjects-and-label-container {
@@ -129,14 +162,14 @@
 .student-name {
     font-size: 28px;
     font-weight: 500;
-    color: var(--color-primary);
+    color: #453D44;
 }
 
 .student-grade {
     font-size: 16px;
     font-weight: 350;
     padding-top: 1px;
-    color: #A0A0A0;
+    color: rgba(69, 61, 68, 0.7);
 }
 
 /* ---------- ПРЕДМЕТИ ---------- */
@@ -178,13 +211,14 @@
 
 .circle-nonactive {
     background-color: #FFFDFB;
-    color: var(--text-dark);
+    color: #453D44;
     font-weight: 420;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .circle-active {
-    background-color: var(--color-secondary);
-    color: var(--bg-light);
+    background-color: #B8AEB6;
+    color: #FFFDFB;
     font-weight: 428;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
@@ -195,9 +229,9 @@
 }
 
 .badge-match1 {
-    padding: 2px 5px;
-    background-color: var(--color-secondary);
-    color: var(--bg-light);
+    padding: 3px 5px;
+    background-color: #B8AEB6;
+    color: #FFFDFB;
     font-weight: 420;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     margin-left: 8px;
@@ -206,25 +240,27 @@
 .badge-nonmatch {
     padding: 2px 5px;
     background-color: #FFFDFB;
-    color: var(--text-dark);
+    color: #453D44;
     font-weight: 400;
     margin-left: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .badge-filter-nonactive {
     padding: 4px 7px;
     background-color: #FFFDFB;
-    color: var(--text-dark);
+    color: #453D44;
     font-size: 16px;
     font-weight: 420;
     margin-bottom: 6px;
     margin-left: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .badge-filter-active {
     padding: 4px 7px;
-    background-color: var(--color-secondary);
-    color: var(--bg-light);
+    background-color: #B8AEB6;
+    color: #FFFDFB;
     font-size: 16px;
     font-weight: 428;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -254,23 +290,24 @@
 .btn-filter-primary {
     width: 190px;
     height: 42px;
-    background-color: var(--color-primary);
-    color: var(--text-light);
+    background-color: #70646E;
+    color: #FFFDFB;
     border-radius: 10px;
     cursor: pointer;
-    font-weight: 470;
-    font-size: 17px;
+    font-weight: 500;
+    font-size: 18px;
     margin-top: 8px;
     margin-right: 10px;
     margin-bottom: 16px;
     margin-top: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .btn-filter-secondary {
     width: 190px;
     height: 42px;
     background-color: #FFFDFB;
-    color: var(--color-primary);
+    color: #453D44;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 470;
@@ -278,42 +315,46 @@
     margin-top: 8px;
     margin-bottom: 16px;
     margin-top: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .btn-primary {
     width: 100%;
     height: 40px;
-    background-color: var(--color-primary);
-    color: var(--text-light);
+    background-color: #70646E;
+    color: #FFFDFB;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 470;
     font-size: 16px;
     margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .btn-secondary {
     width: 100%;
     height: 40px;
     background-color: #FFFDFB;
-    color: var(--text-dark);
+    color: #453D44;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 470;
     font-size: 18px;
     margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
 }
 
 .btn-secondary-warn {
     width: 100%;
     height: 40px;
-    background-color: var(--bg-light);
-    color: var(--text-dark);
+    background-color: #FFFDFB;
+    color: #453D44;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 470;
     font-size: 18px;
     margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* ---------- КОНТЕЙНЕР ДЛЯ КНОПОК ---------- */
@@ -328,5 +369,6 @@ hr {
     border: none;
     height: 1px;
     background-color: rgba(0, 0, 0, 0.15);
-    margin-bottom: 20px;
+    margin-top: 4px;
+    margin-bottom: 24px;
 }

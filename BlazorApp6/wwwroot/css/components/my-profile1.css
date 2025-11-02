@@ -1,5 +1,5 @@
 ﻿body {
-    background-color: var(--bg-accent);
+    background-color: #F0EDE9;
 }
 
 /* ---------- ПРОФИЛНА ---------- */
@@ -14,20 +14,20 @@
 .text-username {
     font-size: 32px;
     font-weight: 500;
-    color: var(--color-primary);
+    color: #453D44;
 }
 
 .text-grade {
     font-size: 16px;
     font-weight: 350;
     padding-top: 1px;
-    color: #A0A0A0;
+    color: rgba(69, 61, 68, 0.7);
 }
 
 /* ---------- КОНТЕЙНЕРИ ---------- */
 .profile-container-stats {
     flex: 0 0 calc(50% - 0.5rem);
-    background-color: var(--bg-light);
+    background-color: #FFFDFB;
     border-radius: 16px;
     padding: 20px;
     padding-top: 54px;
@@ -39,7 +39,7 @@
 
 .profile-container-persinfo {
     flex: 0 0 calc(50% - 0.5rem);
-    background-color: var(--bg-light);
+    background-color: #FFFDFB;
     border-radius: 16px;
     padding: 1rem;
     display: flex;
@@ -52,7 +52,7 @@
 .badge-match {
     padding: 2px 5px;
     border-radius: 8px;
-    background-color: var(--color-secondary);
-    color: var(--bg-light);
+    background-color: #B8AEB6;
+    color: #FFFDFB;
     font-weight: 420;
 }

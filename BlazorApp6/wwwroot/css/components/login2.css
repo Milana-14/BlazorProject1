@@ -1,16 +1,12 @@
-﻿/* ---------- ОБЩ ФОН ---------- */
-/*body {
-    background-color: var(--bg-light);
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    color: var(--text-dark);
-}*/
-
-/* ---------- СТРАНИЦА НА ВХОДА ---------- */
+﻿/* ---------- ФОН ---------- */
 .login-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 150px;
+    background-color: #FFFDFB;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: var(--text-dark);
+    margin: -100px;
 }
 
 /* ---------- КАРТИЧКА ---------- */
@@ -18,21 +14,23 @@
     background-color: #F0EDE9;
     width: 440px;
     padding: 40px 50px 60px;
+    margin: 150px;
     border-radius: 24px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
+    box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.06), inset -3px -3px 6px rgba(255, 255, 255, 0.5);
 }
 
 /* ---------- ЗАГЛАВИЕ ---------- */
-.login-card h3 {
-    font-size: 32px;
-    margin-bottom: 30px;
-    color: var(--color-primary);
-    font-weight: 600;
-}
+    .login-card h3 {
+        font-size: 32px;
+        margin-bottom: 30px;
+        color: rgba(69, 61, 68, 0.8);
+        font-weight: 600;
+    }
 
 /* ---------- ИНПУТ ---------- */
 .login-form {
@@ -44,24 +42,26 @@
     width: 400px;
     height: 41px;
     border-radius: 12px;
-    background-color: var(--bg-light);
-    color: var(--text-dark);
+    background-color: #FFFDFB;
+    color: rgba(69, 61, 68, 0.7);
     font-size: 1rem;
     padding-left: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* ---------- БУТОН ---------- */
 .btn-login {
     width: 400px;
     height: 45px;
-    background-color: var(--color-primary);
-    color: var(--text-light);
+    background-color: #70646E;
+    color: #FFFDFB;
     border: none;
     border-radius: 12px;
     cursor: pointer;
     font-weight: 600;
     font-size: 1rem;
     margin-top: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* ---------- СООБЩЕНИЯ ЗА ГРЕШКИ ---------- */

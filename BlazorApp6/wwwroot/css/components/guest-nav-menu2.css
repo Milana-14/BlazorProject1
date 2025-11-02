@@ -8,7 +8,7 @@
     position: relative; /* важно: для абсолютного позиционирования внутри */
     width: 240px;
     height: 100vh;
-    background: linear-gradient(to bottom, var(--sb-light), var(--sb-dark));
+    background: linear-gradient(to bottom, #8B6D86, #3E363D);
     display: flex;
     flex-direction: column;
 }
@@ -17,7 +17,7 @@
 .navbar-container {
     height: 80px;
     width: 100%;
-    background: linear-gradient(to left, #5E485A, var(--sb-dark));
+    background: linear-gradient(to left, #5E485A, #3E363D);
     display: flex;
     align-items: center;
     padding-left: var(--navbar-padding-left, 20px);
