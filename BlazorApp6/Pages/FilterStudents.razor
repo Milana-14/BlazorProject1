@@ -7,6 +7,8 @@
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
 
+<div class="main-page">
+
 @if (currentStudent == null)
 {
     <p>Моля, влезте в профила си</p>
@@ -201,7 +203,7 @@ else
                   isRequiringHelp="@modalIsHelping"
                   OnClose="SendRequestForSwapAndCloseModal" />
 
-
+</div>
 
 @code {
     private Student? currentStudent;

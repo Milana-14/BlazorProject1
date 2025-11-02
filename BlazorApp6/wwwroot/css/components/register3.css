@@ -1,20 +1,15 @@
-﻿/* ---------- ОБЩ ФОН ---------- */
-/*body {
-    background-color: #FFFDFB;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    color: var(--text-dark);
-}*/
-
+﻿/* ---------- ФОН ---------- */
 .register-page {
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 90vh;
+    width: 100%;
     background-color: #FFFDFB;
     font-family: 'Inter', 'Segoe UI', sans-serif;
-    color: var(--text-dark);
-    padding: 80px;
-    margin: -100px;
+    margin-left: 240px;
 }
+
 
 /* ---------- КАРТИЧКА ---------- */
 .register-card {

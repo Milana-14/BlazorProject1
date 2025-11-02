@@ -27,7 +27,7 @@ namespace BlazorApp6.Models
         [Display(Name = "География")]
         Geograpty,
 
-        [Display(Name = "Английский")]
+        [Display(Name = "Английски език")]
         English,
 
         [Display(Name = "Литература")]

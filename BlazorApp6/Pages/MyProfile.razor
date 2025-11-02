@@ -7,52 +7,79 @@
 @inject SwapManager SwapManager
 @rendermode InteractiveServer
 
+<div class="main-page">
+
 @if (student == null)
 {
     <p>Моля, влезте в профила си</p>
 }
 else if (student is not null)
 {
-    <h3>Мой профил</h3>
-
     @if (!isEditing)
     {
-        <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="profile-avatar" />
-        <p class="text-username">@student.FirstName @student.SecName</p>
-        <p class="text-grade">Клас: @student.Grade</p>
-
         allSwaps = SwapManager.FindSwapsByStudentId(student.Id);
         averageRating = (student.HelpGivenCount == 0) ? 0 : student.HelpRatings.Sum() / student.HelpGivenCount;
+        <div class="profile-all-containers">
+                <div class="profile-main-info-container">
+                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="profile-avatar" />
+                    <div class="profile-username-grade-container">
+                        <p class="text-username">@student.FirstName @student.SecName</p>
+                        <p class="text-grade">Клас: @student.Grade</p>
+                    </div>
+                </div>
 
-        <div class="profile-container-stats">
-            <p>Активни свапове: @allSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
-            <p>Общо свапове: @allSwaps.Count()</p>
-            <p>Рейтинг: @Math.Round(averageRating, 1)</p>
-            <p>Монети: @student.Coins</p>
+                <div class="profile-sections">
+                    <div class="profile-container-stats">
+                        <div class="stat-all">
+                            <p class="stat-value">@allSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
+                            <p class="stat-label">Активни свапове</p>
+                        </div>
+                        <div class="stat-all">
+                            <p class="stat-value">@allSwaps.Count()</p>
+                            <p class="stat-label">Общо свапове</p>
+                        </div>
+                        <div class="stat-all">
+                            <p class="stat-value">@Math.Round(averageRating, 1)</p>
+                            <p class="stat-label">Рейтинг</p>
+                        </div>
+                        <div class="stat-all">
+                            <p class="stat-value">@student.Coins</p>
+                            <p class="stat-label">Монети</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-container-persinfo">
+                        <div>
+                            <p class="text-help-with">Мога да помогна по:</p>
+                            @foreach (var subj in student.CanHelpWith.Select(s => s.GetDisplayName()))
+                            {
+                                <span class="badge-match">@subj</span>
+                            }
+                        </div>
+                        <div>
+                            <p class="text-help-with">Търся помощ по:</p>
+                            @foreach (var subj in student.NeedsHelpWith.Select(s => s.GetDisplayName()))
+                            {
+                                <span class="badge-match">@subj</span>
+                            }
+                        </div>
+
+                        <p>Имейл:</p>
+                        <p>@student.Email</p>
+
+                        <button class="btn-profile-secondary" @onclick="() => isEditing = true">Редактирай</button>
+                    </div>
+                </div>
+
+
+                <div class="profile-reviews-container">
+                    <p>Отзиви за мен</p>
+                    <p>от ученици, на когото съм помогнал(а)</p>
+                </div>
         </div>
 
-        <div class="profile-container-persinfo">
-            <div>
-                <p class="text-help-with">Мога да помогна по:</p>
-                @foreach (var subj in student.CanHelpWith.Select(s => s.GetDisplayName()))
-                {
-                    <span class="badge-match">@subj</span>
-                }
-            </div>
-            <div>
-                <p class="text-help-with">Търся помощ по:</p>
-                @foreach (var subj in student.NeedsHelpWith.Select(s => s.GetDisplayName()))
-                {
-                    <span class="badge-match">@subj</span>
-                }
-            </div>
 
-            <p><strong>Имейл:</strong> @student.Email</p>
-
-            <button class="btn btn-primary" @onclick="() => isEditing = true">Редактиране</button>
-        </div>
-
-        <button class="btn btn-secondary" @onclick="ExitProfile">Изход</button>
+        <button class="btn-profile-secondary-warn" @onclick="ExitProfile">Изход</button>
     }
     else
     {
@@ -134,7 +161,7 @@ else if (student is not null)
         <div class="alert alert-success mt-3">Промените са запазени!</div>
     }
 }
-
+</div>
 
 @code {
     private Student? student;
@@ -216,33 +243,3 @@ else if (student is not null)
         Navigation.NavigateTo("/login");
     }
 }
-
-<style>
-    
-
-    .checkbox-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        flex: 1 1 auto;
-    }
-
-        .checkbox-group > div {
-            flex: 0 0 auto;
-            min-width: 45px;
-        }
-
-    .form-check-label {
-        user-select: none;
-        font-size: 0.9rem;
-        white-space: nowrap;
-    }
-
-    .avatar-xl {
-        width: 160px;
-        height: 160px;
-        object-fit: cover;
-        border-radius: 50%;
-        display: block;
-    }
-</style>

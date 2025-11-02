@@ -1,7 +1,11 @@
 ﻿/* ---------- ОБЩ ФОН ---------- */
-.body {
+body {
     background-color: #F0EDE9;
     font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.main-content {
+    margin-left: 240px;
 }
 
 .filter-header-container {
@@ -10,10 +14,7 @@
 
 .filter-header {
     margin-bottom: 6px;
-/*    background-color: #FAF7F3;*/
     padding: 4px 24px 16px 24px;
-/*    border-radius: 16px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);*/
 }
 
 .filter-title {
@@ -92,8 +93,8 @@
 }
 
 .text-found-students {
-    font-size: 18px;
-    font-weight: 400;
+    font-size: 16px;
+    font-weight: 500;
     margin-bottom: 20px;
     color: rgba(69, 61, 68, 0.7);
 }
@@ -105,7 +106,7 @@
     color: #453D44;
 }
 
-/* ---------- КОНТЕЙНЕР УЧЕНИКОВ ---------- */
+/* ---------- КОНТЕЙНЕР ЗА УЧЕНИЦИТЕ ---------- */
 .students-container {
     display: flex;
     flex-wrap: wrap;
@@ -122,10 +123,6 @@
     flex-direction: column;
     gap: 12px;
     box-sizing: border-box;
-/*        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);*/
-    /*    box-shadow: -3px -3px 6px rgba(255, 255, 255, 0.6), 3px 3px 6px rgba(0, 0, 0, 0.08);*/
-    /*    box-shadow: -4px -4px 8px rgba(255, 255, 255, 0.9), 4px 4px 8px rgba(0, 0, 0, 0.1);*/
-/*    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 3px 8px rgba(0, 0, 0, 0.1);*/
     box-shadow: inset 0 1px 6px rgba(255, 255, 255, 0.8), 0 4px 10px rgba(0, 0, 0, 0.06);
 }
 
@@ -139,7 +136,7 @@
     margin-left: 4px;
 }
 
-/* ---------- ШАПКА УЧЕНИКА ---------- */
+/* ---------- ИНФОРМАЦИЯ ЗА УЧЕНИКА ---------- */
 .student-header {
     display: flex;
     align-items: center;
@@ -272,13 +269,13 @@
 /* ---------- БУТОНИ ---------- */
 .sf-btn-row {
     display: flex;
-    gap: 12px; /* расстояние между кнопками */
-    flex-wrap: wrap; /* чтобы при маленьком экране кнопки переносились */
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .sf-btn-row button {
-    flex: 1; /*кнопки одинаковой ширины */
-    min-width: 110px; /* минимальная ширина */
+    flex: 1;
+    min-width: 110px;
 }
 
 .sf-btn-row-noflex button {
@@ -355,6 +352,28 @@
     font-size: 18px;
     margin-top: 6px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+button:disabled,
+button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-primary:disabled,
+.btn-primary[disabled],
+.btn-filter-primary:disabled {
+    background-color: #B8AEB6;
+    color: #F6F3F1;
+}
+
+.btn-secondary:disabled,
+.btn-secondary[disabled],
+.btn-filter-secondary:disabled {
+    background-color: #F4F2EF;
+    color: rgba(69, 61, 68, 0.5);
 }
 
 /* ---------- КОНТЕЙНЕР ДЛЯ КНОПОК ---------- */

@@ -1,13 +1,21 @@
-﻿/* ---------- ФОН ---------- */
+﻿.login-page,
+.login-page .page,
+.login-page main {
+    background-color: #FFFDFB !important;
+}
+
 .login-page {
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 90vh;
+    width: 100%;
     background-color: #FFFDFB;
     font-family: 'Inter', 'Segoe UI', sans-serif;
-    color: var(--text-dark);
-    margin: -100px;
+    margin-left: 240px;
 }
+
+
 
 /* ---------- КАРТИЧКА ---------- */
 .login-card {

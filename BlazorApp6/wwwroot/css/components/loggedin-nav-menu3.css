@@ -5,12 +5,15 @@
 
 /* ---------- САЙДБАР ---------- */
 .sidebar {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 240px;
     height: 100vh;
     background: linear-gradient(to bottom, #8B6D86, #3E363D);
     display: flex;
     flex-direction: column;
+    z-index: 100;
 }
 
 /* ---------- ГОРНАТА ЧАСТ (EduSwaps) ---------- */

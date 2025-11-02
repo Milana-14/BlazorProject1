@@ -2,57 +2,160 @@
     background-color: #F0EDE9;
 }
 
-/* ---------- ПРОФИЛНА ---------- */
+.main-page {
+    margin-left: 240px;
+}
+
+/* ---------- ГЛАВЕН КОНТЕЙНЕР ---------- */
+.profile-all-containers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+        "info reviews"
+        "sections reviews";
+    gap: 24px;
+    align-items: start;
+    position: relative;
+    margin: 32px;
+}
+
+/* ---------- ГОРНА ЧАСТ: ПРОФИЛНА + ИМЕ ---------- */
+.profile-main-info-container {
+    grid-area: info;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    bottom: -44px;
+    left: -12px;
+}
+
 .profile-avatar {
     width: 120px;
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    margin-right: 8px;
+    position: absolute;
+    bottom: -40px;
+    left: 32px;
+    z-index: 3;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-username-grade-container {
+    margin-left: 170px;
 }
 
 .text-username {
     font-size: 32px;
     font-weight: 500;
     color: #453D44;
+    margin-bottom: 4px;
 }
 
 .text-grade {
     font-size: 16px;
-    font-weight: 350;
-    padding-top: 1px;
+    font-weight: 400;
     color: rgba(69, 61, 68, 0.7);
 }
 
-/* ---------- КОНТЕЙНЕРИ ---------- */
-.profile-container-stats {
-    flex: 0 0 calc(50% - 0.5rem);
-    background-color: #FFFDFB;
-    border-radius: 16px;
-    padding: 20px;
-    padding-top: 54px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    box-sizing: border-box;
+/* ---------- ЛЕВИ КОНТЕЙНЕРИ: СТАТИСТИКА + ИНФОРМАЦИЯ ---------- */
+.profile-sections {
+    grid-area: sections;
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 24px;
+    margin-top: 32px;
 }
 
-.profile-container-persinfo {
-    flex: 0 0 calc(50% - 0.5rem);
+/* ---------- СТАТИСТИКА ---------- */
+.profile-container-stats {
     background-color: #FFFDFB;
     border-radius: 16px;
-    padding: 1rem;
+    padding: 48px 32px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 8px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.stat-all {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 80px;
+}
+
+.stat-value {
+    font-size: 26px;
+    font-weight: 500;
+    color: #453D44;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(69, 61, 68, 0.7);
+}
+
+/* ---------- ЛИЧНА ИНФОРМАЦИЯ ---------- */
+.profile-container-persinfo {
+    background-color: #FFFDFB;
+    border-radius: 16px;
+    padding: 32px;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     box-sizing: border-box;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ---------- ОТЗИВИ (ОТДЯСНО) ---------- */
+.profile-reviews-container {
+    grid-area: reviews;
+    background-color: #FFFDFB;
+    border-radius: 16px;
+    padding: 32px;
+    min-height: 400px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-top: 118px;
 }
 
 /* ---------- БЕЙДЖИ ---------- */
 .badge-match {
-    padding: 2px 5px;
+    padding: 3px 8px;
     border-radius: 8px;
     background-color: #B8AEB6;
     color: #FFFDFB;
     font-weight: 420;
+}
+
+/* ---------- БУТОНИ ---------- */
+.btn-profile-secondary,
+.btn-profile-secondary-warn {
+    width: 180px;
+    height: 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 18px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-profile-secondary {
+    background-color: #F0EDE9;
+    color: #453D44;
+}
+
+.btn-profile-secondary-warn {
+    background-color: #FFFDFB;
+    color: darkred;
 }
