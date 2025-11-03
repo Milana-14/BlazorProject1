@@ -4,13 +4,13 @@
 
 @if (IsOpen)
 {
-    <div class="modal">
+    <div class="modal-request">
         <div class="modal-content">
             <div class="d-flex align-items-center gap-3 mb-3">
-                <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="rounded-circle avatar-lg" />
-                <div>
-                    <h4 class="fw-semibold mb-1">@student.FirstName @student.SecName</h4>
-                    <p class="text-muted small mb-0">Клас: @student.Grade</p>
+                <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="filter-avatar" />
+                <div class="username-grade-modal">
+                    <h4 class="student-name">@student.FirstName @student.SecName</h4>
+                    <p class="student-grade">Клас: @student.Grade</p>
                 </div>
             </div>
 
@@ -21,7 +21,7 @@
                 <div class="match-subjects-scroll mb-2">
                     @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                     {
-                        <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@subj.GetDisplayName()</span>
+                        <span class="badge badge-match1">@subj.GetDisplayName()</span>
                     }
                 </div>
             }
@@ -31,7 +31,7 @@
                 <div class="match-subjects-scroll mb-2">
                     @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
                     {
-                        <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@subj.GetDisplayName()</span>
+                        <span class="badge badge-match1">@subj.GetDisplayName()</span>
                     }
                 </div>
             }
@@ -55,9 +55,9 @@
             </div>
 
 
-            <div class="modal-actions mt-3">
-                <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="SendRequest">Изпрати заявка</button>
+            <div class="modal-buttons-group">
                 <button class="btn btn-secondary" @onclick="Cancel">Назад</button>
+                <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="SendRequest">Изпрати заявка</button>
             </div>
         </div>
     </div>
@@ -98,30 +98,6 @@
 }
 
 <style>
-    .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
-        z-index: 999;
-    }
-
-    .modal-content {
-        background: #fff;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 500px;
-        width: 100%;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-    }
-
     .close {
         position: absolute;
         top: 10px;
@@ -130,21 +106,5 @@
         font-weight: bold;
         color: #333;
         cursor: pointer;
-    }
-
-    .badge-match {
-        background-color: #e6f0ff;
-        color: #003366;
-        font-weight: 600;
-    }
-
-    .avatar-lg {
-        width: 64px;
-        height: 64px;
-        max-width: 100%;
-        object-fit: cover;
-        display: block;
-        border-radius: 50%;
-        overflow: hidden;
     }
 </style>
