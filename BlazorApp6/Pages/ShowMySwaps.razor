@@ -7,6 +7,8 @@
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
 
+
+<div class="myswaps-page">
 @if (currentStudent == null)
 {
     <p>Моля, влезте в профила си</p>
@@ -231,6 +233,7 @@ else
         }
     </div>
 }
+</div>
 
 @code {
     private Student? currentStudent;
@@ -302,6 +305,16 @@ else
 
 
 <style>
+    .myswaps-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 90vh;
+        width: 100%;
+        background-color: #FFFDFB;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        margin-left: 240px;
+    }
     .match-subjects-scroll {
         overflow-x: auto;
         display: flex;
