@@ -75,12 +75,14 @@
                 return;
             }
 
+            string hashedPassword = HashPasswordService.HashPassword(registeredStudent.Password);
+
             Student newStudent = new Student(
                 registeredStudent.FirstName,
                 registeredStudent.SecName,
                 registeredStudent.Email,
                 registeredStudent.Username,
-                registeredStudent.Password,
+                hashedPassword,
                 registeredStudent.Grade
             );
 

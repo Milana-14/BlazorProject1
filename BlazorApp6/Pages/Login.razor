@@ -49,7 +49,7 @@
         {
             Student? foundStudent = StudentManager.FindStudent(s => s.Username == loginModel.Username);
 
-            if (foundStudent != null && foundStudent.Password == loginModel.Password)
+            if (foundStudent != null && HashPasswordService.ComparePasswords(foundStudent.Password, loginModel.Password))
             {
                 loginFailed = false;
                 errorMessage = string.Empty;
