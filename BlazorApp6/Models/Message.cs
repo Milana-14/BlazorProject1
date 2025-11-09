@@ -23,10 +23,11 @@
         public string Content { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-        public MessageForChat(string senderName, string content)
+        public MessageForChat(string senderName, string content, DateTime timestamp)
         {
             SenderName = senderName;
             Content = content;
+            Timestamp = timestamp;
         }
     }
 }

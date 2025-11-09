@@ -16,15 +16,15 @@
 }
 else
 {
-<div class="chat-page">
+    <div class="chat-page">
 
-    <div class="sidebar p-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5>@otherStudent.FirstName @otherStudent.SecName</h5>
-            <button class="btn btn-sm btn-danger" @onclick="ReportPartner">Репортни</button>
-        </div>
-        <p><strong>Предмет:</strong> @swap.SubjectForHelp</p>
-        <p><strong>Статус на свапа:</strong> @swap.Status</p>
+        <div class="sidebar p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5>@otherStudent.FirstName @otherStudent.SecName</h5>
+                <button class="btn btn-sm btn-danger" @onclick="ReportPartner">Репортни</button>
+            </div>
+            <p><strong>Предмет:</strong> @swap.SubjectForHelp</p>
+            <p><strong>Статус на свапа:</strong> @swap.Status</p>
 
             @if (swap.Status == SwapStatus.PendingCompleted)
             {
@@ -58,71 +58,63 @@ else
             {
                 <button class="btn btn-sm btn-primary" @onclick="ProposeCompletion">Предложи завършване</button>
             }
-    </div>
+        </div>
 
 
         @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted)
-    {
+        {
     <div class="chat-container d-flex flex-column flex-grow-1">
         <div class="chat-window flex-grow-1 overflow-auto">
             @code { DateTime? lastDate = null; }
             @foreach (var m in messagesForChat)
-                {
-                    DateTime date = m.Timestamp.Date;
-                    if (lastDate == null || lastDate.Value != date)
-                    {
-                        <div class="chat-date-separator">
-                        @date.ToString("dd MMMM yyyy")
-                        </div>
+                        {
+                        DateTime date = m.Timestamp.Date;
+                        if (lastDate == null || lastDate.Value != date)
+                        {
+            <div class="chat-date-separator">
+                @date.ToString("dd MMMM yyyy")
+            </div>
                         lastDate = date;
-                    }
+                        }
 
-                    @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
-                    {
-                        <div class="my-message-sender">
-                            <small>@m.SenderName:</small>
-                        </div>
-                        <div class="my-message">
-                            @m.Content
-                            <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
-                        </div>
-                    }
-                    else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
-                    {
-                        <div class="other-message-sender">
-                            <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="avatar me-2" />
-                            <small>@m.SenderName:</small>
-                        </div>
-                        <div class="other-message">
-                            @m.Content
-                            <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="system-message">
-                            @if (string.IsNullOrEmpty(m.SenderName))
-                            {
-                                <i>@m.Content</i>
-                                <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
-                            }
-                            else
-                            {
-                                <i>@m.SenderName: @m.Content</i>
-                                <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
-                            }
-                        </div>
-                    }
-                }
+            @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
+            {
+                <div class="my-message">
+                    @((MarkupString)m.Content)
+                    <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
+                </div>
+            }
+            else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
+            {
+                <div class="other-message-sender">
+                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
+                <div class="other-message">
+                    @((MarkupString)m.Content)
+                    <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
+                </div>
+                </div>
+            }
+            else
+            {
+                <div class="system-message">
+                    <i>@m.Content</i>
+                    <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
+                </div>
+            }
+            }
 
-            <div class="input-container mt-2 d-flex gap-2">
-                <input class="form-control" @bind="newMessage" placeholder="Напиши..." />
-                <button class="btn btn-primary" @onclick="SendMessage">Изпрати</button>
+            <div class="input-bar d-flex align-items-center gap-2 mt-2">
+                <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button>
+                <InputFile OnChange="OnInputFileSelected" class="form-control-file" />
+                <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..." class="form-control flex-grow-1 type-message" />
+                <button class="btn-primary-send-message" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage">
+                    <i class="bi bi-send"></i>
+                </button>
             </div>
         </div>
     </div>
-    }
-    else if (swap.Status == SwapStatus.CompletedNotRated)
+        }
+        else if (swap.Status == SwapStatus.CompletedNotRated)
     {
         if (isStudentToRate)
         {
@@ -153,79 +145,67 @@ else
 @code {
     [Parameter] public Guid swapId { get; set; }
     private SwapModel? swap;
-
     private Student? currentStudent;
     private Student? otherStudent;
-
     private HubConnection? hubConnection;
+
     private List<Message> messages = new();
     private List<MessageForChat> messagesForChat = new();
     private string newMessage = string.Empty;
 
     private bool isStudentToRate;
+    private string? errorMessage;
 
-    private string? errorMessage = string.Empty;
-
-    private Student? StudentToRate;
-    private List<int> stars = new() { 1, 2, 3, 4, 5 };
-    private int? SelectedRating { get; set; } = null;
+    private int? SelectedRating { get; set; }
     private bool isChosen => SelectedRating != null;
 
+    private ElementReference chatWindowRef;
 
     protected override async Task OnParametersSetAsync()
     {
         swap = SwapManager.FindSwapById(swapId);
-        if (swap == null)
-        {
-            errorMessage = "Свапът не е намерен.";
-        }
+        if (swap == null) { errorMessage = "Свапът не е намерен."; return; }
+
         currentStudent = AppState.CurrentUser;
-        if (currentStudent == null)
-        {
-            errorMessage = "Моля, влезте в профила си.";
-            return;
-        }
-        otherStudent = (swap.Student1Id == currentStudent.Id) ? StudentManager.FindStudent(s => s.Id == swap.Student2Id) : StudentManager.FindStudent(s => s.Id == swap.Student1Id);
-        if (otherStudent == null)
-        {
-            errorMessage = "Другият ученик не е намерен.";
-            return;
-        }
+        if (currentStudent == null) { errorMessage = "Моля, влезте в профила си."; return; }
+
+        otherStudent = swap.Student1Id == currentStudent.Id
+            ? StudentManager.FindStudent(s => s.Id == swap.Student2Id)
+            : StudentManager.FindStudent(s => s.Id == swap.Student1Id);
+        if (otherStudent == null) { errorMessage = "Другият ученик не е намерен."; return; }
 
         messages = ChatManager.GetMessagesFromDb(swapId);
         messagesForChat = messages.Select(m => new MessageForChat(
-            m.SenderId == currentStudent.Id 
-            ? $"{currentStudent.FirstName} {currentStudent.SecName}" 
-            : $"{otherStudent.FirstName} {otherStudent.SecName}"
-            , m.Content)).ToList();
-
+            m.SenderId == currentStudent.Id
+                ? $"{currentStudent.FirstName} {currentStudent.SecName}"
+                : $"{otherStudent.FirstName} {otherStudent.SecName}",
+            m.Content,
+            m.Timestamp)).ToList();
 
         if (hubConnection != null) return;
 
-        hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.ToAbsoluteUri("/chathub")).WithAutomaticReconnect().Build();
-
-        hubConnection.Reconnected += async (id) =>
-        {
-            await hubConnection.SendAsync("JoinChat", new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
-        };
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+            .WithAutomaticReconnect()
+            .Build();
 
         hubConnection.On<string>("UserJoined", (username) =>
         {
-            messages.Add(new Message(swapId, Guid.Empty, $"{username} влезе в чата"));
-            messagesForChat.Add(new MessageForChat(string.Empty, $"{username} влезе в чата"));
+            messagesForChat.Add(new MessageForChat(string.Empty, $"{username} влезе в чата", DateTime.Now));
             InvokeAsync(StateHasChanged);
         });
+
         hubConnection.On<Guid, string, string>("ReceiveMessage", (studentId, username, message) =>
         {
-            messages.Add(new Message(swapId, studentId, message));
-            messagesForChat.Add(new MessageForChat(username, message));
+            messagesForChat.Add(new MessageForChat(username, message, DateTime.Now));
             InvokeAsync(StateHasChanged);
         });
 
         try
         {
             await hubConnection.StartAsync();
-            await hubConnection.SendAsync("JoinChat", new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
+            await hubConnection.SendAsync("JoinChat",
+                new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
         }
         catch (Exception ex)
         {
@@ -235,55 +215,55 @@ else
 
     private async Task SendMessage()
     {
-        if (!string.IsNullOrEmpty(newMessage) && hubConnection != null)
-        {
-            await hubConnection.SendAsync("SendMessage", new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)), newMessage);
-            newMessage = string.Empty;
-        }
+        if (string.IsNullOrWhiteSpace(newMessage) || hubConnection == null) return;
+
+        await hubConnection.SendAsync("SendMessage",
+            new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+            newMessage);
+
+        newMessage = string.Empty;
     }
 
-    public async ValueTask DisposeAsync()
+    private void ToggleEmojiPanel() { /* TODO: вставка эмодзи */ }
+
+    private async Task OnInputFileSelected(InputFileChangeEventArgs e)
     {
-        if (hubConnection != null && currentStudent != null)
-        {
-            await hubConnection.SendAsync("LeaveChat", new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
-            await hubConnection.DisposeAsync();
-        }
+        var file = e.File;
+        if (file == null) return;
+
+        using var stream = file.OpenReadStream(10 * 1024 * 1024);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        byte[] fileBytes = ms.ToArray();
+
+        await hubConnection.SendAsync("SendFile",
+    new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+    file.Name,
+    fileBytes);
+
     }
 
-    private void ProposeCompletion()
-    {
-        SwapManager.ProposeCompletingSwap(swap, currentStudent.Id);
-        StateHasChanged();
-    }
+    private void ProposeCompletion() => SwapManager.ProposeCompletingSwap(swap, currentStudent.Id);
     private void AcceptCompletion()
     {
         swap.Status = SwapStatus.CompletedNotRated;
         SwapManager.UpdateSwapInDb(swap);
-        if (currentStudent.Id.ToString() == swap.Student2Id.ToString()) isStudentToRate = true;
-        else if (currentStudent.Id.ToString() == swap.Student1Id.ToString()) isStudentToRate = false;
+        isStudentToRate = currentStudent.Id == swap.Student2Id;
     }
-    private void RejectCompletion()
-    {
-        SwapManager.RejectCompletion(swap);
-        StateHasChanged();
-    }
+    private void RejectCompletion() => SwapManager.RejectCompletion(swap);
 
-    private void ChooseRating(int rating)
-    {
-        SelectedRating = rating;
-    }
+    private void ChooseRating(int rating) => SelectedRating = rating;
 
     private async Task RateStudentsHelp()
     {
         if (SelectedRating == null) return;
 
-        otherStudent.HelpGivenCount += 1;
+        otherStudent.HelpGivenCount++;
         otherStudent.HelpRatings.Add(SelectedRating.Value);
-        otherStudent.Coins += 1;
+        otherStudent.Coins++;
         StudentManager.UpdateStudent(otherStudent);
 
-        currentStudent.Coins -= 1;
+        currentStudent.Coins--;
         StudentManager.UpdateStudent(currentStudent);
 
         SwapManager.CompleteSwap(swap);
@@ -291,117 +271,15 @@ else
         NavigationManager.NavigateTo("/my-swaps");
     }
 
-    private async Task ReportPartner()
+    public async ValueTask DisposeAsync()
     {
-        // логика за репортване на другия ученик
-        // SwapManager.ReportStudent(otherStudent.Id, swapId);
+        if (hubConnection != null && currentStudent != null)
+        {
+            await hubConnection.SendAsync("LeaveChat",
+                new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
+            await hubConnection.DisposeAsync();
+        }
     }
+
+    private async Task ReportPartner() { /* TODO */ }
 }
-
-<style>
-    .chat-page {
-        display: flex;
-        height: 90vh;
-        gap: 15px;
-        margin-left: 240px;
-    }
-
-    .sidebar {
-        width: 300px;
-        flex-shrink: 0;
-        border-right: 1px solid #ccc;
-        overflow-y: auto;
-    }
-
-    .chat-container {
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-    }
-
-    .chat-window {
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        overflow-y: auto;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background: #f8f9fa;
-        flex-grow: 1;
-    }
-
-
-    .chat-date-separator {
-        text-align: center;
-        font-size: 0.9rem;
-        color: gray;
-        margin: 10px 0;
-    }
-
-    .my-message {
-        align-self: flex-end;
-        background: #007bff;
-        color: white;
-        padding: 6px 10px;
-        border-radius: 10px 10px 0 10px;
-        max-width: 60%;
-    }
-    .my-message-sender {
-        align-self: flex-end;
-        color: gray;
-        font-size: 0.85rem;
-    }
-
-    .other-message {
-        align-self: flex-start;
-        background: #e5e5ea;
-        color: black;
-        padding: 6px 10px;
-        border-radius: 10px 10px 10px 0;
-        max-width: 60%;
-    }
-    .other-message-sender {
-        align-self: flex-start;
-        color: gray;
-        font-size: 0.85rem;
-        }
-
-    .system-message {
-        align-self: center;
-        color: gray;
-        font-style: italic;
-        font-size: 0.85rem;
-    }
-
-    .avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    .stars-container {
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: center;
-        gap: 5px;
-        font-size: 32px;
-        cursor: pointer;
-    }
-
-    .star {
-        color: #ccc;
-        transition: color 0.2s;
-    }
-
-        .star.selected,
-        .star:hover,
-        .star:hover ~ .star {
-            color: #ffc107;
-        }
-
-    .modal-actions button {
-        min-width: 100px;
-    }
-</style>

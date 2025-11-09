@@ -94,6 +94,23 @@ namespace BlazorApp6.Services
             this.chatManager.AddMessageToDb(connection.SwapId, connection.Student.Id, message);
         }
 
+        public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
+        {
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "files");
+            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+
+            var filePath = Path.Combine(folderPath, fileName);
+            await File.WriteAllBytesAsync(filePath, fileBytes);
+
+            var fileUrl = $"/files/{fileName}";
+            var message = $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>";
+
+            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message);
+
+            chatManager.AddMessageToDb(connection.SwapId, connection.Student.Id, $"[Файл] {fileName}");
+        }
+
+
         public async Task LeaveChat(UserConnection connection)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, connection.SwapId.ToString());
