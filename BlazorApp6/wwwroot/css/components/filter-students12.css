@@ -1,10 +1,4 @@
-﻿/* ---------- ОБЩ ФОН ---------- */
-body {
-    background-color: #F0EDE9;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-}
-
-.main-content {
+﻿.main-content {
     margin-left: 240px;
 }
 
@@ -44,7 +38,7 @@ body {
 }
 
 .filter-section-grade1 {
-    background-color: #FAF7F3;
+    background-color: #F9F7F6;
     width: 180px;
     border-radius: 16px;
     padding: 14px 16px;
@@ -53,7 +47,7 @@ body {
 
 .filter-section1 {
     display: flex;
-    background-color: #FAF7F3;
+    background-color: #F9F7F6;
     border-radius: 16px;
     padding: 12px 14px 4px 14px;
     gap: 6px;
@@ -116,7 +110,7 @@ body {
 /* ---------- КАРТИЧКА НА УЧЕНИКА ---------- */
 .student-card1 {
     flex: 0 0 calc(50% - 0.5rem);
-    background-color: #FAF7F3;
+    background-color: #F9F7F6; /*#FAF7F3*/
     border-radius: 16px;
     padding: 1rem;
     display: flex;
@@ -273,10 +267,10 @@ body {
     flex-wrap: wrap;
 }
 
-.sf-btn-row button {
-    flex: 1;
-    min-width: 110px;
-}
+    .sf-btn-row button {
+        flex: 1;
+        min-width: 110px;
+    }
 
 .sf-btn-row-noflex button {
     flex: none;
@@ -341,11 +335,37 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
 }
 
-.btn-secondary-warn {
-    width: 100%;
+.btn-success {
+    width: 60%;
     height: 40px;
-    background-color: #FFFDFB;
-    color: #453D44;
+    background-color: #E3EFE1;
+    color: #415247;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 18px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-warn {
+    width: 60px;
+    height: 40px;
+    background-color: #F7EBD8;
+    color: #6A5840;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 18px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-danger {
+    width: 100px;
+    height: 40px;
+    background-color: #F0DADA;
+    color: #6A3A3A;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 470;

@@ -8,231 +8,253 @@
 @using SwapModel = BlazorApp6.Models.Swap
 
 
-<div class="myswaps-page">
-@if (currentStudent == null)
-{
-    <p>Моля, влезте в профила си</p>
-}
-else
-{
-    <div class="top-row px-4">
-        <div class="tabs">
-            <button class="@GetTabClass("pairs")" @onclick='@(() => SelectTab("pairs"))'>Моите свапове</button>
-            <button class="@GetTabClass("incoming")" @onclick='@(() => SelectTab("incoming"))'>Заявки към мен</button>
-            <button class="@GetTabClass("outgoing")" @onclick='@(() => SelectTab("outgoing"))'>Моите заявки</button>
+<div class="myswaps-page main-content">
+    @if (currentStudent == null)
+    {
+        <div class="myswaps-empty">
+            <p>Моля, влезте в профила си</p>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="myswaps-container">
 
-    <div class="tab-content mb-3">
-        @* Текущи свапове *@
-        @if (selectedTab == "pairs")
-        {
-            @if (pairs.Count == 0)
-            {
-                <p>Нямате текущи свапове.</p>
-            }
-            else
-            {
-                <p>Текущите ви свапове: @pairs.Count</p>
-                <div class="row g-3">
-                    @foreach (SwapModel swap in pairs)
-                    {
-                        var student = StudentManager.FindStudent(s => s.Id == ((swap.Student1Id == currentStudent.Id) ? swap.Student2Id : swap.Student1Id));
-                        bool currentStHelps = swap.Student2Id == currentStudent.Id;
-                        @if (student == null) continue;
+            <!-- Header / Tabs -->
+            <div class="myswaps-header px-4">
+                <div class="myswaps-toprow top-row">
+                    <div class="myswaps-title">
+                        <h2 class="filter-title">Свапове и заявки</h2>
+                        <p class="filter-description">Тук виждаш текущите си кооперации, входящи заявки и заявките, които си изпратил. Избери таб, за да филтрираш.</p>
+                    </div>
 
-                        <div class="col-12 col-md-6">
-                            <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
-
-                                @* Профилна, име и клас *@
-                                <div class="d-flex align-items-center gap-3 mb-3">
-                                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar"
-                                         class="rounded-circle avatar-lg" />
-                                    <div>
-                                        <h5 class="fw-semibold mb-1">@student.FirstName @student.SecName</h5>
-                                        <p class="text-muted small mb-0">Клас: @student.Grade</p>
-                                    </div>
-                                </div>
-                                <hr />
-
-                                @* Предмет *@
-                                <div class="d-flex align-items-center justify-content-between flex-nowrap mb-2">
-                                    <div class="d-flex align-items-center flex-nowrap">
-                                        @if (currentStHelps)
-                                        {
-                                            <span class="text small fw-semibold me-2">Помагаш по: </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text small fw-semibold me-2">Помага ти по: </span>
-                                        }
-                                        <span class="badge rounded-pill px-3 py-1 me-2 badge-match">@swap.SubjectForHelp.GetDisplayName()</span>
-                                    </div>
-
-                                    @* Бутони *@
-                                    <div class="ms-3">
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => GoToSwap(swap.Id)">Виж детайли</button>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="myswaps-tabs-wrapper">
+                        <div class="tabs myswaps-tabs" role="tablist" aria-label="Swaps tabs">
+                            <button class="@GetTabClass("pairs") myswaps-tab" @onclick='@(() => SelectTab("pairs"))' role="tab">Моите свапове</button>
+                            <button class="@GetTabClass("incoming") myswaps-tab" @onclick='@(() => SelectTab("incoming"))' role="tab">Заявки към мен</button>
+                            <button class="@GetTabClass("outgoing") myswaps-tab" @onclick='@(() => SelectTab("outgoing"))' role="tab">Моите заявки</button>
                         </div>
-                    }
+                    </div>
                 </div>
-            }
-        }
-        @* Заявки, които изпратиха на мен *@
-        else if (selectedTab == "incoming")
-        {
-            @if (incomingSwaps.Count == 0)
-            {
-                <p>Все още никой не ти е продложил кооперация.</p>
-            }
-            else
-            {
-                @if (incomingSwaps.Count == 1)
+            </div>
+
+
+            <div class="tab-content mb-3 myswaps-content">
+
+                <!-- Текущите ми свапове -->
+                @if (selectedTab == "pairs")
                 {
-                    <p>1 ученик ти предложи помощ.</p>
+                    <section class="myswaps-section" aria-labelledby="pairs-heading">
+                        <h3 id="pairs-heading" class="myswaps-section-title">Текущи свапове</h3>
+
+                        @if (pairs.Count == 0)
+                        {
+                            <div class="empty-state">Нямате текущи свапове.</div>
+                        }
+                        else
+                        {
+                            <p class="text-found-students">Текущите ви свапове: <strong>@pairs.Count</strong></p>
+
+                            <div class="row g-3 myswaps-cards">
+                                @foreach (SwapModel swap in pairs)
+                                {
+                                    var student = StudentManager.FindStudent(s => s.Id == ((swap.Student1Id == currentStudent.Id) ? swap.Student2Id : swap.Student1Id));
+                                    bool currentStHelps = swap.Student2Id == currentStudent.Id;
+                                    @if (student == null) continue;
+
+                                    <div class="col-12 col-md-6">
+                                        <div class="card myswaps-card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
+
+                                            <!-- Card header -->
+                                            <div class="myswaps-card-header d-flex align-items-center gap-3 mb-3">
+                                                <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="rounded-circle avatar-lg myswaps-avatar" />
+                                                <div class="myswaps-userinfo">
+                                                    <h5 class="fw-semibold mb-1 myswaps-name">@student.FirstName @student.SecName</h5>
+                                                    <p class="student-grade small text-muted mb-0">Клас: @student.Grade</p>
+                                                </div>
+                                            </div>
+                                            <hr class="myswaps-hr" />
+
+                                            <!-- Subject & actions -->
+                                            <div class="d-flex align-items-center justify-content-between flex-nowrap mb-2 myswaps-card-body">
+                                                <div class="d-flex align-items-center flex-nowrap">
+                                                    @if (currentStHelps)
+                                                    {
+                                                        <span class="text small fw-semibold me-2">Помагаш по:</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text small fw-semibold me-2">Помага ти по:</span>
+                                                    }
+                                                    <span class="badge rounded-pill px-3 py-1 me-2 myswaps-subject-badge">@swap.SubjectForHelp.GetDisplayName()</span>
+                                                </div>
+
+                                                <div class="myswaps-actions ms-3">
+                                                    <button class="btn btn-outline-secondary flex-fill myswaps-btn-details" @onclick="() => GoToSwap(swap.Id)">Виж детайли</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </section>
                 }
-                else
+                <!-- Заявки КЪМ мен -->
+                @if (selectedTab == "incoming")
                 {
-                    <p>@incomingSwaps.Count ученика ти преложиха помощ.</p>
+                <section class="myswaps-section" aria-labelledby="incoming-heading">
+                    <h3 id="incoming-heading" class="myswaps-section-title">Заявки към мен</h3>
+
+                    @if (incomingSwaps.Count == 0)
+                    {
+                        <div class="empty-state">Все още никой не ти е предложил кооперация.</div>
+                    }
+                    else
+                    {
+                        <p class="text-found-students">
+                            @if (incomingSwaps.Count == 1)
+                            {
+                                <text>1 ученик ти предложи помощ.</text>
+                            }
+                            else
+                            {
+                                <text>@incomingSwaps.Count ученика ти преложиха помощ.</text>
+                            }
+                        </p>
+
+                        <div class="row g-3 myswaps-cards">
+                            @foreach (SwapModel swap in incomingSwaps)
+                            {
+                                var student = StudentManager.FindStudent(s => s.Id == swap.RequesterId);
+
+                                int swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+                                int swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+
+                                int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(student.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+                                int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(student.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+
+                                if (student == null) continue;
+
+                                <div class="col-12 col-md-6">
+                                    <div class="card myswaps-card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
+
+                                        <div class="myswaps-card-header d-flex align-items-center gap-3 mb-3">
+                                            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="rounded-circle avatar-lg myswaps-avatar" />
+                                            <div class="myswaps-userinfo">
+                                                <h5 class="fw-semibold mb-1 myswaps-name">@student.FirstName @student.SecName</h5>
+                                                <p class="student-grade small text-muted mb-0">Клас: @student.Grade</p>
+                                            </div>
+                                        </div>
+                                        <hr class="myswaps-hr" />
+
+                                        <div class="d-flex flex-column flex-grow-1 myswaps-card-body">
+
+                                            <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
+                                            <div class="match-subjects-scroll myswaps-subjects mb-2">
+                                                @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                                {
+                                                    var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
+                                                    <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch") myswaps-badge">
+                                                        @subj.GetDisplayName()
+                                                    </span>
+                                                }
+                                            </div>
+
+                                            <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
+                                            <div class="match-subjects-scroll myswaps-subjects mb-2">
+                                                @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                                {
+                                                    var isMatch = currentStudent.CanHelpWith.Contains(subj);
+                                                    <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch") myswaps-badge">
+                                                        @subj.GetDisplayName()
+                                                    </span>
+                                                }
+                                            </div>
+
+                                            <div class="mt-auto d-flex gap-2 myswaps-card-actions">
+                                                <button class="btn btn-primary myswaps-btn-accept" disabled="@((swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => ConfirmSwap(swap)">Приеми заявката</button>
+                                                <button class="btn btn-danger myswaps-btn-reject" @onclick="() => RejectSwap(swap)">Откажи заявката</button>
+                                                <button class="btn btn-outline-secondary flex-fill myswaps-btn-profile" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </section>
                 }
-                <div class="row g-3">
-                    @foreach (SwapModel swap in incomingSwaps)
+                <!-- Заявки ОТ мен -->
+                @if (selectedTab == "outgoing")
+                {
+                <section class="myswaps-section" aria-labelledby="outgoing-heading">
+                    <h3 id="outgoing-heading" class="myswaps-section-title">Моите заявки</h3>
+
+                    @if (outgoingSwaps.Count == 0)
                     {
-                        var student = StudentManager.FindStudent(s => s.Id == swap.RequesterId);
+                        <div class="empty-state">Още на никого не си предложил кооперация.</div>
+                    }
+                    else
+                    {
+                        <p class="text-found-students">Намерени ученици: <strong>@outgoingSwaps.Count</strong></p>
 
-                        int swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
-                        int swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+                        <div class="row g-3 myswaps-cards">
+                            @foreach (SwapModel swap in outgoingSwaps)
+                            {
+                                var student = StudentManager.FindStudent(s => (s.Id == swap.Student1Id || s.Id == swap.Student2Id) && s.Id != currentStudent.Id);
+                                if (student == null) continue;
 
-                        int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(student.Id).Where(s => s.Status == SwapStatus.Pending).Count();
-                        int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(student.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+                                <div class="col-12 col-md-6">
+                                    <div class="card myswaps-card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
 
-                        if (student == null) continue;
+                                        <div class="myswaps-card-header d-flex align-items-center gap-3 mb-3">
+                                            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="rounded-circle avatar-lg myswaps-avatar" />
+                                            <div class="myswaps-userinfo">
+                                                <h5 class="fw-semibold mb-1 myswaps-name">@student.FirstName @student.SecName</h5>
+                                                <p class="student-grade small text-muted mb-0">Клас: @student.Grade</p>
+                                            </div>
+                                        </div>
+                                        <hr class="myswaps-hr" />
 
-                        <div class="col-12 col-md-6">
-                            <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
+                                        <div class="d-flex flex-column flex-grow-1 myswaps-card-body">
 
-                                @* Профилна, име и клас *@
-                                <div class="d-flex align-items-center gap-3 mb-3">
-                                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar"
-                                         class="rounded-circle avatar-lg" />
-                                    <div>
-                                        <h5 class="fw-semibold mb-1">@student.FirstName @student.SecName</h5>
-                                        <p class="text-muted small mb-0">Клас: @student.Grade</p>
+                                            <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
+                                            <div class="match-subjects-scroll myswaps-subjects mb-2">
+                                                @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                                {
+                                                    var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
+                                                    <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch") myswaps-badge">
+                                                        @subj.GetDisplayName()
+                                                    </span>
+                                                }
+                                            </div>
+
+                                            <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
+                                            <div class="match-subjects-scroll myswaps-subjects mb-2">
+                                                @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
+                                                {
+                                                    var isMatch = currentStudent.CanHelpWith.Contains(subj);
+                                                    <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch") myswaps-badge">
+                                                        @subj.GetDisplayName()
+                                                    </span>
+                                                }
+                                            </div>
+
+                                            <div class="mt-auto d-flex gap-2 myswaps-card-actions">
+                                                <button class="btn btn-warning myswaps-btn-cancel" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
+                                                <button class="btn btn-outline-secondary flex-fill myswaps-btn-profile" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <hr />
-
-                                @* Списък с предмети *@
-                                <div class="d-flex flex-column flex-grow-1">
-
-                                    <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
-                                    <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
-                                        {
-                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
-                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                                @subj.GetDisplayName()
-                                            </span>
-                                        }
-                                    </div>
-
-                                    <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
-                                    <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
-                                        {
-                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
-                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                                @subj.GetDisplayName()
-                                            </span>
-                                        }
-                                    </div>
-
-                                    @* Бутони "Приеми/откажи заявката" и "Виж профила" *@
-                                    <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-primary" disabled="@((swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => ConfirmSwap(swap)">Приеми заявката</button>
-                                        <button class="btn btn-danger" @onclick="() => RejectSwap(swap)">Откажи заявката</button>
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
-                                    </div>
-                                </div>
-                            </div>
+                            }
                         </div>
                     }
-                </div>
-
-            }
-        }
-
-        @* Заявки, които съм изпратил *@
-        else if (selectedTab == "outgoing")
-        {
-            @if (outgoingSwaps.Count == 0)
-            {
-                <p>Още на никого не си предложил кооперация.</p>
-            }
-            else
-            {
-                <p>Намерени ученици: @outgoingSwaps.Count</p>
-                <div class="row g-3">
-                    @foreach (SwapModel swap in outgoingSwaps)
-                    {
-                        var student = StudentManager.FindStudent(s => (s.Id == swap.Student1Id || s.Id == swap.Student2Id) && s.Id != currentStudent.Id);
-                        if (student == null) continue;
-
-                        <div class="col-12 col-md-6">
-                            <div class="card h-100 shadow-sm rounded-3 p-3 d-flex flex-column">
-
-                                @* Профилна, име и клас *@
-                                <div class="d-flex align-items-center gap-3 mb-3">
-                                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar"
-                                         class="rounded-circle avatar-lg" />
-                                    <div>
-                                        <h5 class="fw-semibold mb-1">@student.FirstName @student.SecName</h5>
-                                        <p class="text-muted small mb-0">Клас: @student.Grade</p>
-                                    </div>
-                                </div>
-                                <hr />
-
-                                @* Списък с предмети *@
-                                <div class="d-flex flex-column flex-grow-1">
-
-                                    <p class="text small mb-2 fw-semibold">Може да помогне с:</p>
-                                    <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.CanHelpWith.Where(s => s != SubjectEnum.NotSpecified))
-                                        {
-                                            var isMatch = currentStudent.NeedsHelpWith.Contains(subj);
-                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                                @subj.GetDisplayName()
-                                            </span>
-                                        }
-                                    </div>
-
-                                    <p class="text small mb-2 fw-semibold">Търси помощ по:</p>
-                                    <div class="match-subjects-scroll mb-2">
-                                        @foreach (var subj in student.NeedsHelpWith.Where(s => s != SubjectEnum.NotSpecified))
-                                        {
-                                            var isMatch = currentStudent.CanHelpWith.Contains(subj);
-                                            <span class="badge rounded-pill px-3 py-1 me-2 @(isMatch ? "badge-match" : "badge-nonmatch")">
-                                                @subj.GetDisplayName()
-                                            </span>
-                                        }
-                                    </div>
-
-                                    @* Бутини "Отмени заявката ми" и "Виж профила" *@
-                                    <div class="mt-auto d-flex gap-2">
-                                        <button class="btn btn-warning" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
-                                        <button class="btn btn-outline-secondary flex-fill" @onclick="() => ViewProfile(student)">Виж профила</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-        }
-    </div>
-}
+                </section>
+                }
+            </div>
+        </div>
+    }
 </div>
 
 @code {
@@ -302,54 +324,3 @@ else
         Navigation.NavigateTo($"/other-profile/{student.Id}");
     }
 }
-
-
-<style>
-    .myswaps-page {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 90vh;
-        width: 100%;
-        background-color: #FFFDFB;
-        font-family: 'Inter', 'Segoe UI', sans-serif;
-        margin-left: 240px;
-    }
-    .match-subjects-scroll {
-        overflow-x: auto;
-        display: flex;
-        gap: 0.5rem;
-        scrollbar-width: thin;
-    }
-
-        .match-subjects-scroll::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .match-subjects-scroll::-webkit-scrollbar-thumb {
-            background-color: rgba(0,0,0,0.15);
-            border-radius: 3px;
-        }
-
-    .badge-match {
-        background-color: #a8d0ff;
-        color: #003366;
-        font-weight: 600;
-    }
-
-    .badge-nonmatch {
-        background-color: #e6f0ff;
-        color: #555;
-        font-weight: 400;
-    }
-
-    .avatar-lg {
-        width: 64px;
-        height: 64px;
-        max-width: 100%;
-        object-fit: cover;
-        display: block;
-        border-radius: 50%;
-        overflow: hidden;
-    }
-</style>

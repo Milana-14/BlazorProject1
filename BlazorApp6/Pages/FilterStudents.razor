@@ -171,14 +171,14 @@ else
                             }
                             else if (isAlreadyRequestedByMe && !isAlreadyRequestedByOther && !isAlreadySwapped)
                             {
-                                <p>Очаква се приемане на заявката ти</p>
-                                <button class="btn-secondary-warn" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
+                                <p>Очаквай приемането на заявката ти</p>
+                                <button class="btn-warn" @onclick="() => CancelSwapRequest(swap)">Отмяна</button>
                             }
                             else if (!isAlreadyRequestedByMe && isAlreadyRequestedByOther && !isAlreadySwapped)
                             {
-                                <p>Очаква да приемеш заявката</p>
-                                <button class="btn-primary" @onclick="() => ConfirmSwaps(swap)">Приеми заявката</button>
-                                <button class="btn-secondary-warn" @onclick="() => RejectSwaps(swap)">Отхвърли заявката</button>
+                                <p>Прелага ти свап по @swap.SubjectForHelp.GetDisplayName().ToLower()</p>
+                                    <button class="btn-success" @onclick="() => ConfirmSwaps(swap)"><i class="bi bi-check fs-6"></i> Приеми</button>
+                                    <button class="btn-danger" @onclick="() => RejectSwaps(swap)"><i class="bi bi-x fs-6"></i> Отхвърли</button>
                             }
                             else if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && isAlreadySwapped)
                             {

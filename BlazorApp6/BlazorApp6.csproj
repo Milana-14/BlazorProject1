@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\css\components\my-profile1.css" />
+    <None Include="wwwroot\css\components\my-profile2.css" />
   </ItemGroup>
 
 </Project>
