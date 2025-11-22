@@ -8,7 +8,11 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 240px;
+    width: 240px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding-top: 0;
+    padding-left: 0;
     height: 100vh;
     background: linear-gradient(to bottom, #8B6D86, #3E363D);
     display: flex;
@@ -18,8 +22,8 @@
 
 /* ---------- ГОРНАТА ЧАСТ (EduSwaps) ---------- */
 .navbar-container {
-    height: 80px;
-    width: 100%;
+    height: 84px;
+    width: 240px;
     background: linear-gradient(to left, #5E485A, #3E363D);
     display: flex;
     align-items: center;

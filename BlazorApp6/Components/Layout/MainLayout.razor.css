@@ -5,6 +5,8 @@
 
 main {
     flex: 1;
+    padding: 0px;
+    margin: 0px;
 }
 
 @media (min-width: 641px) {

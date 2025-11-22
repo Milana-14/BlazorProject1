@@ -1,19 +1,19 @@
-﻿.login-page,
-.login-page .page,
-.login-page main {
-    background-color: #FFFDFB !important;
-}
-
-.login-page {
+﻿.login-page {
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 90vh;
-    width: 100%;
-    background-color: #FFFDFB;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
     margin-left: 240px;
+    margin-bottom: -40px;
+    margin-top: -40px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
 }
+
+    .login-page .page,
+    .login-page main {
+        background-color: #FFFDFB !important;
+    }
+
 
 
 
@@ -22,7 +22,7 @@
     background-color: #F0EDE9;
     width: 440px;
     padding: 40px 50px 60px;
-    margin: 150px;
+/*    margin: 150px;*/
     border-radius: 24px;
     text-align: center;
     display: flex;

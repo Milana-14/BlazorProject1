@@ -1,14 +1,21 @@
 ﻿/* ---------- ФОН ---------- */
 .register-page {
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 90vh;
-    width: 100%;
-    background-color: #FFFDFB;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
     margin-left: 240px;
+    margin-bottom: -40px;
+    margin-top: -40px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
 }
+
+    .register-page .page,
+    .register-page main {
+        background-color: #FFFDFB !important;
+    }
+
+
 
 
 /* ---------- КАРТИЧКА ---------- */

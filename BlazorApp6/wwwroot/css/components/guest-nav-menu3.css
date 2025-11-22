@@ -6,7 +6,9 @@
 /* ---------- Сайдбар ---------- */
 .sidebar {
     position: relative;
-    width: 240px;
+    width: 240px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     height: 100vh;
     background: linear-gradient(to bottom, #8B6D86, #3E363D);
     display: flex;

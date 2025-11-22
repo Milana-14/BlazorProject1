@@ -1,6 +1,5 @@
 ﻿/* ---------- ОБЩ ФОН / КОНТЕЙНЕР ---------- */
 body {
-    background-color: #F5F3F1;
     font-family: 'Inter', 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -20,7 +19,6 @@ body {
     justify-content: center;
     padding: 28px 20px;
     box-sizing: border-box;
-    background-color: #FFFDFB;
     font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
