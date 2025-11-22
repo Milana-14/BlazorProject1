@@ -1,5 +1,5 @@
 ﻿.main-content {
-    margin-left: 240px;
+    margin-left: 254px;
 }
 
 .filter-header-container {
@@ -133,13 +133,13 @@
     margin-left: 4px;
 }
 
-/* ---------- ИНФОРМАЦИЯ ЗА УЧЕНИКА ---------- */
 .student-header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
+/* ---------- ИНФОРМАЦИЯ ЗА УЧЕНИКА ---------- */
 .filter-avatar {
     width: 74px;
     height: 74px;
@@ -151,6 +151,7 @@
 .student-info {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
 .student-name {
