@@ -67,7 +67,8 @@
 
 /* ---------- СТАТИСТИКА ---------- */
 .profile-container-stats {
-    background-color: #FFFDFB;
+    flex: 0 0 calc(50% - 0.5rem);
+    background-color: #F9F7F6;
     border-radius: 16px;
     padding: 48px 32px 32px;
     display: flex;
@@ -75,9 +76,9 @@
     justify-content: space-around;
     gap: 8px;
     box-sizing: border-box;
+    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
     position: relative;
     z-index: 1;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .stat-all {
@@ -103,24 +104,24 @@
 
 /* ---------- ЛИЧНА ИНФОРМАЦИЯ ---------- */
 .profile-container-persinfo {
-    background-color: #FFFDFB;
+    background-color: #F9F7F6;
     border-radius: 16px;
     padding: 32px;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 12px;
     box-sizing: border-box;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
 /* ---------- ОТЗИВИ (ОТДЯСНО) ---------- */
 .profile-reviews-container {
     grid-area: reviews;
-    background-color: #FFFDFB;
+    background-color: #F9F7F6;
     border-radius: 16px;
     padding: 32px;
     min-height: 400px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
     margin-top: 118px;
 }
 
