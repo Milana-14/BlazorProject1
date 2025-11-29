@@ -173,8 +173,17 @@ else
                             }
                             else if (!isAlreadyRequestedByMe && isAlreadyRequestedByOther && !isAlreadySwapped)
                             {
-                                <p>Прелага ти свап по @swap.SubjectForHelp.GetDisplayName().ToLower()</p>
-                                    <button class="btn-success" @onclick="() => ConfirmSwaps(swap)"><i class="bi bi-check fs-6"></i> Приеми</button>
+                                    <div class="d-flex align-items-center flex-nowrap">
+                                        @if (swap.Student1Id == student.student.Id)
+                                        {
+                                            <span class="text small fw-semibold me-2">Иска да му помогнеш по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text small fw-semibold me-2">Предлага ти помощ по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                        }
+                                    </div>
+                                    <button class="btn-success" disabled="@((swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => ConfirmSwaps(swap)"><i class="bi bi-check fs-6"></i> Приеми</button>
                                     <button class="btn-danger" @onclick="() => RejectSwaps(swap)"><i class="bi bi-x fs-6"></i> Отхвърли</button>
                             }
                             else if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && isAlreadySwapped)
