@@ -2,6 +2,7 @@ using BlazorApp6;
 using BlazorApp6.Services;
 using MudBlazor.Services;
 using System.Data;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,11 @@ builder.Services.AddSignalR(options =>
 });
 
 var app = builder.Build();
+
+var culture = new CultureInfo("bg-BG");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

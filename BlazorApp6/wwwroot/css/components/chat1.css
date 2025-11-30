@@ -4,7 +4,6 @@
 .chat-page {
     display: flex;
     gap: 18px;
-    margin-left: 240px;
     height: calc(100vh - 20px);
     padding: 16px 20px 20px 20px;
     background-color: #F0EDE9;

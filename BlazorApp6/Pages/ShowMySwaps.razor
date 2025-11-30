@@ -66,7 +66,7 @@
                                             <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="filter-avatar" />
                                             <div class="student-info">
                                                 <h5 class="student-name">@student.FirstName @student.SecName</h5>
-                                                <p class="student-grade">Активен от: @(swap.DateConfirmed?.ToString("dd.MM.yy HH:mm"))</p>
+                                                <p class="student-grade">Активен от: @(swap.DateConfirmed?.ToString("dd MMMM yyyy HH:mm"))</p>
                                             </div>
                                         </div>
 
@@ -102,7 +102,7 @@
 
                         @if (incomingSwaps.Count == 0)
                         {
-                            <div class="myswaps-empty-state">Все още никой не ти е предложил кооперация. <span style="text-decoration-line: underline; text-decoration-thickness: 1px;" @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да замериш ученици за взаимопомощ.</span></div>
+                            <div class="myswaps-empty-state">Все още никой не ти е предложил кооперация. <span style="text-decoration-line: underline; text-decoration-thickness: 1px;" @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да намериш ученици за взаимопомощ.</span></div>
                         }
                         else
                         {
@@ -136,7 +136,7 @@
                                             <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="filter-avatar" />
                                             <div class="student-info">
                                                 <h5 class="student-name">@student.FirstName @student.SecName</h5>
-                                                <p class="student-grade">Изпрати ти заявка на: @(swap.DateRequested.ToString("dd.MM.yy HH:mm"))</p>
+                                                <p class="student-grade">Изпрати ти заявка на: @(swap.DateRequested.ToString("dd MMMM yyyy HH:mm"))</p>
                                             </div>
                                         </div>
 
@@ -173,7 +173,7 @@
 
                     @if (outgoingSwaps.Count == 0)
                     {
-                            <div class="myswaps-empty-state">Още на никого не си предложил кооперация... <span style="text-decoration-line: underline; text-decoration-thickness: 1px;"  @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да замериш ученици за взаимопомощ.</span></div>
+                            <div class="myswaps-empty-state">Още на никого не си предложил кооперация... <span style="text-decoration-line: underline; text-decoration-thickness: 1px;"  @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да намериш ученици за взаимопомощ.</span></div>
                     }
                     else
                     {

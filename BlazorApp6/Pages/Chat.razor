@@ -10,6 +10,8 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using SwapModel = BlazorApp6.Models.Swap
 
+
+<div class="main-page">
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <p class="text-danger">@errorMessage</p>
@@ -141,6 +143,7 @@ else
     }
 </div>
 }
+</div>
 
 @code {
     [Parameter] public Guid swapId { get; set; }
