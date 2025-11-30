@@ -141,6 +141,12 @@ body {
     font-weight: 500;
 }
 
+.myswaps-empty-state {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+}
+
 
 
 /* ---------- ИНФОРМАЦИЯ ЗА УЧЕНИКА ---------- */

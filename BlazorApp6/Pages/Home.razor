@@ -4,10 +4,12 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>EduSwaps</h1>
+<div class="main-page">
+    <h1>EduSwaps</h1>
 
-<button class="btn-primary" @onclick="GoToLogin">Вход</button>
-<button class="btn-secondary" @onclick="GoToRegister">Регистрация</button>
+    <button class="btn-primary" @onclick="GoToLogin">Вход</button>
+    <button class="btn-secondary" @onclick="GoToRegister">Регистрация</button>
+</div>
 
 @code {
     public void GoToLogin()

@@ -102,7 +102,7 @@
 
                         @if (incomingSwaps.Count == 0)
                         {
-                            <div class="empty-state">Все още никой не ти е предложил кооперация.</div>
+                            <div class="myswaps-empty-state">Все още никой не ти е предложил кооперация. <span style="text-decoration-line: underline; text-decoration-thickness: 1px;" @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да замериш ученици за взаимопомощ.</span></div>
                         }
                         else
                         {
@@ -173,7 +173,7 @@
 
                     @if (outgoingSwaps.Count == 0)
                     {
-                        <div class="empty-state">Още на никого не си предложил кооперация.</div>
+                            <div class="myswaps-empty-state">Още на никого не си предложил кооперация... <span style="text-decoration-line: underline; text-decoration-thickness: 1px;"  @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да замериш ученици за взаимопомощ.</span></div>
                     }
                     else
                     {
