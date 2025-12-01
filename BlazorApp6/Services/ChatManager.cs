@@ -107,7 +107,7 @@ namespace BlazorApp6.Services
 
             await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message);
 
-            chatManager.AddMessageToDb(connection.SwapId, connection.Student.Id, $"[Файл] {fileName}");
+            chatManager.AddMessageToDb(connection.SwapId, connection.Student.Id, message);
         }
 
 

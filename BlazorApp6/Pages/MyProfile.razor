@@ -50,36 +50,38 @@ else if (student is not null)
 
                     <div class="profile-container-persinfo">
                         <div>
-                            <p class="text-help-with">Мога да помогна по:</p>
-                            @foreach (var subj in student.CanHelpWith.Select(s => s.GetDisplayName()))
-                            {
-                                <span class="badge-match">@subj</span>
-                            }
+                            <p class="profile-text-help-with">Мога да помогна по:</p>
+                            <div class="subjects-only-container mt-lg-2">
+                                @foreach (var subj in student.CanHelpWith.Select(s => s.GetDisplayName()))
+                                {
+                                    <span class="badge badge-match1">@subj</span>
+                                }
+                            </div>
                         </div>
                         <div>
-                            <p class="text-help-with">Търся помощ по:</p>
-                            @foreach (var subj in student.NeedsHelpWith.Select(s => s.GetDisplayName()))
-                            {
-                                <span class="badge-match">@subj</span>
-                            }
+                            <p class="profile-text-help-with">Търся помощ по:</p>
+                            <div class="subjects-only-container mt-lg-2">
+                                @foreach (var subj in student.NeedsHelpWith.Select(s => s.GetDisplayName()))
+                                {
+                                    <span class="badge badge-match1">@subj</span>
+                                }
+                            </div>
                         </div>
 
-                        <p>Имейл:</p>
-                        <p>@student.Email</p>
+                        <p class="profile-text-help-with">Контакти</p>
+                        <p>Имейл:  @student.Email</p>
 
-                        <button class="btn-profile-secondary" @onclick="() => isEditing = true">Редактирай</button>
+                        <button class="btn-secondary" @onclick="() => isEditing = true">Редактирай</button>
                     </div>
+                    <button class="btn-danger" @onclick="ExitProfile">Изход</button>
                 </div>
 
 
                 <div class="profile-reviews-container">
-                    <p>Отзиви за мен</p>
-                    <p>от ученици, на когото съм помогнал(а)</p>
+                    <p class="profile-maintext">Отзиви за мен</p>
+                    <p class="profile-sectext">от ученици, на когото съм помогнал(а)</p>
                 </div>
         </div>
-
-
-        <button class="btn-profile-secondary-warn" @onclick="ExitProfile">Изход</button>
     }
     else
     {
