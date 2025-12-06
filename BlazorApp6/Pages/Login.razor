@@ -1,8 +1,11 @@
 ﻿@page "/login" // страница за вход в профила си
 @layout GuestLayout
 @inject NavigationManager Navigation
-@inject AppState AppState
+@inject IHttpContextAccessor HttpContextAccessor
 @inject StudentManager StudentManager
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
 @rendermode InteractiveServer
 
 <div class="login-page">
@@ -43,7 +46,7 @@
     private bool loginFailed = false;
     public string errorMessage = string.Empty;
 
-    private void LoginUser()
+    private async Task LoginUser()
     {
         try
         {
@@ -53,7 +56,19 @@
             {
                 loginFailed = false;
                 errorMessage = string.Empty;
-                AppState.CurrentUser = foundStudent;
+
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, loginModel.Username),
+                    new Claim(ClaimTypes.Role, "User")
+                };
+
+                var identity = new ClaimsIdentity(claims, "Cookies");
+                var principal = new ClaimsPrincipal(identity);
+
+                await HttpContextAccessor.HttpContext.SignInAsync("Cookies", principal);
+
+
                 Navigation.NavigateTo("/my-profile");
             }
             else

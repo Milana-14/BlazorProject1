@@ -1,6 +1,9 @@
 ﻿@page "/my-profile" // страница за преглед и редактиране на собствения профил
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
-@inject AppState AppState
+@inject IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
 @inject SubjectsManager SubjectsManager
@@ -174,9 +177,26 @@ else if (student is not null)
     private string errorMessage = string.Empty;
     private bool isEditing = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        student = AppState.CurrentUser;
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            student = null;
+            return;
+        }
+
+        var username = user.Identity.Name;
+
+        student = StudentManager.FindStudent(s => s.Username == username);
+
+        if (student == null)
+        {
+            errorMessage = "Профилът не е намерен.";
+            return;
+        }
 
         isEditing = false;
 
@@ -234,14 +254,16 @@ else if (student is not null)
     }
     private void CancelEdit()
     {
-        student = AppState.CurrentUser;
+        var username = student.Username;
+        student = StudentManager.FindStudent(s => s.Username == username);
+
         isEditing = false;
         successMessageShown = false;
     }
 
-    private void ExitProfile()
+    private async Task ExitProfile()
     {
-        AppState.CurrentUser = null;
-        Navigation.NavigateTo("/login");
+        await HttpContextAccessor.HttpContext.SignOutAsync("Cookies");
+        Navigation.NavigateTo("/");
     }
 }

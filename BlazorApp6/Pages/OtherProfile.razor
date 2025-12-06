@@ -1,5 +1,8 @@
 ﻿@page "/other-profile/{Id:guid}" // страница за преглед на профила на друг ученик
-@inject AppState AppState
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@inject IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
@@ -97,11 +100,28 @@ else
 
     private string errorMessage = string.Empty;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         errorMessage = string.Empty;
 
-        currentStudent = AppState.CurrentUser;
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            currentStudent = null;
+            return;
+        }
+
+        var username = user.Identity.Name;
+
+        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+
+        if (currentStudent == null)
+        {
+            errorMessage = "Профилът не е намерен.";
+            return;
+        }
 
         if (currentStudent == null) errorMessage = "Моля, влезте в профила си.";
 

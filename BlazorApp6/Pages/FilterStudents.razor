@@ -1,5 +1,8 @@
 ﻿@page "/students-filter" // страница за филтриране на ученици
-@inject AppState AppState
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@inject IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
@@ -229,9 +232,25 @@ else
     private Student modalTargetStudent;
     private bool modalIsHelping;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        currentStudent = AppState.CurrentUser;
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            currentStudent = null;
+            return;
+        }
+
+        var username = user.Identity.Name;
+
+        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+
+        if (currentStudent == null)
+        {
+            return;
+        }
 
         if (currentStudent != null)
         {

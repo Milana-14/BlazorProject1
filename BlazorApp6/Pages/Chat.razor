@@ -1,7 +1,10 @@
 ﻿@page "/chat/{SwapId:guid}" // страница за чат
 @implements IAsyncDisposable
 @inject NavigationManager NavigationManager
-@inject AppState AppState
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@inject IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
@@ -169,7 +172,24 @@ else
         swap = SwapManager.FindSwapById(swapId);
         if (swap == null) { errorMessage = "Свапът не е намерен."; return; }
 
-        currentStudent = AppState.CurrentUser;
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            currentStudent = null;
+            return;
+        }
+
+        var username = user.Identity.Name;
+
+        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+
+        if (currentStudent == null)
+        {
+            errorMessage = "Профилът не е намерен.";
+            return;
+        }
         if (currentStudent == null) { errorMessage = "Моля, влезте в профила си."; return; }
 
         otherStudent = swap.Student1Id == currentStudent.Id

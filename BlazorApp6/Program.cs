@@ -11,7 +11,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
 
-builder.Services.AddScoped<AppState>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<StudentManager>();
 builder.Services.AddScoped<AvatarManager>();
 builder.Services.AddScoped<SubjectsManager>();
@@ -21,6 +21,14 @@ builder.Services.AddSignalR(options =>
 {
     options.MaximumReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
 });
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -28,6 +36,8 @@ var culture = new CultureInfo("bg-BG");
 CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

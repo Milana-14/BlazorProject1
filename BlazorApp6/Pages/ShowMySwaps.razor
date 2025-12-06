@@ -1,6 +1,9 @@
 ﻿@page "/my-swaps" // страница за преглед на мои заявки, заявки към мен и текущи партньори
 @inject NavigationManager Navigation
-@inject AppState AppState
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@inject IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
@@ -254,9 +257,26 @@
     private List<SwapModel> incomingSwaps = new();
     private List<SwapModel> outgoingSwaps = new();
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        currentStudent = AppState.CurrentUser;
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            currentStudent = null;
+            return;
+        }
+
+        var username = user.Identity.Name;
+
+        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+
+        if (currentStudent == null)
+        {
+            return;
+        }
+
         if (currentStudent == null) return;
 
         LoadData();
