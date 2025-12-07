@@ -42,7 +42,6 @@
     width: 180px;
     border-radius: 16px;
     padding: 14px 16px;
-    /*    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);*/
     box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
@@ -52,7 +51,6 @@
     border-radius: 16px;
     padding: 12px 14px 4px 14px;
     gap: 6px;
-    /*    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);*/
     box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 

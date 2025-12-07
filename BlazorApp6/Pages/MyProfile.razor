@@ -1,4 +1,4 @@
-﻿@page "/my-profile" // страница за преглед и редактиране на собствения профил
+﻿@page "/my-profile"
 @using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
@@ -10,17 +10,17 @@
 
 <div class="main-page">
 
-@if (student == null)
-{
-    <p>Моля, влезте в профила си</p>
-}
-else if (student is not null)
-{
-    @if (!isEditing)
+    @if (student == null)
     {
-        allSwaps = SwapManager.FindSwapsByStudentId(student.Id);
-        averageRating = (student.HelpGivenCount == 0) ? 0 : student.HelpRatings.Sum() / student.HelpGivenCount;
-        <div class="profile-all-containers">
+        <p>Моля, влезте в профила си</p>
+    }
+    else if (student is not null)
+    {
+        @if (!isEditing)
+        {
+            allSwaps = SwapManager.FindSwapsByStudentId(student.Id);
+            averageRating = (student.HelpGivenCount == 0) ? 0 : student.HelpRatings.Sum() / student.HelpGivenCount;
+            <div class="profile-all-containers">
                 <div class="profile-main-info-container">
                     <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="profile-avatar" />
                     <div class="profile-username-grade-container">
@@ -72,7 +72,7 @@ else if (student is not null)
                         <p class="profile-text-help-with">Контакти</p>
                         <p>Имейл:  @student.Email</p>
 
-                        <button class="btn-secondary" @onclick="() => isEditing = true">Редактирай</button>
+                        <button class="btn-secondary" @onclick="StartEditing">Редактирай</button>
                     </div>
                     <form method="post" action="/account/logout">
                         <input type="hidden" name="returnUrl" value="/" />
@@ -87,92 +87,98 @@ else if (student is not null)
                     <p class="profile-maintext">Отзиви за мен</p>
                     <p class="profile-sectext">от ученици, на когото съм помогнал(а)</p>
                 </div>
-        </div>
-    }
-    else
-    {
-        <EditForm Model="@student" OnValidSubmit="SaveChanges">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <div>
-                <label>Аватар:</label>
-                <InputFile OnChange="(e) => SelectFile(e.File)" accept=".jpg,.jpeg,.png" />
-                <button type="button" class="btn btn-danger" @onclick="() => AvatarManager.DeleteAvatar(student)">Изтрий аватара</button>
             </div>
+        }
+        else
+        {
+            <EditForm Model="@student" OnValidSubmit="SaveChanges">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-            <div class="mb-3">
-                <label>Име:</label>
-                <InputText class="form-control" @bind-Value="student.FirstName" />
-            </div>
-
-            <div class="mb-3">
-                <label>Фамилия:</label>
-                <InputText class="form-control" @bind-Value="student.SecName" />
-            </div>
-
-            <div class="mb-3">
-                <label>Клас:</label>
-                <InputNumber class="form-control" @bind-Value="student.Grade" />
-            </div>
-
-            <div class="mb-3">
-                <label>Имейл:</label>
-                <InputText class="form-control" @bind-Value="student.Email" />
-            </div>
-
-            <div class="filter-row">
-                <h5>Мога да помогна с:</h5>
-                <div class="checkbox-group">
-                    @foreach (var subject in allSubjects)
-                    {
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   checked="@student.CanHelpWith.Contains(subject)"
-                                   @onchange="e => ToggleCanHelpSubject(subject, e.Value is true)" />
-                            @subject.GetDisplayName()
-                        </div>
-                    }
+                <div>
+                    <label>Аватар:</label>
+                    <InputFile OnChange="(e) => SelectFile(e.File)" accept=".jpg,.jpeg,.png" />
+                    <button type="button" class="btn btn-danger" @onclick="() => AvatarManager.DeleteAvatar(student)">Изтрий аватара</button>
                 </div>
-            </div>
 
-            <div class="filter-row">
-                <h5>Нуждая се от помощ по:</h5>
-                <div class="checkbox-group">
-                    @foreach (var subject in allSubjects)
-                    {
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   checked="@student.NeedsHelpWith.Contains(subject)"
-                                   @onchange="e => ToggleNeedsHelpSubject(subject, e.Value is true)" />
-                            @subject.GetDisplayName()
-                        </div>
-                    }
+                <div class="mb-3">
+                    <label>Име:</label>
+                    <InputText class="form-control" @bind-Value="student.FirstName" />
                 </div>
-            </div>
-            <button type="button" class="btn btn-success" @onclick="GoToChangePassword">Промени паролата</button>
 
-            <button type="button" class="btn btn-success" @onclick="CancelEdit">Отказ</button>
-            <button type="submit" class="btn btn-success">Запазване на промените</button>
-        </EditForm>
-    }
+                <div class="mb-3">
+                    <label>Фамилия:</label>
+                    <InputText class="form-control" @bind-Value="student.SecName" />
+                </div>
 
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
+                <div class="mb-3">
+                    <label>Клас:</label>
+                    <InputNumber class="form-control" @bind-Value="student.Grade" />
+                </div>
 
-    @if (successMessageShown)
-    {
-        <div class="alert alert-success mt-3">Промените са запазени!</div>
+                <div class="mb-3">
+                    <label>Имейл:</label>
+                    <InputText class="form-control" @bind-Value="student.Email" />
+                </div>
+
+
+                <div class="edit-section">
+                    <div class="edit-subject-container">
+                        <p class="profile-text-help-with">Мога да помогна по:</p>
+                        <div class="checkbox-group2">
+                            @foreach (var subj in allSubjects)
+                            {
+                                <label class="checkbox-item">
+                                    <input type="checkbox"
+                                           checked="@student.CanHelpWith.Contains(subj)"
+                                           @onchange="e => ToggleCanHelpSubject(subj, e.Value is true)"
+                                           class="hidden-checkbox" />
+                                    <span class="badge @(student.CanHelpWith.Contains(subj) ? "badge-match1" : "badge-nonmatch")">
+                                        @subj.GetDisplayName()
+                                    </span>
+                                </label>
+                            }
+                        </div>
+                        <p class="profile-text-help-with">Търся помощ по:</p>
+                        <div class="checkbox-group2">
+                            @foreach (var subj in allSubjects)
+                            {
+                                <label class="checkbox-item">
+                                    <input type="checkbox"
+                                           checked="@student.NeedsHelpWith.Contains(subj)"
+                                           @onchange="e => ToggleNeedsHelpSubject(subj, e.Value is true)"
+                                           class="hidden-checkbox" />
+                                    <span class="badge @(student.NeedsHelpWith.Contains(subj) ? "badge-match1" : "badge-nonmatch")">
+                                        @subj.GetDisplayName()
+                                    </span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-success" @onclick="GoToChangePassword">Промени паролата</button>
+
+                <button type="button" class="btn btn-success" @onclick="CancelEdit">Отказ</button>
+                <button type="submit" class="btn btn-success">Запазване на промените</button>
+            </EditForm>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-3">@errorMessage</div>
+        }
+
+        @if (successMessageShown)
+        {
+            <div class="alert alert-success mt-3">Промените са запазени!</div>
+        }
     }
-}
 </div>
 
 @code {
     private Student? student;
+    private Student? studentBackup;
     private List<SubjectEnum> allSubjects = new();
     private List<Swap> allSwaps = new();
     private double averageRating = 0.0;
@@ -213,6 +219,26 @@ else if (student is not null)
             await AvatarManager.UploadAvatar(file, student);
             StateHasChanged();
         }
+    }
+
+    private void StartEditing()
+    {
+        studentBackup = new Student
+        {
+            Id = student.Id,
+            Username = student.Username,
+            FirstName = student.FirstName,
+            SecName = student.SecName,
+            Grade = student.Grade,
+            Email = student.Email,
+            Password = student.Password,
+            AvatarName = student.AvatarName,
+            CanHelpWith = new HashSet<SubjectEnum>(student.CanHelpWith),
+            NeedsHelpWith = new HashSet<SubjectEnum>(student.NeedsHelpWith)
+        };
+
+        isEditing = true;
+        successMessageShown = false;
     }
 
     private void ToggleCanHelpSubject(SubjectEnum subject, bool isChecked)
@@ -257,8 +283,16 @@ else if (student is not null)
     }
     private void CancelEdit()
     {
-        var username = student.Username;
-        student = StudentManager.FindStudent(s => s.Username == username);
+        if (studentBackup != null)
+        {
+            student.FirstName = studentBackup.FirstName;
+            student.SecName = studentBackup.SecName;
+            student.Grade = studentBackup.Grade;
+            student.Email = studentBackup.Email;
+            student.AvatarName = studentBackup.AvatarName;
+            student.CanHelpWith = new HashSet<SubjectEnum>(studentBackup.CanHelpWith);
+            student.NeedsHelpWith = new HashSet<SubjectEnum>(studentBackup.NeedsHelpWith);
+        }
 
         isEditing = false;
         successMessageShown = false;

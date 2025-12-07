@@ -16,6 +16,24 @@
     margin: 0px, 40px;
 }
 
+.edit-subject-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.edit-section {
+    display: block;
+    background-color: #F9F7F6;
+    border-radius: 16px;
+    padding: 12px 14px 4px 14px;
+    gap: 6px;
+    margin-bottom: 16px !important;
+    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
+    border: none;
+}
+
+
 /* ---------- ГОРНА ЧАСТ: ПРОФИЛНА + ИМЕ ---------- */
 .profile-main-info-container {
     grid-area: info;
