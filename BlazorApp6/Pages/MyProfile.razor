@@ -1,8 +1,6 @@
 ﻿@page "/my-profile" // страница за преглед и редактиране на собствения профил
-@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
-@inject IHttpContextAccessor HttpContextAccessor
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
@@ -76,7 +74,12 @@ else if (student is not null)
 
                         <button class="btn-secondary" @onclick="() => isEditing = true">Редактирай</button>
                     </div>
-                    <button class="btn-danger" @onclick="ExitProfile">Изход</button>
+                    <form method="post" action="/account/logout">
+                        <input type="hidden" name="returnUrl" value="/" />
+                        <button type="submit" class="btn-danger">
+                            Изход
+                        </button>
+                    </form>
                 </div>
 
 
@@ -259,11 +262,5 @@ else if (student is not null)
 
         isEditing = false;
         successMessageShown = false;
-    }
-
-    private async Task ExitProfile()
-    {
-        await HttpContextAccessor.HttpContext.SignOutAsync("Cookies");
-        Navigation.NavigateTo("/");
     }
 }

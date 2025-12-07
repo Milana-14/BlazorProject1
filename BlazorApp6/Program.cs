@@ -6,7 +6,6 @@ using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
@@ -17,18 +16,28 @@ builder.Services.AddScoped<AvatarManager>();
 builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<SwapManager>();
 builder.Services.AddScoped<ChatManager>();
+
+builder.Services.AddHttpClient("ServerAPI", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7117");
+});
+
 builder.Services.AddSignalR(options =>
 {
-    options.MaximumReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
+    options.MaximumReceiveMessageSize = 5 * 1024 * 1024;
 });
+
 builder.Services.AddAuthentication("Cookies")
     .AddCookie("Cookies", options =>
     {
-        options.LoginPath = "/";
+        options.LoginPath = "/login";
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddHttpClient();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -39,11 +48,9 @@ CultureInfo.DefaultThreadCurrentUICulture = culture;
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -54,6 +61,9 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
 app.MapHub<ChatMessages>("/chathub");
+
+app.MapControllers();
 
 app.Run();

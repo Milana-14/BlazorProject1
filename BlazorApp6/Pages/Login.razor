@@ -1,85 +1,44 @@
-﻿@page "/login" // страница за вход в профила си
+﻿@page "/login"
 @layout GuestLayout
 @inject NavigationManager Navigation
-@inject IHttpContextAccessor HttpContextAccessor
 @inject StudentManager StudentManager
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Authentication.Cookies
 @rendermode InteractiveServer
 
 <div class="login-page">
     <div class="login-card">
         <h3>Влез в профила си</h3>
-        
-        <EditForm Model="@loginModel" OnValidSubmit="LoginUser">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+        <form method="post" action="/account/login">
             <div class="login-form">
-                <InputText id="username" @bind-Value="loginModel.Username" placeholder="Юзърнейм" />
+                <input id="username"
+                       name="username"
+                       type="text"
+                       placeholder="Юзърнейм"
+                       required />
             </div>
 
             <div class="login-form">
-                <InputText id="password" type="password" @bind-Value="loginModel.Password" placeholder="Парола" />
+                <input id="password"
+                       name="password"
+                       type="password"
+                       placeholder="Парола"
+                       required />
             </div>
+
+            <input type="hidden" name="returnUrl" value="/my-profile" />
 
             <button type="submit" class="btn-login">Вход</button>
-        </EditForm>
+        </form>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger mt-3">
+                @ErrorMessage
+            </div>
+        }
     </div>
-
-    @if (loginFailed)
-    {
-        <div class="alert alert-danger mt-3">
-            Невалиден юзърнейм или парола.
-        </div>
-    }
-
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
 </div>
 
-
 @code {
-    private LoginStudentFormModel loginModel = new LoginStudentFormModel();
-    private bool loginFailed = false;
-    public string errorMessage = string.Empty;
-
-    private async Task LoginUser()
-    {
-        try
-        {
-            Student? foundStudent = StudentManager.FindStudent(s => s.Username == loginModel.Username);
-
-            if (foundStudent != null && HashPasswordService.ComparePasswords(foundStudent.Password, loginModel.Password))
-            {
-                loginFailed = false;
-                errorMessage = string.Empty;
-
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, loginModel.Username),
-                    new Claim(ClaimTypes.Role, "User")
-                };
-
-                var identity = new ClaimsIdentity(claims, "Cookies");
-                var principal = new ClaimsPrincipal(identity);
-
-                await HttpContextAccessor.HttpContext.SignInAsync("Cookies", principal);
-
-
-                Navigation.NavigateTo("/my-profile");
-            }
-            else
-            {
-                loginFailed = true;
-            }
-        }
-        catch (ApplicationException ex)
-        {
-            errorMessage = ex.Message;
-            loginFailed = true;
-        }
-    }
-}  
+    [SupplyParameterFromQuery]
+    public string? ErrorMessage { get; set; }
+}
