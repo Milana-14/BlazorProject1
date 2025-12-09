@@ -9,8 +9,9 @@
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         public Message() { }
-        public Message(Guid swapId, Guid senderId, string content)
+        public Message(Guid id, Guid swapId, Guid senderId, string content)
         {
+            Id = Id;
             SwapId = swapId;
             SenderId = senderId;
             Content = content;
@@ -19,12 +20,16 @@
 
     public class MessageForChat
     {
+        public Guid Id { get; set; }
+        public Guid SenderId { get; set; }
         public string SenderName { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-        public MessageForChat(string senderName, string content, DateTime timestamp)
+        public MessageForChat(Guid id, Guid senderId, string senderName, string content, DateTime timestamp)
         {
+            Id = id;
+            SenderId = senderId;
             SenderName = senderName;
             Content = content;
             Timestamp = timestamp;

@@ -6,7 +6,7 @@
     gap: 18px;
     height: calc(100vh - 20px);
     padding: 16px 20px 20px 20px;
-    background-color: #F0EDE9;
+/*    background-color: #F0EDE9;*/
     box-sizing: border-box;
 }
 
@@ -76,12 +76,12 @@
 ----------------------------------------- */
 .chat-date-separator {
     align-self: center;
-    background-color: #FFFDFB;
+    background-color: rgba(69, 61, 68, 0.32);
     padding: 4px 12px;
     border-radius: 14px;
     font-size: 0.8rem;
-    color: rgba(69, 61, 68, 0.7);
-    border: 1px solid rgba(0,0,0,0.1);
+    color: #FFFFFF;
+    /*    border: 1px solid rgba(0,0,0,0.1);*/
     margin: 10px 0;
 }
 
@@ -116,13 +116,15 @@
 }
 
 .other-message {
-    background-color: #FAF7F3;
+    /*    background-color: #FAF7F3;*/
+    background-color: #F4F3F1;
     color: #453D44;
     padding: 10px 14px;
     border-radius: 14px 14px 14px 0;
+    border: 0,5px solid rgba(0,0,0,0.1);
     max-width: 60%;
     align-self: flex-start;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    /*    box-shadow: 0 2px 6px rgba(0,0,0,0.06);*/
 }
 
 .chat-avatar {
@@ -225,3 +227,16 @@
 .chat-window {
     scroll-behavior: smooth;
 }
+
+.context-menu {
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+    .context-menu button {
+        width: 100%;
+        text-align: left;
+    }

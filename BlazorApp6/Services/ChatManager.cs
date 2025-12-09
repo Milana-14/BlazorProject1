@@ -34,9 +34,9 @@ namespace BlazorApp6.Services
 
             return messages;
         }
-        public void AddMessageToDb(Guid swapId, Guid senderId, string content)
+        public void AddMessageToDb(Guid Id, Guid swapId, Guid senderId, string content)
         {
-            Message message = new Message(swapId, senderId, content);
+            Message message = new Message(Id, swapId, senderId, content);
             using (var connection = new NpgsqlConnection(connectionString))
             {
                 connection.Open();
@@ -56,16 +56,28 @@ namespace BlazorApp6.Services
                 cmd.ExecuteNonQuery();
             }
         }
+
+        public void DeleteMessageById(Guid messageId)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            string sql = @"DELETE FROM ""Messages"" WHERE ""Id"" = @Id";
+            using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@Id", messageId);
+            cmd.ExecuteNonQuery();
+        }
     }
 
 
     public interface IChatClient
     {
-        Task ReceiveMessage(Guid studentId, string username, string message);
+        Task ReceiveMessage(Guid id, Guid studentId, string username, string message);
         Task UserJoined(string username);
+        Task DeleteMessage(Guid messageId);
     }
     public record StudentToConnect(Guid Id, string FirstName, string SecName);
     public record UserConnection(Guid SwapId, StudentToConnect Student);
+    public record MessageToSend(Guid Id, string content);
 
     public class ChatMessages : Hub<IChatClient>
     {
@@ -88,10 +100,10 @@ namespace BlazorApp6.Services
             await Clients.Group(connection.SwapId.ToString()).UserJoined($"{connection.Student.FirstName} {connection.Student.SecName}");
         }
 
-        public async Task SendMessage(UserConnection connection, string message)
+        public async Task SendMessage(UserConnection connection, MessageToSend message)
         {
-            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message);
-            this.chatManager.AddMessageToDb(connection.SwapId, connection.Student.Id, message);
+            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.content);
+            this.chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.content);
         }
 
         public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
@@ -103,11 +115,32 @@ namespace BlazorApp6.Services
             await File.WriteAllBytesAsync(filePath, fileBytes);
 
             var fileUrl = $"/files/{fileName}";
-            var message = $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>";
+            MessageToSend message = new MessageToSend(Guid.NewGuid(), $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>");
 
-            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message);
+            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.content);
 
-            chatManager.AddMessageToDb(connection.SwapId, connection.Student.Id, message);
+            chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.content);
+        }
+
+        public async Task DeleteMessage(UserConnection connection, Guid messageId)
+        {
+            var messages = chatManager.GetMessagesFromDb(connection.SwapId);
+            var msg = messages.FirstOrDefault(m => m.Id == messageId);
+
+            var swap = swapManager.FindSwapById(connection.SwapId);
+            if (swap.Student1Id != connection.Student.Id && swap.Student2Id != connection.Student.Id)
+            {
+                throw new HubException("Нямаш достъп до този чат.");
+            }
+
+            if (msg == null)
+                throw new HubException("Сообщението не е намерено.");
+
+            if (msg.SenderId != connection.Student.Id)
+                throw new HubException("Можете да изтривате само свои съобщения.");
+
+            await Clients.Group(connection.SwapId.ToString()).DeleteMessage(messageId);
+            this.chatManager.DeleteMessageById(messageId);
         }
 
 

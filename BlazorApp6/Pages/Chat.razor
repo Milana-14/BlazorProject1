@@ -14,7 +14,7 @@
 @using SwapModel = BlazorApp6.Models.Swap
 
 
-<div class="main-page">
+<div class="main-page" @onclick="HideContextMenu">
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <p class="text-danger">@errorMessage</p>
@@ -84,7 +84,7 @@ else
 
             @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
             {
-                <div class="my-message">
+                <div class="my-message" @oncontextmenu="@(e => ShowContextMenu(e, m))">
                     @((MarkupString)m.Content)
                     <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
                 </div>
@@ -120,7 +120,7 @@ else
     </div>
         }
         else if (swap.Status == SwapStatus.CompletedNotRated)
-    {
+        {
         if (isStudentToRate)
         {
             <p>Очаква се @otherStudent.FirstName да оцени Вашата помощ.</p>
@@ -139,11 +139,19 @@ else
                 <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="RateStudentsHelp">Изпрати</button>
             </div>
         }
-    }
-    else if (swap.Status == SwapStatus.Completed)
-    {
-        <p>Този свап е завършен.</p>
-    }
+        }
+        else if (swap.Status == SwapStatus.Completed)
+        {
+            <p>Този свап е завършен.</p>
+        }
+
+        @if (contextMenuVisible)
+        {
+            <div class="context-menu" style="top:@contextMenuYpx; left:@contextMenuXpx; position:absolute; z-index:1000;">
+                <button class="btn btn-sm btn-danger" @onclick="DeleteMessage">Изтрий съобщение</button>
+            </div>
+        }
+
 </div>
 }
 </div>
@@ -158,6 +166,10 @@ else
     private List<Message> messages = new();
     private List<MessageForChat> messagesForChat = new();
     private string newMessage = string.Empty;
+
+    private bool contextMenuVisible = false;
+    private string contextMenuXpx, contextMenuYpx;
+    private MessageForChat? selectedMessage;
 
     private bool isStudentToRate;
     private string? errorMessage;
@@ -199,11 +211,14 @@ else
 
         messages = ChatManager.GetMessagesFromDb(swapId);
         messagesForChat = messages.Select(m => new MessageForChat(
-            m.SenderId == currentStudent.Id
-                ? $"{currentStudent.FirstName} {currentStudent.SecName}"
-                : $"{otherStudent.FirstName} {otherStudent.SecName}",
-            m.Content,
-            m.Timestamp)).ToList();
+        m.Id,
+        m.SenderId,
+        m.SenderId == currentStudent.Id
+            ? $"{currentStudent.FirstName} {currentStudent.SecName}"
+            : $"{otherStudent.FirstName} {otherStudent.SecName}",
+        m.Content,
+        m.Timestamp)).ToList();
+
 
         if (hubConnection != null) return;
 
@@ -214,13 +229,13 @@ else
 
         hubConnection.On<string>("UserJoined", (username) =>
         {
-            messagesForChat.Add(new MessageForChat(string.Empty, $"{username} влезе в чата", DateTime.Now));
+            messagesForChat.Add(new MessageForChat(Guid.Empty, Guid.Empty, string.Empty, $"{username} влезе в чата", DateTime.Now));
             InvokeAsync(StateHasChanged);
         });
 
-        hubConnection.On<Guid, string, string>("ReceiveMessage", (studentId, username, message) =>
+        hubConnection.On<Guid, Guid, string, string>("ReceiveMessage", (messageid, senderId, username, message) =>
         {
-            messagesForChat.Add(new MessageForChat(username, message, DateTime.Now));
+            messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, DateTime.Now));
             InvokeAsync(StateHasChanged);
         });
 
@@ -234,15 +249,28 @@ else
         {
             errorMessage = "Не успяхме да се свържем с чата: " + ex.Message;
         }
+
+        hubConnection.On<Guid>("DeleteMessage", (messageId) =>
+        {
+            var msg = messagesForChat.FirstOrDefault(m => m.Id == messageId);
+            if (msg != null)
+            {
+                messagesForChat.Remove(msg);
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
     }
 
     private async Task SendMessage()
     {
         if (string.IsNullOrWhiteSpace(newMessage) || hubConnection == null) return;
 
+        var message = new MessageToSend(Guid.NewGuid(), newMessage);
+
         await hubConnection.SendAsync("SendMessage",
             new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
-            newMessage);
+            message);
 
         newMessage = string.Empty;
     }
@@ -264,6 +292,42 @@ else
     file.Name,
     fileBytes);
 
+    }
+
+    private void ShowContextMenu(MouseEventArgs e, MessageForChat message)
+    {
+        // e.PreventDefault();
+
+        selectedMessage = message;
+        contextMenuXpx = $"{e.ClientX}px";
+        contextMenuYpx = $"{e.ClientY}px";
+        contextMenuVisible = true;
+    }
+
+    private async Task DeleteMessage()
+    {
+        if (hubConnection == null) return;
+        if (selectedMessage == null) return;
+        if (currentStudent.Id != selectedMessage.SenderId) return;
+
+        await hubConnection.SendAsync("DeleteMessage",
+                new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+                selectedMessage.Id);
+
+        contextMenuVisible = false;
+        selectedMessage = null;
+    }
+
+    private void HideContextMenu()
+    {
+        contextMenuVisible = false;
+        selectedMessage = null;
+    }
+
+
+    private async Task ScrollToBottomAsync()  // добавить скролл к низу чата
+    {
+        
     }
 
     private void ProposeCompletion() => SwapManager.ProposeCompletingSwap(swap, currentStudent.Id);
