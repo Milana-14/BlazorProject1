@@ -148,7 +148,8 @@ else
         @if (contextMenuVisible)
         {
             <div class="context-menu" style="top:@contextMenuYpx; left:@contextMenuXpx; position:absolute; z-index:1000;">
-                <button class="btn btn-sm btn-danger" @onclick="DeleteMessage">Изтрий съобщение</button>
+                <button class="btn btn-sm btn-danger" @onclick="DeleteMessage">Изтрий съобщение</button
+                <button class="btn btn-secondary" @onclick="EditMessage">Редактирай</button>
             </div>
         }
 
@@ -313,6 +314,21 @@ else
         await hubConnection.SendAsync("DeleteMessage",
                 new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
                 selectedMessage.Id);
+
+        contextMenuVisible = false;
+        selectedMessage = null;
+    }
+
+    private async Task EditMessage()
+    {
+        if (hubConnection == null) return;
+        if (selectedMessage == null) return;
+        if (currentStudent.Id != selectedMessage.SenderId) return;
+
+        await hubConnection.SendAsync("EditMessage",
+                new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+                selectedMessage.Id,
+                selectedMessage.Content + " (редактирано)");
 
         contextMenuVisible = false;
         selectedMessage = null;
