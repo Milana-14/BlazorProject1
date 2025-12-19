@@ -1,0 +1,96 @@
+﻿@page "/ai-chat"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider Auth
+
+<div class="chat-page">
+    <div class="sidebar p-3">
+        <h5>AI Учител</h5>
+        <p>Помага с уроци и задачи</p>
+    </div>
+
+    <div class="chat-container d-flex flex-column flex-grow-1">
+        <div class="chat-window flex-grow-1 overflow-auto">
+
+            @foreach (var m in messages)
+            {
+                if (m.SenderId == currentUserId)
+                {
+                    <div class="my-message">
+                        @m.Content
+                    </div>
+                }
+                else
+                {
+                    <div class="other-message-sender">
+                        <div class="other-message">
+                            @m.Content
+                        </div>
+                    </div>
+                }
+            }
+
+            <div class="input-bar d-flex gap-2 mt-2">
+                <InputText @bind-Value="newMessage" class="form-control" />
+                <button class="btn-primary-send-message"
+                        disabled="@string.IsNullOrWhiteSpace(newMessage)"
+                        @onclick="Send">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private HubConnection hub;
+    private List<MessageVm> messages = new();
+    private string newMessage;
+
+    private Guid currentUserId;
+    private string currentUserName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await Auth.GetAuthenticationStateAsync();
+        currentUserName = state.User.Identity.Name;
+        currentUserId = Guid.NewGuid();
+
+        hub = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/aichat"))
+            .Build();
+
+        hub.On<Guid, Guid, string, string>("ReceiveMessage",
+            (id, senderId, sender, msg) =>
+            {
+                messages.Add(new MessageVm(senderId, msg));
+                InvokeAsync(StateHasChanged);
+            });
+
+        await hub.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        await hub.SendAsync(
+            "SendMessage",
+            currentUserName,
+            currentUserId,
+            newMessage
+        );
+
+        newMessage = "";
+    }
+
+    class MessageVm
+    {
+        public Guid SenderId { get; }
+        public string Content { get; }
+
+        public MessageVm(Guid senderId, string content)
+        {
+            SenderId = senderId;
+            Content = content;
+        }
+    }
+}

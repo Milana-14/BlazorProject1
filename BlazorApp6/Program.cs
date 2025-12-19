@@ -1,5 +1,8 @@
 using BlazorApp6;
+using BlazorApp6.Hubs;
 using BlazorApp6.Services;
+using BlazorApp6.Services;
+using Microsoft.AspNetCore.SignalR;
 using MudBlazor.Services;
 using System.Data;
 using System.Globalization;
@@ -16,6 +19,7 @@ builder.Services.AddScoped<AvatarManager>();
 builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<SwapManager>();
 builder.Services.AddScoped<ChatManager>();
+builder.Services.AddScoped<AiChatService>();
 
 builder.Services.AddHttpClient("ServerAPI", client =>
 {
@@ -63,6 +67,8 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapHub<ChatMessages>("/chathub");
+
+app.MapHub<AiChatHub>("/aichat");
 
 app.MapControllers();
 
