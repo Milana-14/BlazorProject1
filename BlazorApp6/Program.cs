@@ -20,6 +20,8 @@ builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<SwapManager>();
 builder.Services.AddScoped<ChatManager>();
 builder.Services.AddScoped<AiChatService>();
+builder.Services.AddScoped<AiChatManager>();
+
 
 builder.Services.AddHttpClient("ServerAPI", client =>
 {

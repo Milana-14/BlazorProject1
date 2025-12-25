@@ -72,40 +72,40 @@ else
         <div class="chat-window flex-grow-1 overflow-auto">
             @code { DateTime? lastDate = null; }
             @foreach (var m in messagesForChat)
-                        {
-                        DateTime date = m.Timestamp.Date;
-                        if (lastDate == null || lastDate.Value != date)
-                        {
-            <div class="chat-date-separator">
-                @date.ToString("dd MMMM yyyy")
-            </div>
-                        lastDate = date;
-                        }
+            {
+                DateTime date = m.Timestamp.Date;
+                if (lastDate == null || lastDate.Value != date)
+                {
+                    <div class="chat-date-separator">
+                        @date.ToString("dd MMMM yyyy")
+                    </div>
+                    lastDate = date;
+                }
 
-            @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
-            {
-                <div class="my-message" @oncontextmenu="@(e => ShowContextMenu(e, m))">
-                    @((MarkupString)m.Content)
-                    <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
-                </div>
-            }
-            else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
-            {
-                <div class="other-message-sender">
-                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
-                <div class="other-message">
-                    @((MarkupString)m.Content)
-                    <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
-                </div>
-                </div>
-            }
-            else
-            {
-                <div class="system-message">
-                    <i>@m.Content</i>
-                    <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
-                </div>
-            }
+                @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
+                {
+                    <div class="my-message" @oncontextmenu="@(e => ShowContextMenu(e, m))">
+                        @((MarkupString)m.Content)
+                        <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
+                    </div>
+                }
+                else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
+                {
+                    <div class="other-message-sender">
+                        <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
+                        <div class="other-message">
+                            @((MarkupString)m.Content)
+                            <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="system-message">
+                        <i>@m.Content</i>
+                        <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
+                    </div>
+                }
             }
 
             <div class="input-bar d-flex align-items-center gap-2 mt-2">

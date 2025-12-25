@@ -4,10 +4,10 @@
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider Auth
 
 <div class="chat-page">
-    <div class="sidebar p-3">
+    @* <div class="sidebar p-3">
         <h5>AI Учител</h5>
         <p>Помага с уроци и задачи</p>
-    </div>
+    </div> *@
 
     <div class="chat-container d-flex flex-column flex-grow-1">
         <div class="chat-window flex-grow-1 overflow-auto">
@@ -30,11 +30,11 @@
                 }
             }
 
-            <div class="input-bar d-flex gap-2 mt-2">
-                <InputText @bind-Value="newMessage" class="form-control" />
-                <button class="btn-primary-send-message"
-                        disabled="@string.IsNullOrWhiteSpace(newMessage)"
-                        @onclick="Send">
+            <div class="input-bar d-flex align-items-center gap-2 mt-2">
+                @* <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button> *@
+                <InputFile OnChange="OnInputFileSelected" class="form-control-file" />
+                <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..." class="form-control flex-grow-1 type-message" />
+                <button class="btn-primary-send-message" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage">
                     <i class="bi bi-send"></i>
                 </button>
             </div>
@@ -81,6 +81,24 @@
 
         newMessage = "";
     }
+
+    private async Task OnInputFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        using var stream = file.OpenReadStream(20 * 1024 * 1024);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        byte[] fileBytes = ms.ToArray();
+
+        await hubConnection.SendAsync("SendFile",
+            currentStudent.Name,
+            currentStudent.Id,
+            file.Name,
+            fileBytes);
+    }
+
 
     class MessageVm
     {
