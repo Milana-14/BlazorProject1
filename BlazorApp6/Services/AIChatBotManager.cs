@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Azure.AI.OpenAI;
 using BlazorApp6.Services;
-using Azure.AI.OpenAI;
+using Microsoft.AspNetCore.SignalR;
 using OpenAI.Chat;
 using System.ClientModel;
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace BlazorApp6.Hubs
@@ -32,14 +33,20 @@ namespace BlazorApp6.Hubs
                 message
             );
 
-            var aiResponse = await ai.AskAsync(message);
+            var response = await ai.AskAsync(Context.ConnectionId, message);
 
             await Clients.Caller.ReceiveMessage(
                 Guid.NewGuid(),
                 BotId,
                 "AI Учител",
-                aiResponse
+                response
             );
+        }
+
+        public override Task OnDisconnectedAsync(Exception? exception)
+        {
+            ai.ClearHistory(Context.ConnectionId);
+            return base.OnDisconnectedAsync(exception);
         }
     }
 }
@@ -50,18 +57,29 @@ namespace BlazorApp6.Services
     {
         private readonly ChatClient chatClient;
 
-        private readonly List<ChatMessage> conversationHistory = new()
+        private readonly ConcurrentDictionary<string, List<ChatMessage>> histories = new();
+
+        private List<ChatMessage> GetHistory(string connectionId)
         {
-            new SystemChatMessage(
+            return histories.GetOrAdd(connectionId, _ => new List<ChatMessage>
+            {
+                new SystemChatMessage(
                 "Ти си внимателен и търпелив гимназиален учител." +
                 "Твоята цел е да помагаш на ученика да разбере учебния материал." +
-                "Обяснявай стъпка по стъпка, с примери и насочващи въпроси."
-            )
-        };
+                "Обяснявай стъпка по стъпка, с примери и насочващи въпроси." +
+                "Опитвай се да насочиш ученика към правилния отговор, без да му го даващ"
+                )
+            });
+        }
 
         public AiChatService(IConfiguration config)
         {
-            var token = config[""];
+            var token = Environment.GetEnvironmentVariable("EDUSWAPS_AI_TOKEN");
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new Exception("Токенът за искуственния интелект не е конфигуриран. Задайте променлива на средата EDUSWAPS_AI_TOKEN.");
+            }
 
             var endpoint = new Uri("https://models.inference.ai.azure.com");
             var client = new AzureOpenAIClient(endpoint, new ApiKeyCredential(token));
@@ -69,11 +87,13 @@ namespace BlazorApp6.Services
             chatClient = client.GetChatClient("gpt-4o");
         }
 
-        public async Task<string> AskAsync(string userMessage)
+        public async Task<string> AskAsync(string connectionId, string userMessage)
         {
-            conversationHistory.Add(new UserChatMessage(userMessage));
+            var history = GetHistory(connectionId);
 
-            var updates = chatClient.CompleteChatStreamingAsync(conversationHistory);
+            history.Add(new UserChatMessage(userMessage));
+
+            var updates = chatClient.CompleteChatStreamingAsync(history);
 
             var sb = new StringBuilder();
 
@@ -87,13 +107,17 @@ namespace BlazorApp6.Services
             }
 
             var fullResponse = sb.ToString();
+            history.Add(new AssistantChatMessage(fullResponse));
 
-            conversationHistory.Add(new AssistantChatMessage(fullResponse));
-
-            if (conversationHistory.Count > 11)
-                conversationHistory.RemoveAt(1);
+            if (history.Count > 11)
+                history.RemoveAt(1);
 
             return fullResponse;
+        }
+
+        public void ClearHistory(string connectionId)
+        {
+            histories.TryRemove(connectionId, out _);
         }
     }
 }
