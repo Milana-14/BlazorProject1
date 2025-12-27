@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider Auth
+@inject StudentManager StudentManager
 
 <div class="chat-page">
     @* <div class="sidebar p-3">
@@ -14,7 +15,7 @@
 
             @foreach (var m in messages)
             {
-                if (m.SenderId == currentUserId)
+                if (m.SenderId == currentStudent.Id)
                 {
                     <div class="my-message">
                         @m.Content
@@ -47,14 +48,19 @@
     private List<MessageVm> messages = new();
     private string newMessage;
 
-    private Guid currentUserId;
-    private string currentUserName;
+    private Student currentStudent;
 
     protected override async Task OnInitializedAsync()
     {
         var state = await Auth.GetAuthenticationStateAsync();
-        currentUserName = state.User.Identity.Name;
-        currentUserId = Guid.NewGuid();
+
+        var userIdClaim = state.User.FindFirst("StudentId");
+        if (userIdClaim == null)
+            return;
+
+        Guid studentId = Guid.Parse(userIdClaim.Value);
+
+        currentStudent = StudentManager.FindStudent(s => s.Id == studentId);
 
         hub = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/aichat"))
@@ -70,12 +76,12 @@
         await hub.StartAsync();
     }
 
-    private async Task Send()
+    private async Task SendMessage()
     {
         await hub.SendAsync(
             "SendMessage",
-            currentUserName,
-            currentUserId,
+            $"{currentStudent.FirstName} {currentStudent.SecName}",
+            currentStudent.Id,
             newMessage
         );
 
@@ -92,8 +98,8 @@
         await stream.CopyToAsync(ms);
         byte[] fileBytes = ms.ToArray();
 
-        await hubConnection.SendAsync("SendFile",
-            currentStudent.Name,
+        await hub.SendAsync("SendFile",
+            $"{currentStudent.FirstName} {currentStudent.SecName}",
             currentStudent.Id,
             file.Name,
             fileBytes);
