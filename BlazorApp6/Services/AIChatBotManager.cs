@@ -24,11 +24,15 @@ namespace BlazorApp6.Services
             using var conn = new NpgsqlConnection(connectionString);
             await conn.OpenAsync();
 
-            string sql = @"INSERT INTO ""AiMessages"" (""Id"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp"")
-                           VALUES (@Id, @SenderId, @SenderName, @Content, @IsFile, @FileName, @Timestamp)";
+            var sql = @"
+INSERT INTO ""AiMessages""
+(""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp"")
+VALUES
+(@Id, @StudentId, @SenderId, @SenderName, @Content, @IsFile, @FileName, @Timestamp)";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", message.Id);
+            cmd.Parameters.AddWithValue("@StudentId", message.StudentId);
             cmd.Parameters.AddWithValue("@SenderId", message.SenderId);
             cmd.Parameters.AddWithValue("@SenderName", message.SenderName);
             cmd.Parameters.AddWithValue("@Content", message.Content);
@@ -39,28 +43,34 @@ namespace BlazorApp6.Services
             await cmd.ExecuteNonQueryAsync();
         }
 
-        public async Task<List<AiMessage>> GetMessagesAsync()
+        public async Task<List<AiMessage>> GetMessagesAsync(Guid studentId)
         {
             var list = new List<AiMessage>();
             using var conn = new NpgsqlConnection(connectionString);
             await conn.OpenAsync();
 
-            string sql = @"SELECT ""Id"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp"" FROM ""AiMessages"" ORDER BY ""Timestamp"" ASC";
+            var sql = @"
+SELECT ""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp""
+FROM ""AiMessages""
+WHERE ""StudentId"" = @StudentId
+ORDER BY ""Timestamp""";
 
             using var cmd = new NpgsqlCommand(sql, conn);
-            using var reader = await cmd.ExecuteReaderAsync();
+            cmd.Parameters.AddWithValue("@StudentId", studentId);
 
+            using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
                 list.Add(new AiMessage
                 {
                     Id = reader.GetGuid(0),
-                    SenderId = reader.GetGuid(1),
-                    SenderName = reader.GetString(2),
-                    Content = reader.GetString(3),
-                    IsFile = reader.GetBoolean(4),
-                    FileName = reader.IsDBNull(5) ? null : reader.GetString(5),
-                    Timestamp = reader.GetDateTime(6)
+                    StudentId = reader.GetGuid(1),
+                    SenderId = reader.GetGuid(2),
+                    SenderName = reader.GetString(3),
+                    Content = reader.GetString(4),
+                    IsFile = reader.GetBoolean(5),
+                    FileName = reader.IsDBNull(6) ? null : reader.GetString(6),
+                    Timestamp = reader.GetDateTime(7)
                 });
             }
 
@@ -75,102 +85,94 @@ namespace BlazorApp6.Services
 
     public class AiChatHub : Hub<IAiChatClient>
     {
+        private readonly AiChatManager db;
         private readonly AiChatService ai;
-        private readonly AiChatManager aiDb;
 
-        private static readonly Guid BotId = Guid.Empty;
+        private static readonly Guid AI_ID = Guid.Empty;
 
-        public AiChatHub(AiChatService ai, AiChatManager aiDb)
+        public AiChatHub(AiChatManager db, AiChatService ai)
         {
+            this.db = db;
             this.ai = ai;
-            this.aiDb = aiDb;
         }
-        public override async Task OnConnectedAsync()
-        {
-            var messages = await aiDb.GetMessagesAsync();
-            foreach (var m in messages)
-            {
-                string content = m.IsFile
-                    ? $"[Файл] <a href='/ai-files/{m.FileName}' target='_blank'>{m.FileName}</a>"
-                    : m.Content;
 
-                await Clients.Caller.ReceiveMessage(m.Id, m.SenderId, m.SenderName, content);
+        public async Task JoinChat(UserConnection connection)
+        {
+            var studentId = connection.Student.Id;
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, studentId.ToString());
+
+            var history = await db.GetMessagesAsync(studentId);
+            foreach (var m in history)
+            {
+                await Clients.Caller.ReceiveMessage(
+                    m.Id, m.SenderId, m.SenderName, m.Content);
             }
-
-            await ai.AskAsync(Context.ConnectionId, "");
-
-            await base.OnConnectedAsync();
         }
 
-
-        public async Task SendMessage(string userName, Guid userId, string message)
+        public async Task SendMessage(UserConnection connection, MessageToSend message)
         {
-            var aiMessage = new AiMessage
+            var studentId = connection.Student.Id;
+            var senderName = $"{connection.Student.FirstName} {connection.Student.SecName}";
+
+            await Clients.Group(studentId.ToString())
+                .ReceiveMessage(message.Id, studentId, senderName, message.content);
+
+            await db.AddMessageAsync(new AiMessage
             {
-                Id = Guid.NewGuid(),
-                SenderId = userId,
-                SenderName = userName,
-                Content = message,
-                IsFile = false,
-                FileName = null,
-                Timestamp = DateTime.Now
-            };
-            await aiDb.AddMessageAsync(aiMessage);
+                Id = message.Id,
+                StudentId = studentId,
+                SenderId = studentId,
+                SenderName = senderName,
+                Content = message.content,
+                IsFile = false
+            });
 
-            await Clients.Caller.ReceiveMessage(
-                Guid.NewGuid(),
-                userId,
-                userName,
-                message
-            );
+            var aiResponse = await ai.AskAsync(studentId, message.content);
 
-            var response = await ai.AskAsync(Context.ConnectionId, message);
+            var aiMsgId = Guid.NewGuid();
+            await Clients.Group(studentId.ToString())
+                .ReceiveMessage(aiMsgId, AI_ID, "AI Учител", aiResponse);
 
-            await Clients.Caller.ReceiveMessage(
-                Guid.NewGuid(),
-                BotId,
-                "AI Учител",
-                response
-            );
+            await db.AddMessageAsync(new AiMessage
+            {
+                Id = aiMsgId,
+                StudentId = studentId,
+                SenderId = AI_ID,
+                SenderName = "AI Учител",
+                Content = aiResponse,
+                IsFile = false
+            });
         }
 
-        public async Task SendFile(string userName, Guid userId, string fileName, byte[] fileBytes)
+        public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
         {
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ai-files");
-            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+            var studentId = connection.Student.Id;
 
-            var filePath = Path.Combine(folderPath, fileName);
-            await File.WriteAllBytesAsync(filePath, fileBytes);
+            var folder = Path.Combine("wwwroot", "ai-files");
+            Directory.CreateDirectory(folder);
 
-            var fileUrl = $"/ai-files/{fileName}";
-            var aiMessage = new AiMessage
+            var path = Path.Combine(folder, $"{Guid.NewGuid()}_{fileName}");
+            await File.WriteAllBytesAsync(path, fileBytes);
+
+            var content = $"<a href='/ai-files/{Path.GetFileName(path)}' target='_blank'>{fileName}</a>";
+            var msgId = Guid.NewGuid();
+
+            await Clients.Group(studentId.ToString())
+                .ReceiveMessage(msgId, studentId,
+                    $"{connection.Student.FirstName} {connection.Student.SecName}",
+                    content);
+
+            await db.AddMessageAsync(new AiMessage
             {
-                Id = Guid.NewGuid(),
-                SenderId = userId,
-                SenderName = userName,
-                Content = fileUrl,
+                Id = msgId,
+                StudentId = studentId,
+                SenderId = studentId,
+                SenderName = $"{connection.Student.FirstName} {connection.Student.SecName}",
+                Content = content,
                 IsFile = true,
-                FileName = fileName,
-                Timestamp = DateTime.Now
-            };
-
-            await aiDb.AddMessageAsync(aiMessage);
-
-            var messageContent = $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>";
-
-            await Clients.Caller.ReceiveMessage(Guid.NewGuid(), userId, userName, messageContent);
-
-            var userMessage = $"Потребителят е качил файл: {fileName}";
-            var aiResponse = await ai.AskAsync(Context.ConnectionId, userMessage);
-
-            await Clients.Caller.ReceiveMessage(Guid.NewGuid(), Guid.Empty, "AI Учител", aiResponse);
-        }
-
-
-        public override Task OnDisconnectedAsync(Exception? exception)
-        {
-            ai.ClearHistory(Context.ConnectionId);
-            return base.OnDisconnectedAsync(exception);
+                FileName = fileName
+            });
         }
     }
 
@@ -198,9 +200,9 @@ namespace BlazorApp6.Services
             this.aiDb = aiDb;
         }
 
-        private async Task<List<ChatMessage>> GetHistoryAsync(string connectionId)
+        private async Task<List<ChatMessage>> GetHistoryAsync(Guid studentId)
         {
-            if (histories.TryGetValue(connectionId, out var memHistory))
+            if (histories.TryGetValue(studentId.ToString(), out var memHistory))
                 return memHistory;
 
             var history = new List<ChatMessage>
@@ -213,22 +215,32 @@ namespace BlazorApp6.Services
                 )
             };
 
-            var messages = await aiDb.GetMessagesAsync();
+            var messages = await aiDb.GetMessagesAsync(studentId);
             foreach (var msg in messages)
             {
                 if (msg.IsFile)
-                    history.Add(new UserChatMessage($"[Файл] {msg.FileName}"));
+                {
+                    if (msg.SenderId == studentId)
+                        history.Add(new UserChatMessage($"[Файл] {msg.FileName}"));
+                    else
+                        history.Add(new AssistantChatMessage($"[Файл] {msg.FileName}"));
+                }
                 else
-                    history.Add(new UserChatMessage(msg.Content));
+                {
+                    if (msg.SenderId == studentId)
+                        history.Add(new UserChatMessage(msg.Content));
+                    else
+                        history.Add(new AssistantChatMessage(msg.Content));
+                }
             }
 
-            histories[connectionId] = history;
+            histories[studentId.ToString()] = history;
             return history;
         }
 
-        public async Task<string> AskAsync(string connectionId, string userMessage)
+        public async Task<string> AskAsync(Guid studentId, string userMessage)
         {
-            var history = await GetHistoryAsync(connectionId);
+            var history = await GetHistoryAsync(studentId);
 
             history.Add(new UserChatMessage(userMessage));
 
@@ -250,9 +262,9 @@ namespace BlazorApp6.Services
             return fullResponse;
         }
 
-        public void ClearHistory(string connectionId)
+        public void ClearHistory(Guid studentId)
         {
-            histories.TryRemove(connectionId, out _);
+            histories.TryRemove(studentId.ToString(), out _);
         }
     }
 }

@@ -1,14 +1,17 @@
 ﻿@page "/ai-chat"
+@implements IAsyncDisposable
 @using Microsoft.AspNetCore.SignalR.Client
-@inject NavigationManager Navigation
-@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider Auth
+@inject NavigationManager NavigationManager
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject StudentManager StudentManager
+@rendermode InteractiveServer
 
 <div class="chat-page">
-    @* <div class="sidebar p-3">
+
+    <div class="sidebar p-3">
         <h5>AI Учител</h5>
-        <p>Помага с уроци и задачи</p>
-    </div> *@
+        <p>Персонален помощник</p>
+    </div>
 
     <div class="chat-container d-flex flex-column flex-grow-1">
         <div class="chat-window flex-grow-1 overflow-auto">
@@ -18,24 +21,25 @@
                 if (m.SenderId == currentStudent.Id)
                 {
                     <div class="my-message">
-                        @m.Content
+                        @((MarkupString)m.Content)
+                        <sub><small>@m.Timestamp.ToString("HH:mm")</small></sub>
                     </div>
                 }
                 else
                 {
                     <div class="other-message-sender">
                         <div class="other-message">
-                            @m.Content
+                            @((MarkupString)m.Content)
+                            <sub><small>@m.Timestamp.ToString("HH:mm")</small></sub>
                         </div>
                     </div>
                 }
             }
 
             <div class="input-bar d-flex align-items-center gap-2 mt-2">
-                @* <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button> *@
-                <InputFile OnChange="OnInputFileSelected" class="form-control-file" />
-                <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..." class="form-control flex-grow-1 type-message" />
-                <button class="btn-primary-send-message" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage">
+                <InputFile OnChange="OnInputFileSelected" />
+                <InputText @bind-Value="newMessage" class="form-control" placeholder="Напиши въпрос..." />
+                <button class="btn-primary-send-message" @onclick="SendMessage">
                     <i class="bi bi-send"></i>
                 </button>
             </div>
@@ -44,46 +48,53 @@
 </div>
 
 @code {
-    private HubConnection hub;
-    private List<MessageVm> messages = new();
-    private string newMessage;
-
+    private HubConnection? hubConnection;
     private Student currentStudent;
+    private List<MessageForChat> messages = new();
+    private string newMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
-        var state = await Auth.GetAuthenticationStateAsync();
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var username = state.User.Identity?.Name;
 
-        var userIdClaim = state.User.FindFirst("StudentId");
-        if (userIdClaim == null)
-            return;
+        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+        if (currentStudent == null) return;
 
-        Guid studentId = Guid.Parse(userIdClaim.Value);
-
-        currentStudent = StudentManager.FindStudent(s => s.Id == studentId);
-
-        hub = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/aichat"))
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/aichat"))
+            .WithAutomaticReconnect()
             .Build();
 
-        hub.On<Guid, Guid, string, string>("ReceiveMessage",
-            (id, senderId, sender, msg) =>
+        hubConnection.On<Guid, Guid, string, string>("ReceiveMessage",
+            (id, senderId, sender, content) =>
             {
-                messages.Add(new MessageVm(senderId, msg));
+                messages.Add(new MessageForChat(id, senderId, sender, content, DateTime.Now));
                 InvokeAsync(StateHasChanged);
             });
 
-        await hub.StartAsync();
+        hubConnection.Reconnected += async _ =>
+        {
+            await hubConnection.SendAsync("JoinChat",
+                new UserConnection(Guid.Empty,
+                    new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
+        };  
+
+        await hubConnection.StartAsync();
+
+        await hubConnection.SendAsync("JoinChat",
+            new UserConnection(Guid.Empty,
+                new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
     }
 
     private async Task SendMessage()
     {
-        await hub.SendAsync(
-            "SendMessage",
-            $"{currentStudent.FirstName} {currentStudent.SecName}",
-            currentStudent.Id,
-            newMessage
-        );
+        if (string.IsNullOrWhiteSpace(newMessage) || hubConnection == null) return;
+
+        await hubConnection.SendAsync("SendMessage",
+            new UserConnection(Guid.Empty,
+                new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+            new MessageToSend(Guid.NewGuid(), newMessage));
 
         newMessage = "";
     }
@@ -91,30 +102,22 @@
     private async Task OnInputFileSelected(InputFileChangeEventArgs e)
     {
         var file = e.File;
-        if (file == null) return;
+        if (file == null || hubConnection == null) return;
 
         using var stream = file.OpenReadStream(20 * 1024 * 1024);
         using var ms = new MemoryStream();
         await stream.CopyToAsync(ms);
-        byte[] fileBytes = ms.ToArray();
 
-        await hub.SendAsync("SendFile",
-            $"{currentStudent.FirstName} {currentStudent.SecName}",
-            currentStudent.Id,
+        await hubConnection.SendAsync("SendFile",
+            new UserConnection(Guid.Empty,
+                new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
             file.Name,
-            fileBytes);
+            ms.ToArray());
     }
 
-
-    class MessageVm
+    public async ValueTask DisposeAsync()
     {
-        public Guid SenderId { get; }
-        public string Content { get; }
-
-        public MessageVm(Guid senderId, string content)
-        {
-            SenderId = senderId;
-            Content = content;
-        }
+        if (hubConnection != null)
+            await hubConnection.DisposeAsync();
     }
 }
