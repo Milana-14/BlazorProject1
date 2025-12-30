@@ -345,6 +345,60 @@ body {
     z-index: 100;
 }
 
+    /* Верх (EduSwaps) — такой же ритм, как ES */
+    .sidebar-full-sidebar .navbar-container {
+        height: 84px;
+        display: flex;
+        align-items: center;
+        padding-left: 24px;
+    }
+
+    /* Навигация */
+    .sidebar-full-sidebar .logged-nav-menu {
+        margin-top: 24px; /* как в collapsed */
+        padding: 0 12px; /* симметрия */
+    }
+
+    .sidebar-full-sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 18px; /* 🔥 ТОЧНО как в collapsed */
+    }
+
+/* Пункт */
+.logged-nav-item {
+    width: 100%;
+}
+
+/* Ссылка = кнопка */
+.logged-nav-link {
+    height: 48px; /* 🔥 та же высота */
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 14px; /* горизонтальные отступы */
+    border-radius: 12px; /* 🔥 одинаковое скругление */
+    color: white;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+}
+
+    /* Hover */
+    .logged-nav-link:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateX(2px); /* лёгкий сдвиг — ощущение глубины */
+    }
+
+    /* Иконки */
+    .logged-nav-link i {
+        font-size: 1.35rem; /* как в collapsed */
+        width: 24px; /* фиксированная ширина → ровные колонки */
+        text-align: center;
+    }
+
+
+
+/* ---------- СЖАТЫЙ САЙДБАР ---------- */
 .sidebar-collapsed-sidebar {
     position: fixed;
     top: 0;
@@ -354,8 +408,50 @@ body {
     background: linear-gradient(to bottom, #8B6D86, #3E363D);
     display: flex;
     flex-direction: column;
+    align-items: center;
     z-index: 100;
 }
+
+    /* Верхний логотип */
+    .sidebar-collapsed-sidebar .navbar-container {
+        height: 84px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Навигация */
+    .sidebar-collapsed-sidebar .logged-nav-menu {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px; /* 🔹 расстояние между иконками */
+    }
+
+        /* Ссылки */
+        .sidebar-collapsed-sidebar .logged-nav-menu a {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            color: white;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+            /* Hover */
+            .sidebar-collapsed-sidebar .logged-nav-menu a:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: scale(1.05);
+            }
+
+    /* Иконки */
+    .sidebar-collapsed-sidebar i {
+        font-size: 1.35rem;
+    }
+
 
 .navbar-container {
     height: 84px;
