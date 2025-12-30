@@ -7,6 +7,13 @@
 <div class="swaps-sidebar">
     <h6>Текущи чатове:</h6>
 
+    <div class="swap-chat-item ai-chat" @onclick="OpenAiChat">
+        <i class="bi bi-lightning"></i>
+        <div class="swap-chat-info">
+            <strong>ИИ чат бот</strong>
+        </div>
+    </div>
+
     @foreach (var student in OtherStudents)
     {
         <div class="swap-chat-item" @onclick="() => OpenChat(student)">
@@ -39,5 +46,10 @@
     {
         var swap = SwapManager.FindSwapByStudentsId(student.Id, CurrentStudentId);
         if (swap != null) NavigationManager.NavigateTo($"/chat/{swap.Id}");
+    }
+
+    private void OpenAiChat()
+    {
+        NavigationManager.NavigateTo($"/ai-chat");
     }
 }

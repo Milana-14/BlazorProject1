@@ -1,0 +1,289 @@
+﻿body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* ---------- ОБЩИЙ КОНТЕЙНЕР ---------- */
+.app-layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* ---------- ПОЛНЫЙ САЙДБАР ---------- */
+.sidebar-full-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background: linear-gradient(to bottom, #8B6D86, #3E363D);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+    .sidebar-full-sidebar .navbar-container {
+        height: 84px;
+        display: flex;
+        align-items: center;
+        padding-left: 24px;
+    }
+
+    /* Навигация */
+    .sidebar-full-sidebar .logged-nav-menu {
+        margin-top: 24px;
+        padding: 0 12px;
+    }
+
+    .sidebar-full-sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+/* Пункт */
+.logged-nav-item {
+    width: 100%;
+}
+
+/* Ссылка = кнопка */
+.logged-nav-link {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 14px;
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+}
+
+    /* Hover */
+    .logged-nav-link:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateX(2px);
+    }
+
+    /* Иконки */
+    .logged-nav-link i {
+        font-size: 1.35rem;
+        width: 24px;
+        text-align: center;
+    }
+
+
+
+/* ---------- СЖАТЫЙ САЙДБАР ---------- */
+.sidebar-collapsed-sidebar {
+    position: fixed;
+    padding-top: 84px;
+    top: 0;
+    left: 0;
+    width: 72px;
+    height: 100vh;
+    background: linear-gradient(to bottom, #8B6D86, #3E363D);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 100;
+}
+
+    /* Верхний логотип */
+    .sidebar-collapsed-sidebar .navbar-container {
+        height: 84px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Навигация */
+    .sidebar-collapsed-sidebar .logged-nav-menu {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px; /* 🔹 расстояние между иконками */
+    }
+
+        /* Ссылки */
+        .sidebar-collapsed-sidebar .logged-nav-menu a {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            color: white;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+            /* Hover */
+            .sidebar-collapsed-sidebar .logged-nav-menu a:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: scale(1.05);
+            }
+
+    /* Иконки */
+    .sidebar-collapsed-sidebar i {
+        font-size: 1.35rem;
+    }
+
+
+.navbar-container {
+    height: 84px;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+}
+
+.navbar-brand {
+    color: white;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+/* ---------- НАВИГАЦИЯ ---------- */
+.logged-nav-menu {
+    display: flex;
+    flex-direction: column;
+    margin-top: 36px;
+}
+
+    .logged-nav-menu a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+    }
+
+        .logged-nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+/* ---------- ДОПОЛНИТЕЛЬНЫЙ САЙДБАР С ЧАТАМИ ---------- */
+.swaps-sidebar {
+    position: fixed;
+    padding-top: 100px;
+    top: 0;
+    left: 72px;
+    width: 280px;
+    height: 100vh;
+    background: #F4F3F1;
+    border-right: 1px solid #d6d4d2;
+    padding: 16px 12px;
+    overflow-y: auto;
+    z-index: 90;
+}
+
+    /* Заголовок */
+    .swaps-sidebar h6 {
+        margin: 8px 8px 18px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+/* ---------- ЭЛЕМЕНТ ЧАТА ---------- */
+.swap-chat-item {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+
+    /* Hover */
+    .swap-chat-item:hover {
+        background: #e2e1df;
+        transform: translateX(2px);
+    }
+
+    /* ---------- АВАТАР / ИКОНКА ---------- */
+    .swap-chat-item img,
+    .swap-chat-item i {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #444;
+    }
+
+/* ---------- ТЕКСТ ---------- */
+.swap-chat-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .swap-chat-info strong {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #222;
+        line-height: 1;
+    }
+
+/* ---------- AI ЧАТ — АКЦЕНТ ---------- */
+.swap-chat-item.ai-chat {
+    background: rgba(139, 109, 134, 0.15);
+}
+
+    .swap-chat-item.ai-chat:hover {
+        background: rgba(139, 109, 134, 0.25);
+    }
+
+    .swap-chat-item.ai-chat i {
+        color: #6a4f66;
+    }
+
+/* ---------- ОСНОВНОЙ КОНТЕНТ ---------- */
+.main-content {
+    margin-left: 240px;
+    flex: 1;
+    padding: 20px;
+}
+
+.app-layout .collapsed-sidebar ~ .main-content {
+    margin-left: 72px;
+}
+.swap-chat-item {
+    cursor: pointer;
+}
+
+/* ---------- ОБЩИЙ HEADER ДЛЯ SWAPS ---------- */
+.swaps-header-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 352px; /* 72 + 280 */
+    height: 84px;
+    background: linear-gradient(to left, #8B6D86, #3E363D);
+    /* #655262; */
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    z-index: 110;
+    border-right: 1px solid rgba(255,255,255,0.15);
+}
+
+/* ЛОГОТИП */
+.swaps-logo {
+    font-size: 26px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.4px;
+}

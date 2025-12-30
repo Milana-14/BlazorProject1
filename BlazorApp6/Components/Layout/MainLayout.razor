@@ -4,15 +4,27 @@
 @inject StudentManager StudentManager
 
 <div class="app-layout">
-    @if (IsSwapsMode)
-    {
-        <CollapsedSidebar />
-        <SwapsSidebar CurrentStudentId="@CurrentStudentId" />
-    }
-    else
-    {
-        <NavMenu />
-    }
+@if (IsSwapsMode)
+{
+    <div class="swaps-header-wrapper">
+        <div class="swaps-logo">
+            EduSwaps
+        </div>
+    </div>
+
+    @* <div class="top-row navbar navbar-dark">
+        <div class="navbar-container">
+            <h2 class="navbar-brand">EduSwaps</h2>
+        </div>
+    </div> *@
+
+    <CollapsedSidebar />
+    <SwapsSidebar CurrentStudentId="@CurrentStudentId" />
+}
+else
+{
+    <NavMenu />
+}
 
     <main class="main-content">
         @Body
