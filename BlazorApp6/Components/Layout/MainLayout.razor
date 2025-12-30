@@ -1,21 +1,60 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+@inject StudentManager StudentManager
 
-<MudDialogProvider>
-    <MudSnackbarProvider>
-        <div class="page">
-            <NavMenu />
+<div class="app-layout">
+    @if (IsSwapsMode)
+    {
+        <CollapsedSidebar />
+        <SwapsSidebar CurrentStudentId="@CurrentStudentId" />
+    }
+    else
+    {
+        <NavMenu />
+    }
 
-            <main>
-                <article class="content px-4">
-                    @Body
-                </article>
-            </main>
-        </div>
-    </MudSnackbarProvider>
-</MudDialogProvider>
-
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+    <main class="main-content">
+        @Body
+    </main>
 </div>
+
+@code {
+    private bool IsSwapsMode;
+    private Guid CurrentStudentId;
+    private Student currentStudent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            var username = user.Identity.Name;
+            currentStudent = StudentManager.FindStudent(s => s.Username == username);
+            CurrentStudentId = currentStudent?.Id ?? Guid.Empty;
+        }
+
+        CheckRoute();
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        CheckRoute();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+
+    private void CheckRoute()
+    {
+        // Если текущий URL содержит /my-swaps — показываем сжатый + чатовый сайдбар
+        IsSwapsMode = (NavigationManager.Uri.Contains("/my-swaps") || NavigationManager.Uri.Contains("/chat") || NavigationManager.Uri.Contains("/ai-chat"));
+    }
+}

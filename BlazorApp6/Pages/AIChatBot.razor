@@ -6,12 +6,12 @@
 @inject StudentManager StudentManager
 @rendermode InteractiveServer
 
+<div class="main-page">
 <div class="chat-page">
-
-    <div class="sidebar p-3">
+    @* <div class="sidebar p-3">
         <h5>AI Учител</h5>
         <p>Персонален помощник</p>
-    </div>
+    </div> *@
 
     <div class="chat-container d-flex flex-column flex-grow-1">
         <div class="chat-window flex-grow-1 overflow-auto">
@@ -37,7 +37,7 @@
             }
 
             <div class="input-bar d-flex align-items-center gap-2 mt-2">
-                <InputFile OnChange="OnInputFileSelected" />
+                @* <InputFile OnChange="OnInputFileSelected" /> *@
                 <InputText @bind-Value="newMessage" class="form-control" placeholder="Напиши въпрос..." />
                 <button class="btn-primary-send-message" @onclick="SendMessage">
                     <i class="bi bi-send"></i>
@@ -45,6 +45,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 @code {
@@ -99,21 +100,21 @@
         newMessage = "";
     }
 
-    private async Task OnInputFileSelected(InputFileChangeEventArgs e)
-    {
-        var file = e.File;
-        if (file == null || hubConnection == null) return;
+    // private async Task OnInputFileSelected(InputFileChangeEventArgs e)
+    // {
+    //     var file = e.File;
+    //     if (file == null || hubConnection == null) return;
 
-        using var stream = file.OpenReadStream(20 * 1024 * 1024);
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
+    //     using var stream = file.OpenReadStream(20 * 1024 * 1024);
+    //     using var ms = new MemoryStream();
+    //     await stream.CopyToAsync(ms);
 
-        await hubConnection.SendAsync("SendFile",
-            new UserConnection(Guid.Empty,
-                new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
-            file.Name,
-            ms.ToArray());
-    }
+    //     await hubConnection.SendAsync("SendFile",
+    //         new UserConnection(Guid.Empty,
+    //             new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+    //         file.Name,
+    //         ms.ToArray());
+    // }
 
     public async ValueTask DisposeAsync()
     {

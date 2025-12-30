@@ -1,0 +1,459 @@
+﻿/*body {
+    margin: 0;
+    padding: 0;
+}*/
+
+/* ---------- САЙДБАР ---------- */
+/*.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding-top: 0;
+    padding-left: 0;
+    height: 100vh;
+    background: linear-gradient(to bottom, #8B6D86, #3E363D);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}*/
+
+/* ---------- ГОРНАТА ЧАСТ (EduSwaps) ---------- */
+/*.navbar-container {
+    height: 84px;
+    width: 240px;
+    background: linear-gradient(to left, #5E485A, #3E363D);
+    display: flex;
+    align-items: center;
+    padding-left: var(--navbar-padding-left, 20px);
+}
+
+.top-row {
+    padding: 0;
+    margin: 0;
+}*/
+
+/* ---------- ЗАГЛАВИЕ EduSwaps ---------- */
+/*.navbar-brand {
+    color: white;
+    font-size: var(--navbar-font-size, 26px);
+    font-weight: 600;
+    margin: 0;
+    user-select: none;
+}*/
+
+/* ---------- НАВИГАЦИЯ ---------- */
+/*.logged-nav-menu {
+    position: absolute;
+    top: var(--nav-top, 120px);*/ /* регулируешь вертикальное положение */
+    /*left: var(--nav-left, 30px);*/ /* регулируешь горизонтальное положение */
+/*}
+
+.logged-nav-menu nav {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;*/ /* расстояние между ссылками */
+/*}
+
+.logged-nav-item {
+    width: 100%;
+    font-size: var(--nav-item-font-size, 18px);
+    font-weight: 320;
+    letter-spacing: 0.2px;
+}
+
+.logged-nav-link {
+    display: block;
+    color: white;
+    font-size: var(--nav-font-size, 18px);
+}
+
+.logged-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+}
+
+    .logged-nav-link:hover {
+        opacity: 0.8;
+    }
+
+    .logged-nav-link i {
+        width: 20px;
+        height: 20px;
+        stroke-width: 1.8;
+    }
+
+.app-layout {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 240px;
+    transition: width 0.25s ease;
+}
+
+    .sidebar.collapsed {
+        width: 72px;
+    }
+
+    .sidebar i {
+        font-size: 1.2rem;
+    }
+
+    .sidebar span {
+        margin-left: 10px;
+    }
+
+.swaps-sidebar {
+    width: 280px;
+    border-right: 1px solid #ddd;
+    padding: 10px;
+}*/
+
+/* ---------- ДОПОЛНИТЕЛЬНЫЙ САЙДБАР С ЧАТАМИ ---------- */
+/*.swaps-sidebar {
+    position: fixed;*/ /* фиксируем на экране */
+    /*top: 0;*/ /* от верха */
+    /*left: 240px;*/ /* сразу справа от основного сайдбара (если основной 240px) */
+    /*width: 280px;*/ /* ширина дополнительного сайдбара */
+    /*height: 100vh;*/ /* на всю высоту экрана */
+    /*background: #f5f5f5;*/ /* светлый фон */
+    /*border-right: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;*/ /* скролл, если много чатов */
+    /*z-index: 90;*/ /* чуть ниже основного сайдбара, если нужно */
+/*}*/
+
+    /* Заголовок */
+    /*.swaps-sidebar h6 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1rem;
+        color: #333;
+    }*/
+
+/* Элемент чата */
+/*.swap-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .swap-chat-item:hover {
+        background: #e0e0e0;
+    }*/
+
+    /* Аватар */
+    /*.swap-chat-item img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }*/
+
+/* Информация о студенте */
+/*.swap-chat-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}*/
+
+    /* Имя */
+    /*.swap-chat-info strong {
+        font-size: 0.95rem;
+        color: #222;
+    }*/
+
+/*body {
+    margin: 0;
+    padding: 0;
+}*/
+
+/* ---------- ОСНОВНОЙ САЙДБАР ---------- */
+/*.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background: linear-gradient(to bottom, #8B6D86, #3E363D);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: width 0.25s ease;
+}
+
+    .sidebar.collapsed {
+        width: 72px;
+    }
+
+    .sidebar i {
+        font-size: 1.2rem;
+    }
+
+    .sidebar span {
+        margin-left: 10px;
+    }*/
+
+/* ---------- ГОРНАЯ ЧАСТЬ (EduSwaps) ---------- */
+/*.navbar-container {
+    height: 84px;
+    width: 240px;
+    background: linear-gradient(to left, #5E485A, #3E363D);
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+}
+
+.navbar-brand {
+    color: white;
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0;
+    user-select: none;
+}*/
+
+/* ---------- НАВИГАЦИЯ ---------- */
+/*.logged-nav-menu {
+    position: absolute;
+    top: 120px;
+    left: 30px;
+}
+
+    .logged-nav-menu nav {
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+    }
+
+.logged-nav-item {
+    width: 100%;
+    font-size: 18px;
+    font-weight: 320;
+}
+
+.logged-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+}
+
+    .logged-nav-link:hover {
+        opacity: 0.8;
+    }
+
+    .logged-nav-link i {
+        width: 20px;
+        height: 20px;
+    }*/
+
+/* ---------- ДОПОЛНИТЕЛЬНЫЙ САЙДБАР С ЧАТАМИ ---------- */
+/*.swaps-sidebar {
+    position: fixed;
+    top: 0;
+    left: 72px;*/ /* сдвиг вправо на ширину основного сайдбара в collapsed-режиме */
+    /*width: 280px;
+    height: 100vh;
+    background: #f5f5f5;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+    z-index: 90;
+}
+
+    .swaps-sidebar h6 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1rem;
+        color: #333;
+    }*/
+
+/* Элемент чата */
+/*.swap-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .swap-chat-item:hover {
+        background: #e0e0e0;
+    }
+
+    .swap-chat-item img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+.swap-chat-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .swap-chat-info strong {
+        font-size: 0.95rem;
+        color: #222;
+    }*/
+
+/* ---------- ОСНОВНОЙ КОНТЕНТ ---------- */
+/*.app-layout {
+    display: flex;
+    height: 100vh;
+}*/
+
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* ---------- ОБЩИЙ КОНТЕЙНЕР ---------- */
+.app-layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* ---------- ПОЛНЫЙ САЙДБАР ---------- */
+.sidebar-full-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background: linear-gradient(to bottom, #8B6D86, #3E363D);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.sidebar-collapsed-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 72px;
+    height: 100vh;
+    background: linear-gradient(to bottom, #8B6D86, #3E363D);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.navbar-container {
+    height: 84px;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+}
+
+.navbar-brand {
+    color: white;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+/* ---------- НАВИГАЦИЯ ---------- */
+.logged-nav-menu {
+    display: flex;
+    flex-direction: column;
+    margin-top: 36px;
+}
+
+    .logged-nav-menu a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+    }
+
+        .logged-nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+/* ---------- ДОПОЛНИТЕЛЬНЫЙ САЙДБАР С ЧАТАМИ ---------- */
+.swaps-sidebar {
+    position: fixed;
+    top: 0;
+    left: 72px; /* под сжатый сайдбар */
+    width: 280px;
+    height: 100vh;
+    background: #F4F3F1;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+    z-index: 90;
+}
+
+    .swaps-sidebar h6 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1rem;
+        color: #333;
+    }
+
+.swap-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .swap-chat-item:hover {
+        background: #e0e0e0;
+    }
+
+    .swap-chat-item img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+.swap-chat-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .swap-chat-info strong {
+        font-size: 0.95rem;
+        color: #222;
+    }
+
+/* ---------- ОСНОВНОЙ КОНТЕНТ ---------- */
+.main-content {
+    margin-left: 240px; /* при полном сайдбаре */
+    flex: 1;
+    padding: 20px;
+}
+
+.app-layout .collapsed-sidebar ~ .main-content {
+    margin-left: 72px; /* при сжатом сайдбаре */
+}
+.swap-chat-item {
+    cursor: pointer;
+}

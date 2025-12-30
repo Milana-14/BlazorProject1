@@ -1,0 +1,259 @@
+﻿@page "/my-incoming-swaps" // страница за преглед на заявки за свап от мен и към мен
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@inject IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+@inject StudentManager StudentManager
+@inject AvatarManager AvatarManager
+@inject SwapManager SwapManager
+@rendermode InteractiveServer
+@using SwapModel = BlazorApp6.Models.Swap
+
+
+<div class="myswaps-page main-content">
+    @if (currentStudent == null)
+    {
+        <div class="myswaps-empty">
+            <p>Моля, влезте в профила си</p>
+        </div>
+    }
+    else
+    {
+        <div class="myswaps-container">
+
+            <!-- Header / Tabs -->
+            <div class="myswaps-header px-4">
+                <div class="myswaps-toprow top-row">
+                    <div class="myswaps-title">
+                        <h2 class="filter-title">Заявки за свап</h2>
+                    </div>
+
+                    <div class="myswaps-tabs-wrapper">
+                        <div class="myswaps-tabs-wrapper">
+                            <div class="myswaps-tabs" role="tablist" aria-label="Swaps tabs">
+                                <button class="@GetTabClass("incoming") myswaps-tab" @onclick='@(() => SelectTab("incoming"))' role="tab">Заявки към мен</button>
+                                <button class="@GetTabClass("outgoing") myswaps-tab" @onclick='@(() => SelectTab("outgoing"))' role="tab">Моите заявки</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="tab-content mb-3 myswaps-content">
+
+                <!-- Заявки КЪМ мен -->
+                @if (selectedTab == "incoming")
+                {
+                    <section class="myswaps-section" aria-labelledby="incoming-heading">
+
+                        @if (incomingSwaps.Count == 0)
+                        {
+                            <div class="myswaps-empty-state">Все още никой не ти е предложил кооперация. <span style="text-decoration-line: underline; text-decoration-thickness: 1px;" @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да намериш ученици за взаимопомощ.</span></div>
+                        }
+                        else
+                        {
+                            <p class="text-found-students">
+                                @if (incomingSwaps.Count == 1)
+                                {
+                                    <text>1 ученик ти предложи помощ:</text>
+                                }
+                                else
+                                {
+                                    <text>@incomingSwaps.Count ученика ти преложиха помощ.</text>
+                                }
+                            </p>
+
+                            <div class="students-container">
+                                @foreach (SwapModel swap in incomingSwaps)
+                                {
+                                    var student = StudentManager.FindStudent(s => s.Id == swap.RequesterId);
+
+                                    int swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+                                    int swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+
+                                    int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(student.Id).Where(s => s.Status == SwapStatus.Pending).Count();
+                                    int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(student.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
+
+                                    if (student == null) continue;
+
+                                    <div class="student-card1">
+                                        @* Профилна, име и дата на предлагане *@
+                                        <div class="student-header">
+                                            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="filter-avatar" />
+                                            <div class="student-info">
+                                                <h5 class="student-name">@student.FirstName @student.SecName</h5>
+                                                <p class="student-grade">Изпрати ти заявка на: @(swap.DateRequested.ToString("dd MMMM yyyy HH:mm"))</p>
+                                            </div>
+                                        </div>
+
+                                        @* Предмет *@
+                                        <div class="myswaps-card-body">
+                                            <div class="d-flex align-items-center flex-nowrap">
+                                                @if (swap.Student1Id == student.Id)
+                                                {
+                                                    <span class="text small fw-semibold me-2">Иска да му помогнеш по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text small fw-semibold me-2">Предлага ти помощ по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                                }
+                                                @* <p class="badge badge-match1">@swap.SubjectForHelp.GetDisplayName()</p> *@
+                                            </div>
+                                            @* Бутони *@
+                                            <div class="myswaps-actions">
+                                                <button class="btn-success" disabled="@((swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => ConfirmSwap(swap)"><i class="bi bi-check fs-6"></i> Приеми</button>
+                                                <button class="btn-danger" @onclick="() => RejectSwap(swap)"><i class="bi bi-x fs-6"></i> Отхвърли</button>
+                                                <button class="btn-secondary" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </section>
+                }
+                <!-- Заявки ОТ мен -->
+                @if (selectedTab == "outgoing")
+                {
+                    <section class="myswaps-section" aria-labelledby="outgoing-heading">
+
+                        @if (outgoingSwaps.Count == 0)
+                        {
+                            <div class="myswaps-empty-state">Още на никого не си предложил кооперация... <span style="text-decoration-line: underline; text-decoration-thickness: 1px;" @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да намериш ученици за взаимопомощ.</span></div>
+                        }
+                        else
+                        {
+                            <p class="text-found-students">Намерени ученици: <strong>@outgoingSwaps.Count</strong></p>
+
+                            <div class="students-container">
+                                @foreach (SwapModel swap in outgoingSwaps)
+                                {
+                                    var student = StudentManager.FindStudent(s => (s.Id == swap.Student1Id || s.Id == swap.Student2Id) && s.Id != currentStudent.Id);
+                                    if (student == null) continue;
+
+                                    <div class="student-card1">
+                                        @* Профилна, име и дата на предлагане *@
+                                        <div class="student-header">
+                                            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="filter-avatar" />
+                                            <div class="student-info">
+                                                <h5 class="student-name">@student.FirstName @student.SecName</h5>
+                                                <p class="student-grade">Изпратил си заявка на: @(swap.DateRequested.ToString("dd.MM.yy HH:mm"))</p>
+                                            </div>
+                                        </div>
+
+                                        @* Предмет *@
+                                        <div class="myswaps-card-body">
+                                            <div class="d-flex align-items-center flex-nowrap">
+                                                @if (swap.Student1Id == currentStudent.Id)
+                                                {
+                                                    <span class="text small fw-semibold me-2">Искаш да ти помогне по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text small fw-semibold me-2">Предлагаш помощ по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                                }
+                                                @* <p class="badge badge-match1">@swap.SubjectForHelp.GetDisplayName()</p> *@
+                                            </div>
+                                            @* Бутони *@
+                                            <div class="myswaps-actions">
+                                                <button class="btn-warn" @onclick="() => CancelSwapRequest(swap)">Отмяна</button>
+                                                <button class="btn-secondary" @onclick="() => ViewProfile(student)">Виж профила</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </section>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private Student? currentStudent;
+    private string selectedTab = "pairs";
+
+    private List<SwapModel> pairs = new();
+    private List<SwapModel> incomingSwaps = new();
+    private List<SwapModel> outgoingSwaps = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            currentStudent = null;
+            return;
+        }
+
+        var username = user.Identity.Name;
+
+        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+
+        if (currentStudent == null)
+        {
+            return;
+        }
+
+        if (currentStudent == null) return;
+
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        List<SwapModel> swaps = SwapManager.FindSwapsByStudentId(currentStudent.Id);
+
+        pairs = swaps.Where(m => m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted).ToList();
+        incomingSwaps = swaps.Where(m => m.RequesterId != currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
+        outgoingSwaps = swaps.Where(m => m.RequesterId == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
+    }
+
+    private void SelectTab(string tab)
+    {
+        selectedTab = tab;
+    }
+    private string GetTabClass(string tab)
+    {
+        return (selectedTab == tab) ? "btn-primary myswaps-tab" : "btn-secondary myswaps-tab";
+    }
+
+    private void ConfirmSwap(SwapModel swap)
+    {
+        SwapManager.ConfirmSwap(swap);
+        LoadData();
+    }
+
+    private void RejectSwap(SwapModel swap)
+    {
+        SwapManager.RejectSwap(swap);
+        LoadData();
+    }
+
+    private void CancelSwapRequest(SwapModel swap)
+    {
+        SwapManager.CancelMyRequest(swap);
+        LoadData();
+    }
+
+    private void CompleteSwap(SwapModel swap)
+    {
+        SwapManager.CompleteSwap(swap);
+        LoadData();
+    }
+
+    private void GoToSwap(Guid Id)
+    {
+        Navigation.NavigateTo($"/chat/{Id}");
+    }
+    private void ViewProfile(Student student)
+    {
+        Navigation.NavigateTo($"/other-profile/{student.Id}");
+    }
+}

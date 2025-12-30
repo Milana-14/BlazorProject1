@@ -1,0 +1,43 @@
+﻿@inject SwapManager SwapManager
+@inject StudentManager StudentManager
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@using BlazorApp6.Models
+
+<div class="swaps-sidebar">
+    <h6>Текущи чатове:</h6>
+
+    @foreach (var student in OtherStudents)
+    {
+        <div class="swap-chat-item" @onclick="() => OpenChat(student)">
+            <img src="@student.AvatarName" />
+            <div class="swap-chat-info">
+                <strong>@student.FirstName @((!string.IsNullOrEmpty(student.SecName)) ? student.SecName[0].ToString() : "")</strong>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid CurrentStudentId { get; set; }
+
+    private List<Swap> Swaps = new();
+    private List<Student> OtherStudents = new();
+
+    protected override void OnInitialized()
+    {
+        Swaps = SwapManager.FindSwapsByStudentId(CurrentStudentId);
+
+        foreach (var swap in Swaps)
+        {
+            var other = StudentManager.FindStudent(s => s.Id == (swap.Student1Id == CurrentStudentId ? swap.Student2Id : swap.Student1Id));
+            if (other != null && swap.Status == SwapStatus.Confirmed) OtherStudents.Add(other);
+        }
+    }
+
+    private void OpenChat(Student student)
+    {
+        var swap = SwapManager.FindSwapByStudentsId(student.Id, CurrentStudentId);
+        if (swap != null) NavigationManager.NavigateTo($"/chat/{swap.Id}");
+    }
+}

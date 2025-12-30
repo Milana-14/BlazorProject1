@@ -13,17 +13,17 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using SwapModel = BlazorApp6.Models.Swap
 
+@* @onclick="HideContextMenu" *@
 
-<div class="main-page" @onclick="HideContextMenu">
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <p class="text-danger">@errorMessage</p>
-}
-else
-{
-    <div class="chat-page">
-
-        <div class="sidebar p-3">
+<div class="main-page">
+    <div class="chat-page">    
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <p class="text-danger">@errorMessage</p>
+        }
+        else
+        {
+        @* <div class="sidebar p-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h5>@otherStudent.FirstName @otherStudent.SecName</h5>
                 <button class="btn btn-sm btn-danger" @onclick="ReportPartner">Репортни</button>
@@ -63,7 +63,7 @@ else
             {
                 <button class="btn btn-sm btn-primary" @onclick="ProposeCompletion">Предложи завършване</button>
             }
-        </div>
+        </div> *@
 
 
         @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted)
@@ -152,9 +152,8 @@ else
                 <button class="btn btn-secondary" @onclick="EditMessage">Редактирай</button>
             </div>
         }
-
-</div>
-}
+    }
+    </div>
 </div>
 
 @code {
