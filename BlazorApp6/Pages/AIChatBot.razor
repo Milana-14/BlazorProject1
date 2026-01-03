@@ -4,6 +4,7 @@
 @inject NavigationManager NavigationManager
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject StudentManager StudentManager
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 
 <div class="main-page">
@@ -14,15 +15,18 @@
     </div> *@
 
     <div class="chat-container d-flex flex-column flex-grow-1">
-        <div class="chat-window flex-grow-1 overflow-auto">
+            <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
 
             @foreach (var m in messages)
             {
                 if (m.SenderId == currentStudent.Id)
                 {
-                    <div class="my-message">
+                    <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
                         @((MarkupString)m.Content)
-                        <sub><small>@m.Timestamp.ToString("HH:mm")</small></sub>
+                        @if (m.IsEdited)
+                        {
+                            <sub><small>редактирано</small></sub>
+                        }
                     </div>
                 }
                 else
@@ -30,7 +34,6 @@
                     <div class="other-message-sender">
                         <div class="other-message">
                             @((MarkupString)m.Content)
-                            <sub><small>@m.Timestamp.ToString("HH:mm")</small></sub>
                         </div>
                     </div>
                 }
@@ -45,6 +48,12 @@
             </div>
         </div>
     </div>
+        @if (contextMenuVisible)
+        {
+            <div class="context-menu" style="top:@contextMenuYpx; left:@contextMenuXpx; position:absolute; z-index:1000;">
+                <button class="btn btn-secondary" @onclick="EditMessage">Редактирай</button>
+            </div>
+        }
 </div>
 </div>
 
@@ -53,6 +62,12 @@
     private Student currentStudent;
     private List<MessageForChat> messages = new();
     private string newMessage = "";
+
+    private bool contextMenuVisible = false;
+    private string contextMenuXpx, contextMenuYpx;
+    private MessageForChat? selectedMessage;
+
+    private ElementReference chatWindowRef;
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,8 +85,9 @@
         hubConnection.On<Guid, Guid, string, string>("ReceiveMessage",
             (id, senderId, sender, content) =>
             {
-                messages.Add(new MessageForChat(id, senderId, sender, content, DateTime.Now));
+                messages.Add(new MessageForChat(id, senderId, sender, content, DateTime.Now, false, false));
                 InvokeAsync(StateHasChanged);
+                InvokeAsync(ScrollToBottomAsync);
             });
 
         hubConnection.Reconnected += async _ =>
@@ -80,6 +96,17 @@
                 new UserConnection(Guid.Empty,
                     new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
         };  
+
+        hubConnection.On<Guid, string>("EditMessage", (messageId, newContent) =>
+        {
+            var msg = messages.FirstOrDefault(m => m.Id == messageId);
+            if (msg != null)
+            {
+                msg.Content = newContent;
+                msg.IsEdited = true;
+                InvokeAsync(StateHasChanged);
+            }
+        });
 
         await hubConnection.StartAsync();
 
@@ -95,7 +122,7 @@
         await hubConnection.SendAsync("SendMessage",
             new UserConnection(Guid.Empty,
                 new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
-            new MessageToSend(Guid.NewGuid(), newMessage));
+            new MessageToSend(Guid.NewGuid(), newMessage, DateTime.UtcNow));
 
         newMessage = "";
     }
@@ -115,6 +142,40 @@
     //         file.Name,
     //         ms.ToArray());
     // }
+
+    private async Task EditMessage()
+    {
+        if (hubConnection == null) return;
+        if (selectedMessage == null) return;
+        if (currentStudent.Id != selectedMessage.SenderId) return;
+
+        await hubConnection.SendAsync("EditMessage",
+                new UserConnection(Guid.Empty, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+                selectedMessage.Id,
+                selectedMessage.Content);
+
+        contextMenuVisible = false;
+        selectedMessage = null;
+    }
+
+    private void ShowContextMenu(MouseEventArgs e, MessageForChat message)
+    {
+        selectedMessage = message;
+        contextMenuXpx = $"{e.ClientX}px";
+        contextMenuYpx = $"{e.ClientY}px";
+        contextMenuVisible = true;
+    }
+
+    private void HideContextMenu()
+    {
+        contextMenuVisible = false;
+        selectedMessage = null;
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        await JS.InvokeVoidAsync("blazorScrollToBottom", chatWindowRef);
+    }
 
     public async ValueTask DisposeAsync()
     {

@@ -1,4 +1,6 @@
 ﻿using BlazorApp6.Models;
+using BlazorApp6.Services;
+using Microsoft.AspNetCore.SignalR;
 using Npgsql;
 
 namespace BlazorApp6.Services
@@ -93,6 +95,16 @@ namespace BlazorApp6.Services
             swap.ProposeCompletion(proposerId);
             UpdateSwapInDb(swap);
         }
+        public void AcceptCompletion(Swap swap)
+        {
+            CompleteSwap(swap);
+            UpdateSwapInDb(swap);
+        }
+        public void RejectCompletion(Swap swap)
+        {
+            swap.RejectCompletion();
+            UpdateSwapInDb(swap);
+        }
         public void CompleteSwap(Swap swap)
         {
             swaps.Remove(swap);
@@ -100,11 +112,6 @@ namespace BlazorApp6.Services
 
             if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
 
-            UpdateSwapInDb(swap);
-        }
-        public void RejectCompletion(Swap swap)
-        {
-            swap.RejectCompletion();
             UpdateSwapInDb(swap);
         }
 

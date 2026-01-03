@@ -1,8 +1,11 @@
 ﻿@page "/chat/{SwapId:guid}" // страница за чат
 @implements IAsyncDisposable
-@inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.SignalR.Client
+@using SwapModel = BlazorApp6.Models.Swap
+@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject StudentManager StudentManager
@@ -12,12 +15,8 @@
 @inject OnlineUsersService OnlineUsers
 @inject IJSRuntime JS
 @rendermode InteractiveServer
-@using Microsoft.AspNetCore.SignalR.Client
-@using SwapModel = BlazorApp6.Models.Swap
 
-@* @onclick="HideContextMenu" *@
-
-<div class="main-page d-flex">
+<div class="main-page d-flex" @onclick="HideContextMenu">
     <div class="chat-page @(isSidebarHidden ? "no-info" : "with-info")">
         @if (!string.IsNullOrEmpty(errorMessage))
         {
@@ -74,122 +73,126 @@
                 </div>
             </div>
 
-
-        @*  else if (swap.Status == SwapStatus.CompletedNotRated)
+            @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted)
             {
-                if (isStudentToRate)
-                {
-                    <p>Очаква се @otherStudent.FirstName да оцени Вашата помощ.</p>
-                }
-                else
-                {
-                    <p>Моля, оставете отзив за помощта на @otherStudent.FirstName @otherStudent.SecName.</p>
-                }
-            }
-            else
-            {
-                <button class="btn btn-sm btn-primary" @onclick="ProposeCompletion">Предложи завършване</button>
-            }*@
-
-
-        @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted)
-        {
-            <div class="chat-container d-flex flex-column flex-grow-1">
-                <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
-                    @code { DateTime? lastDate = null; }
-                    @foreach (var m in messagesForChat)
-                    {
-                        DateTime date = m.Timestamp.Date;
-                        if (lastDate == null || lastDate.Value != date)
+                <div class="chat-container d-flex flex-column flex-grow-1">
+                    <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
+                        @code { DateTime? lastDate = null; }
+                        @foreach (var m in messagesForChat)
                         {
-                            <div class="chat-date-separator">
-                                @date.ToString("dd MMMM yyyy")
-                            </div>
-                            lastDate = date;
-                        }
-                        
-                        @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
-                        {
-                            <div class="my-message" @oncontextmenu="@(e => ShowContextMenu(e, m))">
-                                @((MarkupString)m.Content)
-                                <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
-                            </div>
-                        }
-                        else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
-                        {
-                            <div class="other-message-sender">
-                                <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
-                                <div class="other-message">
-                                    @((MarkupString)m.Content)
-                                    <sub><small><time>@m.Timestamp.ToString("HH:mm")</time></small></sub>
+                            DateTime date = m.Timestamp.Date;
+                            if (lastDate == null || lastDate.Value != date)
+                            {
+                                <div class="chat-date-separator">
+                                    @date.ToString("dd MMMM yyyy")
                                 </div>
-                            </div>
+                                lastDate = date;
+                            }
+                    
+                            @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
+                            {
+                                <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
+                                    @((MarkupString)m.Content)
+                                    @if (m.IsEdited)
+                                    {
+                                        <sub><small><time>редактирано @m.Timestamp.ToString("HH:mm")</time></small></sub>
+                                    }
+                                    else
+                                    {
+                                        <sub><small><time>@m.Timestamp.ToLocalTime().ToString("HH:mm")</time></small></sub>
+                                    }
+                                </div>
+                            }
+                            else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
+                            {
+                                <div class="other-message-sender">
+                                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
+                                    <div class="other-message">
+                                        @((MarkupString)m.Content)
+                                        @if (m.IsEdited)
+                                        {
+                                            <sub><small><time>редактирано @m.Timestamp.ToString("HH:mm")</time></small></sub>
+                                        }
+                                        else
+                                        {
+                                            <sub><small><time>@m.Timestamp.ToLocalTime().ToString("HH:mm")</time></small></sub>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="system-message">
+                                    <i>@m.Content</i>
+                                    <small><time>@m.Timestamp.ToLocalTime().ToString("HH:mm")</time></small>
+                                </div>
+                            }
                         }
-                        else
-                        {
-                            <div class="system-message">
-                                <i>@m.Content</i>
-                                <small><time>@m.Timestamp.ToString("HH:mm")</time></small>
-                            </div>
-                        }
-                    }
 
-                @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
-                {
-                    <div class="swap-notification">
-                        @if (swap.CompletionProposedByStudentId.Value != currentStudent.Id)
+                        @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
                         {
-                            <span>@otherStudent.FirstName е предложил да завершите свапа.</span>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-danger btn-sm" @onclick="AcceptCompletion">Завърши</button>
-                                <button class="btn btn-secondary btn-sm" @onclick="RejectCompletion">Продължи</button>
+                            <div class="swap-notification">
+                                @if (swap.CompletionProposedByStudentId.Value != currentStudent.Id)
+                                {
+                                    <span>@otherStudent.FirstName е предложил да завършите свапа.</span>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-danger btn-sm" @onclick="AcceptCompletion">Завърши</button>
+                                        <button class="btn btn-secondary btn-sm" @onclick="RejectCompletion">Продължи</button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span>Вие предложихте да завършите свапа. Очаквайте подтверждението от @otherStudent.FirstName.</span>
+                                    <button class="btn btn-warning btn-sm" @onclick="CancelProposeCompletion">Отмяна</button>
+                                }
                             </div>
                         }
-                        else
+                        else if (swap.Status == SwapStatus.CompletedNotRated)
                         {
-                            <span>Вие предлложихте да завършите свапа. Очаквайте подтверждението от @otherStudent.FirstName.</span>
-                            <button class="btn btn-warning btn-sm" @onclick="CancelProposeCompletion">Отмяна</button>
-                        }
-                    </div>
-                }
-                else if (swap.Status == SwapStatus.CompletedNotRated)
-                {
-                    if (isStudentToRate)
-                    {
-                        <p>Очаква се @otherStudent.FirstName да оцени Вашата помощ.</p>
-                    }
-                    else /////////////////////////////////////////////////////////////////
-                    { /////////////////////////////////////////////////////////////////////
-                        <p>Моля, оставете отзив за помощта на @otherStudent.FirstName @otherStudent.SecName.</p>
-                        // Бутон "Оцени помощта" и след това излиза модален прозорец с оценяването
-
-                        @* <div class="stars-container mb-3">
-                            @for (int i = 1; i <= 5; i++)
+                            if (isStudentToRate)
+                            {
+                                <p>Очаква се @otherStudent.FirstName да оцени Вашата помощ.</p>
+                            }
+                            else
+                            {
+                                <p>Моля, оставете отзив за помощта на @otherStudent.FirstName @otherStudent.SecName.</p>
+                                    
+                                <div class="stars-container mb-3">
+                            @* @for (int i = 1; i <= 5; i++)
                             {
                                 <span class="star @(SelectedRating >= i ? "selected" : "")" @onclick="() => ChooseRating(i)">&#9733;</span>
+                            } *@
+
+                                    <span class="star @(SelectedRating >= 1 ? "selected" : "")" @onclick="() => ChooseRating(1)">&#9733;</span>
+                                    <span class="star @(SelectedRating >= 2 ? "selected" : "")" @onclick="() => ChooseRating(2)">&#9733;</span>
+                                    <span class="star @(SelectedRating >= 3 ? "selected" : "")" @onclick="() => ChooseRating(3)">&#9733;</span>
+                                    <span class="star @(SelectedRating >= 4 ? "selected" : "")" @onclick="() => ChooseRating(4)">&#9733;</span>
+                                    <span class="star @(SelectedRating >= 5 ? "selected" : "")" @onclick="() => ChooseRating(5)">&#9733;</span>
+                                </div>
+
+                                <InputText @bind-Value="comment" placeholder="Оставете мнение или коментар..." class="" />
+
+                                <div class="modal-actions mt-3 d-flex gap-2">
+                                    <button class="btn btn-primary" disabled="@(SelectedRating == null && (string.IsNullOrEmpty(comment) || string.IsNullOrWhiteSpace(comment)))"
+                                    @onclick="RateStudentsHelp">Изпрати</button>
+                                </div>
+                                    
                             }
+                        }
+                        else if (swap.Status == SwapStatus.Completed)
+                        {
+                            <p>Този свап е завършен.</p>
+                        }
+
+                        <div class="input-bar d-flex align-items-center gap-2 mt-2">
+                            <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button>
+                            <InputFile OnChange="OnInputFileSelected" class="form-control-file" />
+                            <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..." class="form-control flex-grow-1 type-message" />
+                            <button class="btn-primary-send-message" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage"><i class="bi bi-send"></i></button>
                         </div>
-
-
-                        <div class="modal-actions mt-3 d-flex gap-2">
-                            <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="RateStudentsHelp">Изпрати</button>
-                        </div> *@
-                    } //////////////////////////////////////////////////////////////////////
-                }
-                else if (swap.Status == SwapStatus.Completed)
-                {
-                    <p>Този свап е завършен.</p>
-                }
-
-                    <div class="input-bar d-flex align-items-center gap-2 mt-2">
-                        <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button>
-                        <InputFile OnChange="OnInputFileSelected" class="form-control-file" />
-                        <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..." class="form-control flex-grow-1 type-message" />
-                        <button class="btn-primary-send-message" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage"><i class="bi bi-send"></i></button>
                     </div>
                 </div>
-            </div>
-        }
+            }
 
             @if (contextMenuVisible)
             {
@@ -224,10 +227,10 @@
     private MessageForChat? selectedMessage;
 
     private bool isStudentToRate;
+    private string comment = string.Empty;
     private string? errorMessage;
 
     private int? SelectedRating { get; set; }
-    private bool isChosen => SelectedRating != null;
 
     private ElementReference chatWindowRef;
     private bool isSidebarHidden = false;
@@ -270,7 +273,9 @@
             ? $"{currentStudent.FirstName} {currentStudent.SecName}"
             : $"{otherStudent.FirstName} {otherStudent.SecName}",
         m.Content,
-        m.Timestamp)).ToList();
+        m.Timestamp,
+        m.IsRead,
+        m.IsEdited)).ToList();
 
 
         if (hubConnection != null) return;
@@ -282,13 +287,13 @@
 
         hubConnection.On<string>("UserJoined", (username) =>
         {
-            messagesForChat.Add(new MessageForChat(Guid.Empty, Guid.Empty, string.Empty, $"{username} влезе в чата", DateTime.Now));
+            messagesForChat.Add(new MessageForChat(Guid.Empty, Guid.Empty, string.Empty, $"{username} влезе в чата", DateTime.UtcNow, true, false));
             InvokeAsync(StateHasChanged);
         });
 
-        hubConnection.On<Guid, Guid, string, string>("ReceiveMessage", async (messageid, senderId, username, message) =>
+        hubConnection.On<Guid, Guid, string, string, DateTime>("ReceiveMessage", async (messageid, senderId, username, message, time) =>
         {
-            messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, DateTime.Now));
+            messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, time, senderId == currentStudent.Id, false));
             await InvokeAsync(StateHasChanged);
             await ScrollToBottomAsync();
         });
@@ -321,6 +326,18 @@
             }
         });
 
+        hubConnection.On<Guid, string>("EditMessage", (messageId, newContent) =>
+        {
+            var msg = messagesForChat.FirstOrDefault(m => m.Id == messageId);
+            if (msg != null)
+            {
+                msg.Content = newContent;
+                msg.IsEdited = true;
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+
         hubConnection.On<Guid>("NewUnread", async swapId =>
         {
             messages = ChatManager.GetMessagesFromDb(swapId);
@@ -331,9 +348,17 @@
                     ? $"{currentStudent.FirstName} {currentStudent.SecName}"
                     : $"{otherStudent.FirstName} {otherStudent.SecName}",
                 m.Content,
-                m.Timestamp)).ToList();
+                m.Timestamp,
+                m.IsRead,
+                m.IsEdited)).ToList();
 
             await InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<SwapModel>("SwapUpdated", updatedSwap =>
+        {
+            swap = updatedSwap;
+            InvokeAsync(StateHasChanged);
         });
 
 
@@ -359,7 +384,7 @@
     {
         if (string.IsNullOrWhiteSpace(newMessage) || hubConnection == null) return;
 
-        var message = new MessageToSend(Guid.NewGuid(), newMessage);
+        var message = new MessageToSend(Guid.NewGuid(), newMessage, DateTime.UtcNow);
 
         await hubConnection.SendAsync("SendMessage",
             new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
@@ -389,8 +414,6 @@
 
     private void ShowContextMenu(MouseEventArgs e, MessageForChat message)
     {
-        // e.PreventDefault();
-
         selectedMessage = message;
         contextMenuXpx = $"{e.ClientX}px";
         contextMenuYpx = $"{e.ClientY}px";
@@ -420,7 +443,7 @@
         await hubConnection.SendAsync("EditMessage",
                 new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
                 selectedMessage.Id,
-                selectedMessage.Content + " (редактирано)");
+                selectedMessage.Content);
 
         contextMenuVisible = false;
         selectedMessage = null;
@@ -438,20 +461,27 @@
         await JS.InvokeVoidAsync("blazorScrollToBottom", chatWindowRef);
     }
 
-    private void ProposeCompletion() => SwapManager.ProposeCompletingSwap(swap, currentStudent.Id);
 
-    private void CancelProposeCompletion()
+    private async Task ProposeCompletion()
     {
-        SwapManager.RejectCompletion(swap);
+        await hubConnection.SendAsync("ProposeCompletion", swap.Id, currentStudent.Id);
     }
 
-    private void AcceptCompletion()
+    private async Task CancelProposeCompletion()
     {
-        swap.Status = SwapStatus.CompletedNotRated;
-        SwapManager.UpdateSwapInDb(swap);
-        isStudentToRate = currentStudent.Id == swap.Student2Id;
+        await hubConnection.SendAsync("RejectCompletion", swap.Id, currentStudent.Id);
     }
-    private void RejectCompletion() => SwapManager.RejectCompletion(swap);
+
+    private async Task AcceptCompletion()
+    {
+        await hubConnection.SendAsync("AcceptCompletion", swap.Id, currentStudent.Id);
+    }
+
+    private async Task RejectCompletion()
+    {
+        await hubConnection.SendAsync("RejectCompletion", swap.Id, currentStudent.Id);
+    }
+
 
     private void ChooseRating(int rating) => SelectedRating = rating;
 
@@ -468,6 +498,8 @@
         StudentManager.UpdateStudent(currentStudent);
 
         SwapManager.CompleteSwap(swap);
+
+        await hubConnection.SendAsync("AcceptCompletion", swap.Id, currentStudent.Id);
 
         NavigationManager.NavigateTo("/my-swaps");
     }

@@ -1,5 +1,4 @@
 ﻿using Azure.AI.OpenAI;
-using BlazorApp6.Services;
 using Microsoft.AspNetCore.SignalR;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -76,6 +75,19 @@ ORDER BY ""Timestamp""";
 
             return list;
         }
+
+        public async Task UpdateMessageContentAsync(Guid messageId, string newContent)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"UPDATE ""AiMessages"" SET ""Content"" = @Content WHERE ""Id"" = @Id";
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", messageId);
+            cmd.Parameters.AddWithValue("@Content", newContent);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
     }
 
     public interface IAiChatClient
@@ -174,6 +186,37 @@ ORDER BY ""Timestamp""";
                 FileName = fileName
             });
         }
+
+        public async Task EditMessage(UserConnection connection, Guid messageId, string newContent)
+        {
+            var messages = await db.GetMessagesAsync(connection.Student.Id);
+            var msg = messages.FirstOrDefault(m => m.Id == messageId);
+
+            if (msg == null)
+                throw new HubException("Сообщение не найдено.");
+
+            if (msg.SenderId != connection.Student.Id)
+                throw new HubException("Можно редактировать только свои сообщения.");
+
+            var lastMessage = messages
+                .Where(m => m.SenderId == connection.Student.Id)
+                .OrderByDescending(m => m.Timestamp)
+                .FirstOrDefault();
+
+            if (msg.Id != lastMessage?.Id)
+                throw new HubException("Можно редактировать только своё последнее сообщение.");
+
+            await db.UpdateMessageContentAsync(messageId, newContent);
+
+            if (connection.SwapId == Guid.Empty)
+            {
+                var aiResponse = await ai.AskAsync(connection.Student.Id, newContent);
+                var aiMessage = new MessageToSend(Guid.NewGuid(), aiResponse, DateTime.UtcNow);
+                await Clients.Group(connection.Student.Id.ToString())
+                    .ReceiveMessage(aiMessage.Id, Guid.Empty, "AI Учител", aiMessage.content);
+            }
+        }
+
     }
 
     public class AiChatService

@@ -8,6 +8,7 @@
         public string Content { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public bool IsRead { get; set; }
+        public bool IsEdited { get; set; }
 
         public Message() { }
         public Message(Guid id, Guid swapId, Guid senderId, string content)
@@ -27,14 +28,18 @@
         public string SenderName { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public bool IsRead { get; set; }
+        public bool IsEdited { get; set; }
 
-        public MessageForChat(Guid id, Guid senderId, string senderName, string content, DateTime timestamp)
+        public MessageForChat(Guid id, Guid senderId, string senderName, string content, DateTime timestamp, bool isRead, bool isEdited)
         {
             Id = id;
             SenderId = senderId;
             SenderName = senderName;
             Content = content;
             Timestamp = timestamp;
+            IsRead = isRead;
+            IsEdited = isEdited;
         }
     }
 
