@@ -395,3 +395,28 @@
     margin-right: 320px;
     transition: margin 0.25s ease;
 }
+
+.swap-notification {
+    position: relative; /* или оставь default static */
+    margin: 10px 0;
+    padding: 10px 16px;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: #856404;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+    .swap-notification button {
+        font-size: 0.85rem;
+        padding: 4px 10px;
+    }

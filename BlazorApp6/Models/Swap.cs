@@ -61,6 +61,7 @@
             if (Status != SwapStatus.PendingCompleted)
                 throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\".");
 
+            this.CompletionProposedByStudentId = null;
             Status = SwapStatus.Confirmed;
         }
     }

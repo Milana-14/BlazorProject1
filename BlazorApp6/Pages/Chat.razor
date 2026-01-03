@@ -50,8 +50,13 @@
                     </div>
 
                     <div class="chat-info-action">
+                        <i class="bi bi-person"></i>
+                        <span @onclick="ProposeCompletion">Предложи завършване</span>
+                    </div>
+
+                    <div class="chat-info-action">
                         <i class="bi bi-x-circle"></i>
-                        <span>Удалить чат</span> /////////////////////
+                        <span>Изтрий чата</span> /////////////////////
                     </div>
 
                     <div class="chat-info-action" @onclick="() => ReportPartner(otherStudent)">
@@ -70,22 +75,7 @@
             </div>
 
 
-        @*  @if (swap.Status == SwapStatus.PendingCompleted)
-            {
-                if (swap.CompletionProposedByStudentId.HasValue && swap.CompletionProposedByStudentId.Value != currentStudent.Id)
-                {
-                    <p>@otherStudent.FirstName иска да завърши свапа</p>
-                        <button class="btn btn-sm btn-success ms-2" @onclick="AcceptCompletion">Завърши</button>
-                        <button class="btn btn-sm btn-secondary ms-1" @onclick="RejectCompletion">Продължи свапа</button>
-                }
-                else
-                {
-                    <div class="alert alert-info p-2">
-                        <p>Вие предложихте да завършите свапа. Очаква се потвърждението на @otherStudent.FirstName.</p>
-                    </div>
-                }
-            }
-            else if (swap.Status == SwapStatus.CompletedNotRated)
+        @*  else if (swap.Status == SwapStatus.CompletedNotRated)
             {
                 if (isStudentToRate)
                 {
@@ -144,6 +134,53 @@
                         }
                     }
 
+                @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
+                {
+                    <div class="swap-notification">
+                        @if (swap.CompletionProposedByStudentId.Value != currentStudent.Id)
+                        {
+                            <span>@otherStudent.FirstName е предложил да завершите свапа.</span>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-danger btn-sm" @onclick="AcceptCompletion">Завърши</button>
+                                <button class="btn btn-secondary btn-sm" @onclick="RejectCompletion">Продължи</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <span>Вие предлложихте да завършите свапа. Очаквайте подтверждението от @otherStudent.FirstName.</span>
+                            <button class="btn btn-warning btn-sm" @onclick="CancelProposeCompletion">Отмяна</button>
+                        }
+                    </div>
+                }
+                else if (swap.Status == SwapStatus.CompletedNotRated)
+                {
+                    if (isStudentToRate)
+                    {
+                        <p>Очаква се @otherStudent.FirstName да оцени Вашата помощ.</p>
+                    }
+                    else /////////////////////////////////////////////////////////////////
+                    { /////////////////////////////////////////////////////////////////////
+                        <p>Моля, оставете отзив за помощта на @otherStudent.FirstName @otherStudent.SecName.</p>
+                        // Бутон "Оцени помощта" и след това излиза модален прозорец с оценяването
+
+                        @* <div class="stars-container mb-3">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span class="star @(SelectedRating >= i ? "selected" : "")" @onclick="() => ChooseRating(i)">&#9733;</span>
+                            }
+                        </div>
+
+
+                        <div class="modal-actions mt-3 d-flex gap-2">
+                            <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="RateStudentsHelp">Изпрати</button>
+                        </div> *@
+                    } //////////////////////////////////////////////////////////////////////
+                }
+                else if (swap.Status == SwapStatus.Completed)
+                {
+                    <p>Този свап е завършен.</p>
+                }
+
                     <div class="input-bar d-flex align-items-center gap-2 mt-2">
                         <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button>
                         <InputFile OnChange="OnInputFileSelected" class="form-control-file" />
@@ -153,31 +190,6 @@
                 </div>
             </div>
         }
-        else if (swap.Status == SwapStatus.CompletedNotRated)
-        {
-        if (isStudentToRate)
-        {
-            <p>Очаква се @otherStudent.FirstName да оцени Вашата помощ.</p>
-        }
-        else
-        {
-            <div class="stars-container mb-3">
-                @for (int i = 1; i <= 5; i++)
-                {
-                    <span class="star @(SelectedRating >= i ? "selected" : "")" @onclick="() => ChooseRating(i)">&#9733;</span>
-                }
-            </div>
-
-
-            <div class="modal-actions mt-3 d-flex gap-2">
-                <button class="btn btn-primary" disabled="@(!isChosen)" @onclick="RateStudentsHelp">Изпрати</button>
-            </div>
-        }
-        }
-            else if (swap.Status == SwapStatus.Completed)
-            {
-                <p>Този свап е завършен.</p>
-            }
 
             @if (contextMenuVisible)
             {
@@ -427,6 +439,12 @@
     }
 
     private void ProposeCompletion() => SwapManager.ProposeCompletingSwap(swap, currentStudent.Id);
+
+    private void CancelProposeCompletion()
+    {
+        SwapManager.RejectCompletion(swap);
+    }
+
     private void AcceptCompletion()
     {
         swap.Status = SwapStatus.CompletedNotRated;
