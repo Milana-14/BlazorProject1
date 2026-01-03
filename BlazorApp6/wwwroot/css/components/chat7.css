@@ -1,6 +1,12 @@
 ﻿/* ----------------------------------------
    ОСНОВНО ОФОРМЛЕНИЕ
 ----------------------------------------- */
+.main-chat-page {
+/*    margin-left: 352px;*/
+    padding: 20px 40px;
+    box-sizing: border-box;
+}
+
 .chat-page {
     display: flex;
     gap: 18px;
@@ -12,7 +18,7 @@
 }
 
     .chat-page.with-info {
-        margin-left: 352px;
+        margin-left: 322px;
         margin-right: 280px;
     }
 

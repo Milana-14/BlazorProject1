@@ -11,7 +11,8 @@
 @using SwapModel = BlazorApp6.Models.Swap
 
 
-<div class="myswaps-page main-content">
+@* <div class="myswaps-page main-content"> *@
+<div class="main-page">
     @if (currentStudent == null)
     {
         <div class="myswaps-empty">
@@ -175,7 +176,7 @@
 
 @code {
     private Student? currentStudent;
-    private string selectedTab = "pairs";
+    private string selectedTab = "incoming";
 
     private List<SwapModel> pairs = new();
     private List<SwapModel> incomingSwaps = new();

@@ -136,6 +136,10 @@
     display: flex;
     align-items: center;
     padding-left: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
 }
 
 .navbar-brand {
@@ -270,6 +274,21 @@
     top: 0;
     left: 0;
     width: 352px; /* 72 + 280 */
+    height: 84px;
+    background: linear-gradient(to left, #8B6D86, #3E363D);
+    /* #655262; */
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    z-index: 110;
+    border-right: 1px solid rgba(255,255,255,0.15);
+}
+
+.navbar-header-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
     height: 84px;
     background: linear-gradient(to left, #8B6D86, #3E363D);
     /* #655262; */

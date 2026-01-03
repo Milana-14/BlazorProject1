@@ -1,5 +1,7 @@
 ﻿.main-page {
     margin-left: 240px;
+    padding: 20px 40px;
+    box-sizing: border-box;
 }
 
 /* ---------- ГЛАВЕН КОНТЕЙНЕР ---------- */
@@ -13,7 +15,9 @@
     gap: 24px;
     align-items: start;
     position: relative;
-    margin: 0px, 40px;
+/*    margin: 0 40px;*/
+    margin: 0;
+    gap: 24px;
 }
 
 .edit-subject-container {

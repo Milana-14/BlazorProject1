@@ -16,7 +16,8 @@
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
-<div class="main-page d-flex" @onclick="HideContextMenu">
+@* <div class="main-page d-flex" @onclick="HideContextMenu"> *@
+<div class="main-chat-page" @onclick="HideContextMenu">
     <div class="chat-page @(isSidebarHidden ? "no-info" : "with-info")">
         @if (!string.IsNullOrEmpty(errorMessage))
         {
