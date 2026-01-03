@@ -21,6 +21,8 @@ builder.Services.AddScoped<SwapManager>();
 builder.Services.AddScoped<ChatManager>();
 builder.Services.AddScoped<AiChatService>();
 builder.Services.AddScoped<AiChatManager>();
+builder.Services.AddSingleton<OnlineUsersService>();
+
 
 
 builder.Services.AddHttpClient("ServerAPI", client =>
@@ -71,6 +73,9 @@ app.MapRazorComponents<App>()
 app.MapHub<ChatMessages>("/chathub");
 
 app.MapHub<AiChatHub>("/aichat");
+
+app.MapHub<OnlineHub>("/onlineHub");
+
 
 app.MapControllers();
 

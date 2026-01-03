@@ -9,6 +9,8 @@
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
 @inject ChatManager ChatManager
+@inject OnlineUsersService OnlineUsers
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.SignalR.Client
 @using SwapModel = BlazorApp6.Models.Swap
@@ -23,6 +25,41 @@
         }
         else
         {
+            <div class="chat-info-sidebar">
+                <div class="chat-info-profile">
+                    <img src="/avatars/user.png" />
+                    <h4>@otherStudent.FirstName @otherStudent.SecName</h4>
+                    <span class="user-status @(OnlineUsers.IsOnline(otherStudent.Id) ? "online" : "offline")">
+                        @(OnlineUsers.IsOnline(otherStudent.Id) ? "Онлайн" : "Оффлайн")
+                    </span>
+
+                </div>
+
+                <div class="chat-info-actions">
+                    <div class="chat-info-action">
+                        <i class="bi bi-person"></i>
+                        <span>Виж профила</span>
+                    </div>
+
+                    <div class="chat-info-action">
+                        <i class="bi bi-bell-slash"></i>
+                        <span>Отключить уведомления</span> ////////////////////////////
+                    </div>
+
+                    <div class="chat-info-action">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Удалить чат</span> ///////////////////////////////////////
+                    </div>
+                </div>
+
+                <div class="chat-info-section">
+                    Активен от: @swap.DateConfirmed
+                    <br />
+                    Статус на свапа: @swap.Status
+                </div>
+            </div>
+
+
         @* <div class="sidebar p-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h5>@otherStudent.FirstName @otherStudent.SecName</h5>
@@ -69,7 +106,7 @@
         @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted)
         {
     <div class="chat-container d-flex flex-column flex-grow-1">
-        <div class="chat-window flex-grow-1 overflow-auto">
+            <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
             @code { DateTime? lastDate = null; }
             @foreach (var m in messagesForChat)
             {
@@ -233,10 +270,11 @@
             InvokeAsync(StateHasChanged);
         });
 
-        hubConnection.On<Guid, Guid, string, string>("ReceiveMessage", (messageid, senderId, username, message) =>
+        hubConnection.On<Guid, Guid, string, string>("ReceiveMessage", async (messageid, senderId, username, message) =>
         {
             messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, DateTime.Now));
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
+            await ScrollToBottomAsync();
         });
 
         try
@@ -250,6 +288,13 @@
             errorMessage = "Не успяхме да се свържем с чата: " + ex.Message;
         }
 
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("MarkAsRead",
+                new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
+        }
+
+
         hubConnection.On<Guid>("DeleteMessage", (messageId) =>
         {
             var msg = messagesForChat.FirstOrDefault(m => m.Id == messageId);
@@ -260,7 +305,39 @@
             }
         });
 
+        hubConnection.On<Guid>("NewUnread", async swapId =>
+        {
+            messages = ChatManager.GetMessagesFromDb(swapId);
+            messagesForChat = messages.Select(m => new MessageForChat(
+                m.Id,
+                m.SenderId,
+                m.SenderId == currentStudent.Id
+                    ? $"{currentStudent.FirstName} {currentStudent.SecName}"
+                    : $"{otherStudent.FirstName} {otherStudent.SecName}",
+                m.Content,
+                m.Timestamp)).ToList();
+
+            await InvokeAsync(StateHasChanged);
+        });
+
+
+        ChatManager.MarkMessagesAsRead(swapId, currentStudent.Id);
     }
+
+    private bool _firstRender = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _firstRender = false;
+            if (messagesForChat.Any())
+            {
+                await ScrollToBottomAsync();
+            }
+        }
+    }
+
 
     private async Task SendMessage()
     {
@@ -340,9 +417,9 @@
     }
 
 
-    private async Task ScrollToBottomAsync()  // добавить скролл к низу чата
+    private async Task ScrollToBottomAsync()
     {
-        
+        await JS.InvokeVoidAsync("blazorScrollToBottom", chatWindowRef);
     }
 
     private void ProposeCompletion() => SwapManager.ProposeCompletingSwap(swap, currentStudent.Id);

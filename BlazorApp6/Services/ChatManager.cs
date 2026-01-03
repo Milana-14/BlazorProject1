@@ -28,6 +28,7 @@ namespace BlazorApp6.Services
                 message.SenderId = reader.GetGuid(2);
                 message.Content = reader.GetString(3);
                 message.Timestamp = reader.GetDateTime(4);
+                message.IsRead = reader.GetBoolean(5);
 
                 messages.Add(message);
             }
@@ -41,8 +42,10 @@ namespace BlazorApp6.Services
             {
                 connection.Open();
 
-                string sql = @"INSERT INTO ""Messages"" (""Id"", ""SwapId"", ""SenderId"", ""Content"", ""Timestamp"") 
-                                VALUES (@Id, @SwapId, @SenderId, @Content, @Timestamp)";
+                string sql = @"INSERT INTO ""Messages""
+                        (""Id"", ""SwapId"", ""SenderId"", ""Content"", ""Timestamp"", ""IsRead"")
+                        VALUES (@Id, @SwapId, @SenderId, @Content, @Timestamp, @IsRead)";
+
 
 
                 using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
@@ -52,6 +55,7 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@SenderId", message.SenderId);
                 cmd.Parameters.AddWithValue("@Content", message.Content);
                 cmd.Parameters.AddWithValue("@Timestamp", message.Timestamp);
+                cmd.Parameters.AddWithValue("@IsRead", false);
 
                 cmd.ExecuteNonQuery();
             }
@@ -66,6 +70,42 @@ namespace BlazorApp6.Services
             cmd.Parameters.AddWithValue("@Id", messageId);
             cmd.ExecuteNonQuery();
         }
+
+        public void MarkMessagesAsRead(Guid swapId, Guid readerId)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            conn.Open();
+
+            var sql = @"
+        UPDATE ""Messages""
+        SET ""IsRead"" = true
+        WHERE ""SwapId"" = @swapId
+          AND ""SenderId"" != @readerId
+          AND ""IsRead"" = false";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@swapId", swapId);
+            cmd.Parameters.AddWithValue("@readerId", readerId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public int GetUnreadCount(Guid swapId, Guid studentId)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            conn.Open();
+
+            var cmd = new NpgsqlCommand(@"
+            SELECT COUNT(*)
+            FROM ""Messages""
+            WHERE ""SwapId"" = @swapId
+              AND ""SenderId"" != @studentId
+              AND ""IsRead"" = false", conn);
+
+            cmd.Parameters.AddWithValue("@swapId", swapId);
+            cmd.Parameters.AddWithValue("@studentId", studentId);
+
+            return Convert.ToInt32(cmd.ExecuteScalar());
+        }
     }
 
 
@@ -74,6 +114,7 @@ namespace BlazorApp6.Services
         Task ReceiveMessage(Guid id, Guid studentId, string username, string message);
         Task UserJoined(string username);
         Task DeleteMessage(Guid messageId);
+        Task NewUnread(Guid swapId);
     }
     public record StudentToConnect(Guid Id, string FirstName, string SecName);
     public record UserConnection(Guid SwapId, StudentToConnect Student);
@@ -104,6 +145,8 @@ namespace BlazorApp6.Services
         {
             await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.content);
             this.chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.content);
+
+            await Clients.OthersInGroup(connection.SwapId.ToString()).NewUnread(connection.SwapId);
         }
 
         public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
@@ -121,6 +164,14 @@ namespace BlazorApp6.Services
 
             chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.content);
         }
+
+        public async Task MarkAsRead(UserConnection connection)
+        {
+            chatManager.MarkMessagesAsRead(connection.SwapId, connection.Student.Id);
+
+            await Clients.Group(connection.SwapId.ToString()).NewUnread(connection.SwapId);
+        }
+
 
         public async Task DeleteMessage(UserConnection connection, Guid messageId)
         {

@@ -241,3 +241,106 @@
         width: 100%;
         text-align: left;
     }
+
+
+
+
+
+
+/* ---------- ПРАВЫЙ ИНФО-САЙДБАР ---------- */
+.chat-info-sidebar {
+    position: fixed;
+    top: 84px; /* высота общего header EduSwaps */
+    right: 0;
+    width: 320px;
+    height: calc(100vh - 84px);
+    background: #FAF9F7;
+    border-left: 1px solid #ddd;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 95;
+    /* плавное появление */
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+    /* Скрытое состояние */
+    .chat-info-sidebar.hidden {
+        transform: translateX(100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+/* ---------- БЛОК С АВАТАРОМ ---------- */
+.chat-info-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+    .chat-info-profile img {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .chat-info-profile h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #222;
+    }
+
+    .chat-info-profile span {
+        font-size: 0.85rem;
+        color: #777;
+    }
+
+/* ---------- СПИСОК ДЕЙСТВИЙ ---------- */
+.chat-info-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-info-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .chat-info-action i {
+        font-size: 1.1rem;
+        color: #666;
+    }
+
+    .chat-info-action span {
+        font-size: 0.95rem;
+        color: #333;
+    }
+
+    .chat-info-action:hover {
+        background: #ECEBE8;
+    }
+
+/* ---------- ДОП. ИНФОРМАЦИЯ ---------- */
+.chat-info-section {
+    margin-top: auto;
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+.chat-page.with-info {
+    margin-right: 320px;
+    transition: margin 0.25s ease;
+}
