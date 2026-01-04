@@ -431,3 +431,108 @@
     width: 80%;
     margin-right: 5px;
 }
+
+
+/* =========================================================
+   AI СЪОБЩЕНИЯ
+   ========================================================= */
+
+.ai-message {
+    line-height: 1.6;
+    font-size: 15px;
+    max-width: 70%;
+}
+
+    .ai-message h2 {
+        font-size: 1.3em;
+        margin-top: 1em;
+    }
+
+    .ai-message h3 {
+        font-size: 1.15em;
+        margin-top: 0.8em;
+    }
+
+    .ai-message strong {
+        font-weight: 600;
+    }
+
+    .ai-message em {
+        font-style: italic;
+    }
+
+    .ai-message blockquote {
+        border-left: 4px solid #ccc;
+        padding-left: 12px;
+        color: #666;
+        margin: 10px 0;
+    }
+
+    .ai-message blockquote strong {
+        color: #453D44;
+    }
+
+
+    .ai-message p {
+        margin: 6px 0;
+    }
+
+    .ai-message ul {
+        padding-left: 20px;
+        margin: 8px 0;
+    }
+
+    .ai-message ol {
+        padding-left: 20px;
+        margin: 8px 0;
+    }
+
+    .ai-message code {
+        background: #f4f4f4;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+
+    .ai-message hr {
+        border: none;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        margin: 12px 0;
+    }
+
+    .ai-message a {
+        color: #5b4d58;
+        text-decoration: underline;
+    }
+
+    .ai-message a:hover {
+        opacity: 0.85;
+    }
+
+    .ai-message pre {
+        background: #f6f5f4;
+        padding: 10px 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-family: monospace;
+        font-size: 13px;
+        margin: 8px 0;
+    }
+
+    .ai-message table {
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 14px;
+    }
+
+    .ai-message th,
+    .ai-message td {
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 6px 10px;
+        text-align: left;
+    }
+
+    .ai-message th {
+        background: #f0efed;
+        font-weight: 600;
+    }

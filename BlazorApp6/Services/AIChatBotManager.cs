@@ -27,9 +27,9 @@ namespace BlazorApp6.Services
 
             var sql = @"
 INSERT INTO ""AiMessages""
-(""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp"", ""ReplyToMessageId"")
+(""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""ReplyToMessageId"")
 VALUES
-(@Id, @StudentId, @SenderId, @SenderName, @Content, @IsFile, @FileName, @Timestamp, @ReplyToMessageId)";
+(@Id, @StudentId, @SenderId, @SenderName, @Content, @IsFile, @FileName, @ReplyToMessageId)";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", message.Id);
@@ -39,7 +39,6 @@ VALUES
             cmd.Parameters.AddWithValue("@Content", message.Content);
             cmd.Parameters.AddWithValue("@IsFile", message.IsFile);
             cmd.Parameters.AddWithValue("@FileName", (object?)message.FileName ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Timestamp", message.Timestamp);
             cmd.Parameters.AddWithValue("@ReplyToMessageId", message.ReplyToMessageId == Guid.Empty ? Guid.Empty : message.ReplyToMessageId);
 
             await cmd.ExecuteNonQueryAsync();
@@ -52,7 +51,7 @@ VALUES
             await conn.OpenAsync();
 
             var sql = @"
-SELECT ""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp"", ""ReplyToMessageId""
+SELECT ""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""ReplyToMessageId""
 FROM ""AiMessages""
 WHERE ""StudentId"" = @StudentId
 ORDER BY ""Timestamp""";
@@ -72,8 +71,7 @@ ORDER BY ""Timestamp""";
                     Content = reader.GetString(4),
                     IsFile = reader.GetBoolean(5),
                     FileName = reader.IsDBNull(6) ? null : reader.GetString(6),
-                    Timestamp = reader.GetDateTime(7),
-                    ReplyToMessageId = reader.GetGuid(8)
+                    ReplyToMessageId = reader.GetGuid(7)
                 });
             }
 
@@ -164,31 +162,16 @@ ORDER BY ""Timestamp""";
             var tempId = Guid.NewGuid();
             await Clients.Group(studentId.ToString()).AiTypingStarted(tempId);
 
-            //var sb = new StringBuilder();
-
             await foreach (var token in ai.StreamAskAsync(studentId, message.content))
             {
-                //sb.Append(token);
                 await Clients.Group(studentId.ToString()).AiTypingChunk(tempId, token);
             }
 
-            //var aiFullContent = sb.ToString();
-
-            //var aiMessage = new AiMessage
-            //{
-            //    Id = Guid.NewGuid(),
-            //    StudentId = studentId,
-            //    SenderId = AI_ID,
-            //    SenderName = "AI Учител",
-            //    Content = aiFullContent,
-            //    IsFile = false,
-            //    ReplyToMessageId = message.Id
-            //};
-
-            //await db.AddMessageAsync(aiMessage);
-            //await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, aiMessage.Id);
-
             var aiFullContent = await ai.GetFullResponseAsync(studentId);
+            if (aiFullContent == null)
+            {
+                throw new HubException("Грешка при генериране на отговор от AI.");
+            }
 
             if (!string.IsNullOrWhiteSpace(aiFullContent))
             {
@@ -204,12 +187,9 @@ ORDER BY ""Timestamp""";
                 };
 
                 await db.AddMessageAsync(aiMessage);
-
                 await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, aiMessage.Id);
             }
-            else
-
-                await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, Guid.Empty);
+            else await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, Guid.Empty);
         }
 
         public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
@@ -249,10 +229,10 @@ ORDER BY ""Timestamp""";
             var msg = messages.FirstOrDefault(m => m.Id == messageId);
 
             if (msg == null)
-                throw new HubException("Сообщение не найдено.");
+                throw new HubException("Сообщението не е намерено.");
 
             if (msg.SenderId != connection.Student.Id)
-                throw new HubException("Можно редактировать только свои сообщения.");
+                throw new HubException("Може да се редактират само свои съобщения.");
 
             var aiMsg = messages.FirstOrDefault(m => m.SenderId == AI_ID && m.ReplyToMessageId == messageId);
 
@@ -268,7 +248,7 @@ ORDER BY ""Timestamp""";
                 .FirstOrDefault();
 
             if (msg.Id != lastMessage?.Id)
-                throw new HubException("Можно редактировать только своё последнее сообщение.");
+                throw new HubException("Редакцията е позволена само на последното съобщение.");
 
             await db.UpdateMessageContentAsync(messageId, newContent);
             await Clients.Group(connection.Student.Id.ToString())
@@ -287,6 +267,10 @@ ORDER BY ""Timestamp""";
                 }
 
                 var aiResponse = await ai.GetFullResponseAsync(connection.Student.Id);
+                if (aiResponse == null)
+                {
+                    throw new HubException("Грешка при генериране на отговор от AI.");
+                } 
 
                 var newAiId = Guid.NewGuid();
 
@@ -311,11 +295,10 @@ ORDER BY ""Timestamp""";
     public class AiChatService
 {
     private readonly ChatClient chatClient;
-
     private readonly ConcurrentDictionary<string, List<ChatMessage>> histories = new();
-
     private readonly AiChatManager aiDb;
-    public AiChatService(IConfiguration config, AiChatManager aiDb)
+    private readonly StudentManager studentManager;
+    public AiChatService(IConfiguration config, AiChatManager aiDb, StudentManager studentManager)
     {
         var token = Environment.GetEnvironmentVariable("EDUSWAPS_AI_TOKEN");
         if (string.IsNullOrWhiteSpace(token))
@@ -326,6 +309,7 @@ ORDER BY ""Timestamp""";
 
         chatClient = client.GetChatClient("gpt-4o");
         this.aiDb = aiDb;
+        this.studentManager = studentManager;
     }
 
     private async Task<List<ChatMessage>> GetOrCreateHistoryAsync(Guid studentId)
@@ -333,13 +317,39 @@ ORDER BY ""Timestamp""";
         if (histories.TryGetValue(studentId.ToString(), out var memHistory))
             return memHistory;
 
+        Student student = studentManager.FindStudent(s => s.Id == studentId);
+
         var history = new List<ChatMessage>
         {
             new SystemChatMessage(
-                    "Ти си внимателен и търпелив гимназиален учител." +
-                    "Твоята цел е да помагаш на ученика да разбере учебния материал." +
-                    "Обяснявай стъпка по стъпка, с примери и насочващи въпроси." +
-                    "Опитвай се да насочиш ученика към правилния отговор, без да му го даващ"
+                    $"Ти си внимателен и търпелив гимназиален учител за {student.Grade} клас.\n" +
+                    $"Имай предвид, че ученикът има затруднения в следните теми: {string.Join(", ", student.NeedsHelpWith).ToLower()}\n\n" +
+
+                    "Твоята цел е да помагаш на ученика да разбере учебния материал.\n" +
+                    "Обяснявай стъпка по стъпка, с примери и насочващи въпроси.\n" +
+                    "Опитвай се да насочиш ученика към правилния отговор, без да му го даваш.\n" +
+                    "Отговорите да бъдат ясни и стегнати.\n" +
+                    "Ако ученикът греши, помогни му да стигне сам до правилния отговор.\n\n" +
+
+                    "При обяснение на нов урок или нова тема – структурирай отговора така:\n" +
+                    "1) Кратко въведение\n" +
+                    "2) Основна част със списъци и примери\n" +
+                    "3) Кратко обобщение в края и/или въпрос към ученика\n\n" +
+
+                    "Когато ученикът задава уточняващ или конкретен въпрос:\n" +
+                    "- отговаряй директно по същество\n" +
+                    "- фокусирай се само върху зададения въпрос\n" +
+                    "- използвай примери, ако помагат за разбирането\n" +
+                    "- НЕ е задължително да следваш пълната структура по-горе\n\n" +
+
+                    "Отговаряй винаги във формат Markdown.\n" +
+                    "Използвай:\n" +
+                    "- заглавия (##, ###)\n" +
+                    "- **удебелен текст** за важни понятия\n" +
+                    "- *курсив* за пояснения\n" +
+                    "- списъци\n" +
+                    "- > цитати при нужда\n" +
+                    "Не използвай HTML, само Markdown."
             )
         };
 
