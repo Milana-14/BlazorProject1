@@ -1,4 +1,4 @@
-﻿@page "/other-profile/{Id:guid}" // страница за преглед на профила на друг ученик
+﻿@page "/other-profile/{Id:guid}"
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Components.Forms
 @inject IHttpContextAccessor HttpContextAccessor
@@ -10,74 +10,171 @@
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
 
-<h3>OtherProfile</h3>
+<div class="main-page">
 
-@if (currentStudent == null)
-{
-    <p>Моля, влезте в профила си</p>
-}
-else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
-{
-    SwapModel? swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, currentStudent.Id);
-
-    bool isAlreadyRequested = swap?.Status == SwapStatus.Pending;
-    bool isAlreadySwapped = swap?.Status == SwapStatus.Confirmed;
-
-    bool canRequestHelp = otherStudent.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.NeedsHelpWith).ToHashSet().Count > 0;
-    bool canOfferHelp = otherStudent.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.CanHelpWith).ToHashSet().Count > 0;
-
-    int swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
-    int swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
-
-    int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(otherStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
-    int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(otherStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
-
-    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" alt="Avatar" class="rounded-circle avatar-xl" />
-    <p><strong>Име:</strong> @otherStudent.FirstName @otherStudent.SecName</p>
-    <p><strong>Клас:</strong> @otherStudent.Grade</p>
-
-    allSwaps = SwapManager.FindSwapsByStudentId(otherStudent.Id);
-    averageRating = (otherStudent.HelpGivenCount == 0) ? 0 : otherStudent.HelpRatings.Sum() / otherStudent.HelpGivenCount;
-
-    <p>Активни свапове: @allSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
-    <p>Общо свапове: @allSwaps.Count()</p>
-    <p>Рейтинг: @Math.Round(averageRating, 1)</p>
-    <p>Монети: @otherStudent.Coins</p>
-
-    @if (!isAlreadyRequested && isAlreadySwapped)
+    @if (currentStudent == null)
     {
-        <p><strong>Имейл:</strong> @otherStudent.Email</p>
+        <p>Моля, влезте в профила си</p>
     }
+    else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
+    {
+        SwapModel? swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, currentStudent.Id);
 
-    @if (otherStudent.CanHelpWith?.Any() == true)
-    {
-        <p><strong>Може да помогне с:</strong> @string.Join(", ", otherStudent.CanHelpWith.Select(s => s.GetDisplayName()))</p>
-    }
+        bool isAlreadyRequested = swap?.Status == SwapStatus.Pending;
+        bool isAlreadySwapped = swap?.Status == SwapStatus.Confirmed;
 
-    @if (otherStudent.NeedsHelpWith?.Any() == true)
-    {
-        <p><strong>Търси помощ по:</strong> @string.Join(", ", otherStudent.NeedsHelpWith.Select(s => s.GetDisplayName()))</p>
-    }
+        bool canRequestHelp =
+        otherStudent.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified)
+        .Intersect(currentStudent.NeedsHelpWith).Any() == true;
 
-    @if (!isAlreadyRequested && !isAlreadySwapped)
-    {
-        <button class="btn btn-primary" disabled="@(!canRequestHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(otherStudent, true)"> Помоли за помощ</button>
-        <button class="btn btn-primary" disabled="@(!canOfferHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(otherStudent, false)">Предложи помощ</button>
+        bool canOfferHelp =
+        otherStudent.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified)
+        .Intersect(currentStudent.CanHelpWith).Any() == true;
+
+        int swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id)
+        .Count(s => s.Status == SwapStatus.Pending);
+
+        int swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id)
+        .Count(s => s.Status == SwapStatus.Confirmed);
+
+        int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(otherStudent.Id)
+        .Count(s => s.Status == SwapStatus.Pending);
+
+        int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(otherStudent.Id)
+        .Count(s => s.Status == SwapStatus.Confirmed);
+
+        allSwaps = SwapManager.FindSwapsByStudentId(otherStudent.Id);
+        averageRating = (otherStudent.HelpGivenCount == 0)
+        ? 0
+        : otherStudent.HelpRatings.Sum() / otherStudent.HelpGivenCount;
+
+        <div class="profile-all-containers">
+
+            <!-- ===== ГОРНА ЧАСТ ===== -->
+            <div class="profile-main-info-container">
+                <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)"
+                     class="profile-avatar"
+                     alt="Avatar" />
+
+                <div class="profile-username-grade-container">
+                    <p class="text-username">
+                        @otherStudent.FirstName @otherStudent.SecName
+                    </p>
+                    <p class="text-grade">
+                        Клас: @otherStudent.Grade
+                    </p>
+
+                    <!-- 🔹 необязательный индикатор онлайна -->
+                    @* <span class="online-indicator">● онлайн</span> *@
+                </div>
+            </div>
+
+            <!-- ===== ЛЕВАЯ ЧАСТ ===== -->
+            <div class="profile-sections">
+
+                <!-- СТАТИСТИКА -->
+                <div class="profile-container-stats">
+                    <div class="stat-all">
+                        <p class="stat-value">
+                            @allSwaps.Count(s =>
+                            s.Status == SwapStatus.Confirmed ||
+                            s.Status == SwapStatus.PendingCompleted ||
+                            s.Status == SwapStatus.CompletedNotRated)
+                    </p>
+                    <p class="stat-label">Активни свапове</p>
+                </div>
+
+                <div class="stat-all">
+                    <p class="stat-value">@allSwaps.Count()</p>
+                    <p class="stat-label">Общо свапове</p>
+                </div>
+
+                <div class="stat-all">
+                    <p class="stat-value">@Math.Round(averageRating, 1)</p>
+                    <p class="stat-label">Рейтинг</p>
+                </div>
+
+                <div class="stat-all">
+                    <p class="stat-value">@otherStudent.Coins</p>
+                    <p class="stat-label">Монети</p>
+                </div>
+            </div>
+
+            <!-- ЛИЧНА ИНФОРМАЦИЯ -->
+            <div class="profile-container-persinfo">
+
+                <div>
+                    <p class="profile-text-help-with">Мога да помогна по:</p>
+                    <div class="subjects-only-container">
+                        @foreach (var subj in otherStudent.CanHelpWith)
+                            {
+                                <span class="badge badge-match1">@subj.GetDisplayName()</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="profile-text-help-with">Търся помощ по:</p>
+                        <div class="subjects-only-container">
+                            @foreach (var subj in otherStudent.NeedsHelpWith)
+                            {
+                                <span class="badge badge-match1">@subj.GetDisplayName()</span>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!isAlreadyRequested && isAlreadySwapped)
+                    {
+                        <p><strong>Имейл:</strong> @otherStudent.Email</p>
+                    }
+
+                    <!-- ===== КНОПКИ ДЕЙСТВИЙ ===== -->
+                    @if (!isAlreadyRequested && !isAlreadySwapped)
+                    {
+                        <button class="btn-profile-secondary"
+                                disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3
+                                                                      || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
+                                                                                                                                @onclick="() => OpenModal(otherStudent, true)">
+                                                                                                                            Помоли за помощ
+                                                                                                                        </button>
+
+                        <button class="btn-profile-secondary"
+                                disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3
+                                                                      || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
+                        @onclick="() => OpenModal(otherStudent, false)">
+                    Предложи помощ
+                </button>
+                                }
+                    else if (isAlreadyRequested && !isAlreadySwapped)
+                    {
+                        <p>Очаква се приемане на заявката ти</p>
+                        <button class="btn-profile-secondary-warn"
+                                @onclick="() => CancelSwapRequest(swap!)">
+                            Отмени заявката ми
+                        </button>
+                    }
+                    else if (isAlreadySwapped)
+                    {
+                        <button class="btn-profile-secondary"
+                                @onclick="() => GoToSwapDetails(swap!)">
+                            Виж свапа
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- ===== ОТЗИВИ ===== -->
+            <div class="profile-reviews-container">
+                <p class="profile-maintext">Отзиви</p>
+                <p class="profile-sectext">от ученици, на които е помогнал(а)</p>
+            </div>
+        </div>
     }
-    else if (isAlreadyRequested && !isAlreadySwapped)
+    else
     {
-        <p>Очаква се приемане на заявката ти</p>
-        <button class="btn btn-outline-secondary" @onclick="() => CancelSwapRequest(swap)">Отмени заявката ми</button>
+        <div class="alert alert-danger mt-3">@errorMessage</div>
     }
-    else if (!isAlreadyRequested && isAlreadySwapped)
-    {
-        <button class="btn btn-primary" @onclick="() => GoToSwapDetails(swap)">Виж свапа</button>
-    }
-}
-else
-{
-    <div class="alert alert-danger mt-3">@errorMessage</div>
-}
+</div>
 
 <ModalRequestSwap IsOpen="@modalOpen"
                   student="@modalTargetStudent"
@@ -87,14 +184,14 @@ else
 
 @code {
     [Parameter] public Guid Id { get; set; }
+
     private Student? otherStudent;
-
-    private List<Swap> allSwaps = new();
-    private double averageRating = 0.0;
-
     private Student? currentStudent;
 
-    private bool modalOpen = false;
+    private List<Swap> allSwaps = new();
+    private double averageRating;
+
+    private bool modalOpen;
     private Student? modalTargetStudent;
     private bool modalIsHelping;
 
@@ -102,8 +199,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        errorMessage = string.Empty;
-
         var state = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = state.User;
 
@@ -113,17 +208,7 @@ else
             return;
         }
 
-        var username = user.Identity.Name;
-
-        currentStudent = StudentManager.FindStudent(s => s.Username == username);
-
-        if (currentStudent == null)
-        {
-            errorMessage = "Профилът не е намерен.";
-            return;
-        }
-
-        if (currentStudent == null) errorMessage = "Моля, влезте в профила си.";
+        currentStudent = StudentManager.FindStudent(s => s.Username == user.Identity.Name);
 
         if (Id == Guid.Empty)
         {
@@ -131,22 +216,14 @@ else
             return;
         }
 
-        try
-        {
-            otherStudent = StudentManager.FindStudent(s => s.Id == Id);
-            if (otherStudent == null) errorMessage = "Ученикът не беше намерен.";
-        }
-        catch (ApplicationException ex)
-        {
-            errorMessage = ex.Message;
-        }
+        otherStudent = StudentManager.FindStudent(s => s.Id == Id);
+
+        if (otherStudent == null)
+            errorMessage = "Ученикът не беше намерен.";
     }
 
-
-    private void CancelSwapRequest(SwapModel swap)
-    {
+    private void CancelSwapRequest(SwapModel swap) =>
         SwapManager.CancelMyRequest(swap);
-    }
 
     private void OpenModal(Student target, bool isHelping)
     {
@@ -154,42 +231,20 @@ else
         modalIsHelping = isHelping;
         modalOpen = true;
     }
-    private void SendRequestForSwapAndCloseModal(SubjectEnum? selectedSubject)
+
+    private void SendRequestForSwapAndCloseModal(SubjectEnum? subject)
     {
         modalOpen = false;
 
-        if (selectedSubject.HasValue && modalTargetStudent != null && currentStudent != null)
+        if (subject.HasValue && modalTargetStudent != null && currentStudent != null)
         {
-            SubjectEnum subject = selectedSubject.Value;
-
-            SwapModel? newSwap;
             if (modalIsHelping)
-            {
-                newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, subject, currentStudent);
-            }
+                SwapManager.OfferHelp(modalTargetStudent, currentStudent, subject.Value, currentStudent);
             else
-            {
-                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject, currentStudent);
-            }
+                SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject.Value, currentStudent);
         }
-
-        modalTargetStudent = null;
-
-        InvokeAsync(StateHasChanged);
     }
 
-    private void GoToSwapDetails(SwapModel swap)
-    {
+    private void GoToSwapDetails(SwapModel swap) =>
         NavigationManager.NavigateTo($"/SwapDetails/{swap.Id}");
-    }
 }
-
-<style>
-    .avatar-xl {
-        width: 160px;
-        height: 160px;
-        object-fit: cover;
-        border-radius: 50%;
-        display: block;
-    }
-</style>

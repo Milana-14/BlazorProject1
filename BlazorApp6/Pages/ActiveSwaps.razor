@@ -11,7 +11,9 @@
 @using SwapModel = BlazorApp6.Models.Swap
 
 
-<div class="myswaps-page main-content">
+@* <div class="myswaps-page main-content"> *@
+<div class="main-chat-page">
+    <div class="chat-page no-info">
     @if (currentStudent == null)
     {
         <div class="myswaps-empty">
@@ -86,6 +88,7 @@
             </div>
         </div>
     }
+    </div>
 </div>
 
 @code {
@@ -128,15 +131,6 @@
         pairs = swaps.Where(m => m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted).ToList();
         incomingSwaps = swaps.Where(m => m.RequesterId != currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
         outgoingSwaps = swaps.Where(m => m.RequesterId == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
-    }
-
-    private void SelectTab(string tab)
-    {
-        selectedTab = tab;
-    }
-    private string GetTabClass(string tab)
-    {
-        return (selectedTab == tab) ? "btn-primary myswaps-tab" : "btn-secondary myswaps-tab";
     }
 
     private void ConfirmSwap(SwapModel swap)

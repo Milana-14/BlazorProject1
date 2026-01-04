@@ -18,6 +18,38 @@
 
 @* <div class="main-page d-flex" @onclick="HideContextMenu"> *@
 <div class="main-chat-page" @onclick="HideContextMenu">
+
+    <div class="chat-topbar">
+        <div class="chat-topbar-left @(isSidebarHidden ? "no-info" : "with-info")">
+            <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)"
+                 class="chat-topbar-avatar" />
+
+            <div class="chat-topbar-user">
+                <div class="chat-topbar-name">
+                    @otherStudent.FirstName @otherStudent.SecName
+                </div>
+
+                <div class="chat-topbar-sub">
+                    <span class="chat-status @(OnlineUsers.IsOnline(otherStudent.Id) ? "online" : "offline")">
+                        @(OnlineUsers.IsOnline(otherStudent.Id) ? "Онлайн" : "Оффлайн")
+                    </span>
+
+                    <span class="dot">•</span>
+
+                    <span class="chat-subject">
+                        @swap.SubjectForHelp.GetDisplayName()
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-topbar-right @(isSidebarHidden ? "no-info" : "with-info")">
+            <span class="swap-status status-@swap.Status.ToString().ToLower()">
+                @swapStatusName
+            </span>
+        </div>
+    </div>
+
     <div class="chat-page @(isSidebarHidden ? "no-info" : "with-info")">
         @if (!string.IsNullOrEmpty(errorMessage))
         {
@@ -30,7 +62,7 @@
                 <button class="close-sidebar-btn" @onclick="ToggleSidebar"><i class="bi bi-x-lg"></i></button>
 
                 <div class="chat-info-profile">
-                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" alt="Avatar" class="filter-avatar" />
+                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" alt="Avatar" class="chat-info-profile-avatar" />
                     <h4>@otherStudent.FirstName @otherStudent.SecName</h4>
                     <span class="user-status">
                         @(OnlineUsers.IsOnline(otherStudent.Id) ? "Онлайн" : "Оффлайн")
@@ -44,20 +76,20 @@
                         <span @onclick="() => ViewProfile(otherStudent)">Виж профила</span>
                     </div>
 
-                    <div class="chat-info-action">
+                    @* <div class="chat-info-action">
                         <i class="bi bi-bell-slash"></i>
-                        <span>Отключить уведомления</span> ///////////////////
-                    </div>
+                        <span>Изключи известия</span> ///////////////////
+                    </div> *@
 
                     <div class="chat-info-action">
                         <i class="bi bi-person"></i>
                         <span @onclick="ProposeCompletion">Предложи завършване</span>
                     </div>
 
-                    <div class="chat-info-action">
+                    @* <div class="chat-info-action">
                         <i class="bi bi-x-circle"></i>
                         <span>Изтрий чата</span> /////////////////////
-                    </div>
+                    </div> *@
 
                     <div class="chat-info-action" @onclick="() => ReportPartner(otherStudent)">
                         <i class="bi bi-x-circle"></i>
@@ -66,11 +98,11 @@
                 </div>
 
                 <div class="chat-info-section">
-                    Предмет: @swap.SubjectForHelp
+                    Предмет: @swap.SubjectForHelp.GetDisplayName()
                     <br/>
                     Активен от: @swap.DateConfirmed
                     <br />
-                    Статус на свапа: @swap.Status
+                    Статус на свапа: @swapStatusName
                 </div>
             </div>
 
@@ -78,9 +110,13 @@
             {
                 <div class="chat-container d-flex flex-column flex-grow-1">
                     <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
-                        @code { DateTime? lastDate = null; }
+                        @code {
+                            DateTime? lastDate = null;
+                            MessageForChat? previousMessage = null;
+                        }
                         @foreach (var m in messagesForChat)
                         {
+                            bool showAvatar = previousMessage == null || previousMessage.SenderId != m.SenderId || previousMessage.Timestamp.Date != m.Timestamp.Date;
                             DateTime date = m.Timestamp.Date;
                             if (lastDate == null || lastDate.Value != date)
                             {
@@ -107,7 +143,14 @@
                             else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
                             {
                                 <div class="other-message-sender">
-                                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
+                                    @if (showAvatar)
+                                    {
+                                        <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
+                                    }
+                                    else
+                                    {
+                                        <div class="chat-avatar-placeholder"></div>
+                                    }
                                     <div class="other-message">
                                         @((MarkupString)m.Content)
                                         @if (m.IsEdited)
@@ -128,6 +171,7 @@
                                     <small><time>@m.Timestamp.ToLocalTime().ToString("HH:mm")</time></small>
                                 </div>
                             }
+                            previousMessage = m;
                         }
 
                         @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
@@ -185,11 +229,18 @@
                             <p>Този свап е завършен.</p>
                         }
 
-                        <div class="input-bar d-flex align-items-center gap-2 mt-2">
-                            <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button>
-                            <InputFile OnChange="OnInputFileSelected" class="form-control-file" />
-                            <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..." class="form-control flex-grow-1 type-message" />
-                            <button class="btn-primary-send-message" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage"><i class="bi bi-send"></i></button>
+                        <div class="input-bar @(isSidebarHidden ? "no-info" : "with-info") d-flex align-items-center">
+                            <button class="btn-emoji" @onclick="ToggleEmojiPanel">😀</button>
+                            <label for="fileInput" class="btn-file">
+                                <i class="bi bi-paperclip"></i>
+                            </label>
+                            <InputFile id="fileInput" OnChange="OnInputFileSelected" style="display:none;" />
+                            <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..."/>
+                            <button class="btn-send" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage"><i class="bi bi-send"></i></button>
+
+                    @* <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button>
+                    <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..." class="form-control flex-grow-1 type-message" />
+                    <button class="btn-primary-send-message" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage"><i class="bi bi-send"></i></button> *@
                         </div>
                     </div>
                 </div>
@@ -208,7 +259,9 @@
 
 @if (isSidebarHidden)
 {
-    <button class="open-sidebar-btn" @onclick="ToggleSidebar">☰</button>
+    <button class="open-sidebar-btn" @onclick="ToggleSidebar">
+        <i class="bi bi-info-circle-fill"></i>
+    </button>
 }
 
 
@@ -226,6 +279,16 @@
     private bool contextMenuVisible = false;
     private string contextMenuXpx, contextMenuYpx;
     private MessageForChat? selectedMessage;
+
+    private string swapStatusName => swap.Status switch
+    {
+        SwapStatus.Pending => "Очаква потвърждение",
+        SwapStatus.Confirmed => "Активен",
+        SwapStatus.PendingCompleted => "Предложено завършване",
+        SwapStatus.CompletedNotRated => "Завършен - чака оценка",
+        SwapStatus.Completed => "Завършен",
+        _ => "Неизвестен статус"
+    };
 
     private bool isStudentToRate;
     private string comment = string.Empty;

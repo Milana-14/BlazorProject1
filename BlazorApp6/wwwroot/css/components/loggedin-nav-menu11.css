@@ -92,7 +92,7 @@
 
     /* Верхний логотип */
     .sidebar-collapsed-sidebar .navbar-container {
-        height: 84px;
+        height: 76px;
         width: 100%;
         display: flex;
         align-items: center;
@@ -104,7 +104,7 @@
         margin-top: 24px;
         display: flex;
         flex-direction: column;
-        gap: 18px; /* 🔹 расстояние между иконками */
+        gap: 18px;
     }
 
         /* Ссылки */
