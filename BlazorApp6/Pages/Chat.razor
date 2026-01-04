@@ -98,7 +98,7 @@
                 </div>
 
                 <div class="chat-info-section">
-                    Предмет: @swap.SubjectForHelp.GetDisplayName()
+                    @(currentStudent.Id == swap.Student2Id ? "Помагаш по" : $"{otherStudent.FirstName} ти помага по"): @swap.SubjectForHelp.GetDisplayName().ToLower()
                     <br/>
                     Активен от: @swap.DateConfirmed
                     <br />
@@ -203,11 +203,6 @@
                                 <p>Моля, оставете отзив за помощта на @otherStudent.FirstName @otherStudent.SecName.</p>
                                     
                                 <div class="stars-container mb-3">
-                            @* @for (int i = 1; i <= 5; i++)
-                            {
-                                <span class="star @(SelectedRating >= i ? "selected" : "")" @onclick="() => ChooseRating(i)">&#9733;</span>
-                            } *@
-
                                     <span class="star @(SelectedRating >= 1 ? "selected" : "")" @onclick="() => ChooseRating(1)">&#9733;</span>
                                     <span class="star @(SelectedRating >= 2 ? "selected" : "")" @onclick="() => ChooseRating(2)">&#9733;</span>
                                     <span class="star @(SelectedRating >= 3 ? "selected" : "")" @onclick="() => ChooseRating(3)">&#9733;</span>
@@ -215,10 +210,10 @@
                                     <span class="star @(SelectedRating >= 5 ? "selected" : "")" @onclick="() => ChooseRating(5)">&#9733;</span>
                                 </div>
 
-                                <InputText @bind-Value="comment" placeholder="Оставете мнение или коментар..." class="" />
+                                <InputText @bind-Value="ratingComment" placeholder="Оставете мнение или коментар..." class="" />
 
                                 <div class="modal-actions mt-3 d-flex gap-2">
-                                    <button class="btn btn-primary" disabled="@(SelectedRating == null && (string.IsNullOrEmpty(comment) || string.IsNullOrWhiteSpace(comment)))"
+                                <button class="btn btn-primary" disabled="@(SelectedRating == null && (string.IsNullOrEmpty(ratingComment) || string.IsNullOrWhiteSpace(ratingComment)))"
                                     @onclick="RateStudentsHelp">Изпрати</button>
                                 </div>
                                     
@@ -237,10 +232,6 @@
                             <InputFile id="fileInput" OnChange="OnInputFileSelected" style="display:none;" />
                             <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..."/>
                             <button class="btn-send" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage"><i class="bi bi-send"></i></button>
-
-                    @* <button class="btn btn-light rounded-circle" @onclick="ToggleEmojiPanel">😀</button>
-                    <InputText @bind-Value="newMessage" placeholder="Напиши съобщение..." class="form-control flex-grow-1 type-message" />
-                    <button class="btn-primary-send-message" disabled="@string.IsNullOrWhiteSpace(newMessage)" @onclick="SendMessage"><i class="bi bi-send"></i></button> *@
                         </div>
                     </div>
                 </div>
@@ -291,7 +282,9 @@
     };
 
     private bool isStudentToRate;
-    private string comment = string.Empty;
+    private int userRating = 0;
+    private string ratingComment = "";
+
     private string? errorMessage;
 
     private int? SelectedRating { get; set; }
@@ -316,6 +309,8 @@
         var username = user.Identity.Name;
 
         currentStudent = StudentManager.FindStudent(s => s.Username == username);
+
+        isStudentToRate = swap.Student2Id == currentStudent.Id;
 
         if (currentStudent == null)
         {
@@ -351,7 +346,6 @@
 
         hubConnection.On<string>("UserJoined", (username) =>
         {
-            messagesForChat.Add(new MessageForChat(Guid.Empty, Guid.Empty, string.Empty, $"{username} влезе в чата", DateTime.UtcNow, true, false));
             InvokeAsync(StateHasChanged);
         });
 
@@ -422,6 +416,7 @@
         hubConnection.On<SwapModel>("SwapUpdated", updatedSwap =>
         {
             swap = updatedSwap;
+            isStudentToRate = currentStudent.Id == swap.Student2Id;
             InvokeAsync(StateHasChanged);
         });
 

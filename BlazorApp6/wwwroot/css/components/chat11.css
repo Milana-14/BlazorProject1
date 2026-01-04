@@ -89,11 +89,11 @@
 }
 
     .chat-topbar-right.no-info {
-        right: 80px;
+        right: 70px;
     }
 
     .chat-topbar-right.with-info {
-        right: 320px;
+        right: 310px;
     }
 
 
@@ -161,6 +161,12 @@
     border-radius: 14px 14px 0 14px;
 }
 
+.my-message .message-meta {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
 .other-message-sender {
     display: flex;
     gap: 6px;
@@ -172,6 +178,12 @@
     background-color: #F4F3F1;
     color: #453D44;
     border-radius: 14px 14px 14px 0;
+}
+
+.other-message .message-meta {
+    color: rgba(69, 61, 68, 0.5);
+    font-size: 12px;
+    margin-top: 4px;
 }
 
 .my-message,

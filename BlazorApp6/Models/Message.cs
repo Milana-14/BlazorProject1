@@ -53,5 +53,6 @@
         public bool IsFile { get; set; }
         public string? FileName { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public Guid ReplyToMessageId { get; set; } = Guid.Empty;
     }
 }

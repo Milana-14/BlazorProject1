@@ -1,11 +1,12 @@
-﻿using Azure.AI.OpenAI;
+﻿using Azure;
+using Azure.AI.OpenAI;
+using BlazorApp6.Models;
 using Microsoft.AspNetCore.SignalR;
+using Npgsql;
 using OpenAI.Chat;
 using System.ClientModel;
 using System.Collections.Concurrent;
 using System.Text;
-using BlazorApp6.Models;
-using Npgsql;
 
 namespace BlazorApp6.Services
 {
@@ -25,9 +26,9 @@ namespace BlazorApp6.Services
 
             var sql = @"
 INSERT INTO ""AiMessages""
-(""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp"")
+(""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp"", ""ReplyToMessageId"")
 VALUES
-(@Id, @StudentId, @SenderId, @SenderName, @Content, @IsFile, @FileName, @Timestamp)";
+(@Id, @StudentId, @SenderId, @SenderName, @Content, @IsFile, @FileName, @Timestamp, @ReplyToMessageId)";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", message.Id);
@@ -38,6 +39,7 @@ VALUES
             cmd.Parameters.AddWithValue("@IsFile", message.IsFile);
             cmd.Parameters.AddWithValue("@FileName", (object?)message.FileName ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@Timestamp", message.Timestamp);
+            cmd.Parameters.AddWithValue("@ReplyToMessageId", message.ReplyToMessageId == Guid.Empty ? Guid.Empty : message.ReplyToMessageId);
 
             await cmd.ExecuteNonQueryAsync();
         }
@@ -49,7 +51,7 @@ VALUES
             await conn.OpenAsync();
 
             var sql = @"
-SELECT ""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp""
+SELECT ""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""Timestamp"", ""ReplyToMessageId""
 FROM ""AiMessages""
 WHERE ""StudentId"" = @StudentId
 ORDER BY ""Timestamp""";
@@ -69,7 +71,8 @@ ORDER BY ""Timestamp""";
                     Content = reader.GetString(4),
                     IsFile = reader.GetBoolean(5),
                     FileName = reader.IsDBNull(6) ? null : reader.GetString(6),
-                    Timestamp = reader.GetDateTime(7)
+                    Timestamp = reader.GetDateTime(7),
+                    ReplyToMessageId = reader.GetGuid(8)
                 });
             }
 
@@ -88,11 +91,27 @@ ORDER BY ""Timestamp""";
             await cmd.ExecuteNonQueryAsync();
         }
 
+        public async Task DeleteMessageAsync(Guid messageId)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"DELETE FROM ""AiMessages"" WHERE ""Id"" = @Id";
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", messageId);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
     }
 
     public interface IAiChatClient
     {
         Task ReceiveMessage(Guid id, Guid senderId, string senderName, string message);
+        Task DeleteMessage(Guid messageId);
+
+        Task AiTypingStarted(Guid tempMessageId);
+        Task AiTypingChunk(Guid tempMessageId, string chunk);
+        Task AiTypingFinished(Guid tempMessageId, Guid finalMessageId);
     }
 
     public class AiChatHub : Hub<IAiChatClient>
@@ -137,24 +156,36 @@ ORDER BY ""Timestamp""";
                 SenderId = studentId,
                 SenderName = senderName,
                 Content = message.content,
-                IsFile = false
+                IsFile = false,
+                ReplyToMessageId = Guid.Empty
             });
 
-            var aiResponse = await ai.AskAsync(studentId, message.content);
+            var tempId = Guid.NewGuid();
+            await Clients.Group(studentId.ToString()).AiTypingStarted(tempId);
 
-            var aiMsgId = Guid.NewGuid();
-            await Clients.Group(studentId.ToString())
-                .ReceiveMessage(aiMsgId, AI_ID, "AI Учител", aiResponse);
+            var sb = new StringBuilder();
 
-            await db.AddMessageAsync(new AiMessage
+            await foreach (var token in ai.StreamAskAsync(studentId, message.content))
             {
-                Id = aiMsgId,
+                sb.Append(token);
+                await Clients.Group(studentId.ToString()).AiTypingChunk(tempId, token);
+            }
+
+            var aiFullContent = sb.ToString();
+
+            var aiMessage = new AiMessage
+            {
+                Id = Guid.NewGuid(),
                 StudentId = studentId,
                 SenderId = AI_ID,
                 SenderName = "AI Учител",
-                Content = aiResponse,
-                IsFile = false
-            });
+                Content = aiFullContent,
+                IsFile = false,
+                ReplyToMessageId = message.Id
+            };
+
+            await db.AddMessageAsync(aiMessage);
+            await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, aiMessage.Id);
         }
 
         public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
@@ -183,7 +214,8 @@ ORDER BY ""Timestamp""";
                 SenderName = $"{connection.Student.FirstName} {connection.Student.SecName}",
                 Content = content,
                 IsFile = true,
-                FileName = fileName
+                FileName = fileName,
+                ReplyToMessageId = Guid.Empty
             });
         }
 
@@ -198,6 +230,14 @@ ORDER BY ""Timestamp""";
             if (msg.SenderId != connection.Student.Id)
                 throw new HubException("Можно редактировать только свои сообщения.");
 
+            var aiMsg = messages.FirstOrDefault(m => m.SenderId == AI_ID && m.ReplyToMessageId == messageId);
+
+            if (aiMsg != null)
+            {
+                await db.DeleteMessageAsync(aiMsg.Id);
+                await Clients.Group(connection.Student.Id.ToString()).DeleteMessage(aiMsg.Id);
+            }
+
             var lastMessage = messages
                 .Where(m => m.SenderId == connection.Student.Id)
                 .OrderByDescending(m => m.Timestamp)
@@ -208,12 +248,35 @@ ORDER BY ""Timestamp""";
 
             await db.UpdateMessageContentAsync(messageId, newContent);
 
+            await ai.RestoreHistoryAsync(connection.Student.Id);
+
             if (connection.SwapId == Guid.Empty)
             {
-                var aiResponse = await ai.AskAsync(connection.Student.Id, newContent);
-                var aiMessage = new MessageToSend(Guid.NewGuid(), aiResponse, DateTime.UtcNow);
+                var tempId = Guid.NewGuid();
+                await Clients.Group(connection.Student.Id.ToString()).AiTypingStarted(tempId);
+
+                await foreach (var token in ai.StreamAskAsync(connection.Student.Id, newContent))
+                {
+                    await Clients.Group(connection.Student.Id.ToString()).AiTypingChunk(tempId, token);
+                }
+
+                var aiResponse = await ai.GetFullResponseAsync(connection.Student.Id);
+
+                var newAiId = aiMsg?.Id ?? Guid.NewGuid();
+
+                await db.AddMessageAsync(new AiMessage
+                {
+                    Id = newAiId,
+                    StudentId = connection.Student.Id,
+                    SenderId = AI_ID,
+                    SenderName = "AI Учител",
+                    Content = aiResponse,
+                    ReplyToMessageId = messageId
+                });
+
                 await Clients.Group(connection.Student.Id.ToString())
-                    .ReceiveMessage(aiMessage.Id, Guid.Empty, "AI Учител", aiMessage.content);
+                    .ReceiveMessage(newAiId, AI_ID, "AI Учител", aiResponse);
+
             }
         }
 
@@ -229,44 +292,41 @@ ORDER BY ""Timestamp""";
         public AiChatService(IConfiguration config, AiChatManager aiDb)
         {
             var token = Environment.GetEnvironmentVariable("EDUSWAPS_AI_TOKEN");
-
             if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new Exception("Токенът за искуствения интелект не е конфигуриран. Задайте EDUSWAPS_AI_TOKEN.");
-            }
+                throw new Exception("Токен AI не задан. EDUSWAPS_AI_TOKEN");
 
             var endpoint = new Uri("https://models.inference.ai.azure.com");
             var client = new AzureOpenAIClient(endpoint, new ApiKeyCredential(token));
 
             chatClient = client.GetChatClient("gpt-4o");
-
             this.aiDb = aiDb;
         }
 
-        private async Task<List<ChatMessage>> GetHistoryAsync(Guid studentId)
+        private async Task<List<ChatMessage>> GetOrCreateHistoryAsync(Guid studentId)
         {
             if (histories.TryGetValue(studentId.ToString(), out var memHistory))
                 return memHistory;
 
             var history = new List<ChatMessage>
-            {
-                new SystemChatMessage(
+        {
+            new SystemChatMessage(
                     "Ти си внимателен и търпелив гимназиален учител." +
                     "Твоята цел е да помагаш на ученика да разбере учебния материал." +
                     "Обяснявай стъпка по стъпка, с примери и насочващи въпроси." +
                     "Опитвай се да насочиш ученика към правилния отговор, без да му го даващ"
-                )
-            };
+            )
+        };
 
             var messages = await aiDb.GetMessagesAsync(studentId);
             foreach (var msg in messages)
             {
                 if (msg.IsFile)
                 {
+                    var text = $"[Файл] {msg.FileName}";
                     if (msg.SenderId == studentId)
-                        history.Add(new UserChatMessage($"[Файл] {msg.FileName}"));
+                        history.Add(new UserChatMessage(text));
                     else
-                        history.Add(new AssistantChatMessage($"[Файл] {msg.FileName}"));
+                        history.Add(new AssistantChatMessage(text));
                 }
                 else
                 {
@@ -281,10 +341,9 @@ ORDER BY ""Timestamp""";
             return history;
         }
 
-        public async Task<string> AskAsync(Guid studentId, string userMessage)
+        public async IAsyncEnumerable<string> StreamAskAsync(Guid studentId, string userMessage)
         {
-            var history = await GetHistoryAsync(studentId);
-
+            var history = await GetOrCreateHistoryAsync(studentId);
             history.Add(new UserChatMessage(userMessage));
 
             var sb = new StringBuilder();
@@ -293,21 +352,45 @@ ORDER BY ""Timestamp""";
             {
                 foreach (var part in update.ContentUpdate)
                     if (!string.IsNullOrEmpty(part.Text))
+                    {
                         sb.Append(part.Text);
+                        yield return part.Text;
+                    }
             }
 
             var fullResponse = sb.ToString();
             history.Add(new AssistantChatMessage(fullResponse));
 
             if (history.Count > 50)
-                history.RemoveAt(1);
-
-            return fullResponse;
+                history.RemoveRange(1, history.Count - 50);
         }
 
-        public void ClearHistory(Guid studentId)
+        public async Task<string> GetFullResponseAsync(Guid studentId)
         {
-            histories.TryRemove(studentId.ToString(), out _);
+            var history = await GetOrCreateHistoryAsync(studentId);
+            var last = history.LastOrDefault() as UserChatMessage;
+            if (last == null) return "";
+
+            var sb = new StringBuilder();
+            await foreach (var update in chatClient.CompleteChatStreamingAsync(history))
+            {
+                foreach (var part in update.ContentUpdate)
+                    if (!string.IsNullOrEmpty(part.Text))
+                        sb.Append(part.Text);
+            }
+
+            var full = sb.ToString();
+            history.Add(new AssistantChatMessage(full));
+
+            if (history.Count > 50)
+                history.RemoveRange(1, history.Count - 50);
+
+            return full;
+        }
+
+        public async Task RestoreHistoryAsync(Guid studentId)
+        {
+            var history = await GetOrCreateHistoryAsync(studentId);
         }
     }
 }

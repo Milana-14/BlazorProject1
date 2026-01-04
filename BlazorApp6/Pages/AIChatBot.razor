@@ -17,9 +17,9 @@
 <div class="main-chat-page">
     <div class="chat-page no-info">
     <div class="chat-container d-flex flex-column flex-grow-1">
-            <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
+            <div class="chat-window flex-grow-1 overflow-auto" style="padding-bottom: 80px;" @ref="chatWindowRef">
 
-            @foreach (var m in messages)
+            @foreach (var m in messages.ToList())
             {
                 if (m.SenderId == currentStudent.Id)
                 {
@@ -71,6 +71,50 @@
 
     private ElementReference chatWindowRef;
 
+    void OnAiTypingStarted(Guid tempId)
+    {
+        InvokeAsync(() =>
+        {
+            messages.Add(new MessageForChat(
+                tempId,
+                Guid.Empty,
+                "AI Учител",
+                "",
+                DateTime.UtcNow,
+                false,
+                false
+            ));
+            StateHasChanged();
+        });
+    }
+
+    void OnAiTypingChunk(Guid tempId, string chunk)
+    {
+        InvokeAsync(() =>
+        {
+            var msg = messages.FirstOrDefault(x => x.Id == tempId);
+            if (msg != null)
+            {
+                msg.Content += chunk;
+                StateHasChanged();
+            }
+        });
+    }
+
+    void OnAiTypingFinished(Guid tempId, Guid finalId)
+    {
+        InvokeAsync(() =>
+        {
+            var msg = messages.FirstOrDefault(x => x.Id == tempId);
+            if (msg != null)
+            {
+                msg.Id = finalId;
+                StateHasChanged();
+            }
+        });
+    }
+
+
     protected override async Task OnInitializedAsync()
     {
         var state = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -98,6 +142,10 @@
                 new UserConnection(Guid.Empty,
                     new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
         };  
+
+        hubConnection.On<Guid>("AiTypingStarted", OnAiTypingStarted);
+        hubConnection.On<Guid, string>("AiTypingChunk", OnAiTypingChunk);
+        hubConnection.On<Guid, Guid>("AiTypingFinished", OnAiTypingFinished);
 
         hubConnection.On<Guid, string>("EditMessage", (messageId, newContent) =>
         {
