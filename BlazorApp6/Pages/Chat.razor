@@ -128,17 +128,29 @@
                     
                             @if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
                             {
-                                <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
-                                    @((MarkupString)m.Content)
-                                    @if (m.IsEdited)
-                                    {
-                                        <sub><small><time>редактирано @m.Timestamp.ToString("HH:mm")</time></small></sub>
-                                    }
-                                    else
-                                    {
-                                        <sub><small><time>@m.Timestamp.ToLocalTime().ToString("HH:mm")</time></small></sub>
-                                    }
-                                </div>
+                                @if (editingMessage != null && editingMessage.Id == m.Id)
+                                {
+                                    <div class="my-message editing">
+                                        <InputText @bind-Value="editingContent" class="edit-input" />
+                                        <button class="btn btn-sm btn-success" @onclick="SaveEditedMessage">Запази</button>
+                                        <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Откажи</button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
+                                        @((MarkupString)m.Content)
+                                        @if (m.IsEdited)
+                                        {
+                                            <sub><small><time>редактирано @m.Timestamp.ToString("HH:mm")</time></small></sub>
+                                        }
+                                        else
+                                        {
+                                            <sub><small><time>@m.Timestamp.ToLocalTime().ToString("HH:mm")</time></small></sub>
+                                        }
+                                    </div>
+                                }
+
                             }
                             else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
                             {
@@ -282,14 +294,16 @@
     };
 
     private bool isStudentToRate;
-    private int userRating = 0;
+    private int? SelectedRating { get; set; }
     private string ratingComment = "";
 
     private string? errorMessage;
 
-    private int? SelectedRating { get; set; }
+    private MessageForChat? editingMessage = null;
+    private string editingContent = string.Empty;
 
     private ElementReference chatWindowRef;
+    private ElementReference editingInputRef;
     private bool isSidebarHidden = false;
 
     protected override async Task OnParametersSetAsync()
@@ -499,14 +513,35 @@
         if (selectedMessage == null) return;
         if (currentStudent.Id != selectedMessage.SenderId) return;
 
-        await hubConnection.SendAsync("EditMessage",
-                new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
-                selectedMessage.Id,
-                selectedMessage.Content);
+        editingMessage = selectedMessage;
+        editingContent = selectedMessage.Content;
 
         contextMenuVisible = false;
         selectedMessage = null;
+
+        await Task.Delay(50);
+        await editingInputRef.FocusAsync();
     }
+
+    private async Task SaveEditedMessage()
+    {
+        if (editingMessage == null || hubConnection == null) return;
+
+        await hubConnection.SendAsync("EditMessage",
+            new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+            editingMessage.Id,
+            editingContent);
+
+        editingMessage = null;
+        editingContent = string.Empty;
+    }
+
+    private void CancelEdit()
+    {
+        editingMessage = null;
+        editingContent = string.Empty;
+    }
+
 
     private void HideContextMenu()
     {

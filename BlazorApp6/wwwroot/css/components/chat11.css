@@ -419,3 +419,15 @@
     .star:hover {
         color: #ffc107;
     }
+
+
+.my-message.editing {
+    background-color: #fff3cd;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.edit-input {
+    width: 80%;
+    margin-right: 5px;
+}
