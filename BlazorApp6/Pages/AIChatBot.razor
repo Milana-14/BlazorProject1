@@ -23,13 +23,24 @@
             {
                 if (m.SenderId == currentStudent.Id)
                 {
-                    <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
-                        @((MarkupString)m.Content)
-                        @if (m.IsEdited)
+                        @if (editingMessage != null && editingMessage.Id == m.Id)
                         {
-                            <sub><small>редактирано</small></sub>
+                            <div class="my-message editing">
+                                <input @bind="editingContent" class="edit-input" @ref="editingInputRef" />
+                                <button class="btn btn-sm btn-success" @onclick="SaveEditedMessage">Запази</button>
+                                <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Откажи</button>
+                            </div>
                         }
-                    </div>
+                        else
+                        {
+                            <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
+                                @((MarkupString)m.Content)
+                                @if (m.IsEdited)
+                                {
+                                    <sub><small>редактирано </small></sub>
+                                }
+                            </div>
+                        }
                 }
                 else
                 {
@@ -69,7 +80,11 @@
     private string contextMenuXpx, contextMenuYpx;
     private MessageForChat? selectedMessage;
 
+    private MessageForChat? editingMessage = null;
+    private string editingContent = string.Empty;
+
     private ElementReference chatWindowRef;
+    private ElementReference editingInputRef;
 
     void OnAiTypingStarted(Guid tempId)
     {
@@ -109,8 +124,13 @@
             if (msg != null)
             {
                 msg.Id = finalId;
-                StateHasChanged();
             }
+            else
+            {
+                messages.Add(new MessageForChat(finalId, Guid.Empty, "AI Учител", "", DateTime.UtcNow, false, false));
+            }
+            StateHasChanged();
+            ScrollToBottomAsync();
         });
     }
 
@@ -199,13 +219,33 @@
         if (selectedMessage == null) return;
         if (currentStudent.Id != selectedMessage.SenderId) return;
 
-        await hubConnection.SendAsync("EditMessage",
-                new UserConnection(Guid.Empty, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
-                selectedMessage.Id,
-                selectedMessage.Content);
+        editingMessage = selectedMessage;
+        editingContent = selectedMessage.Content;
 
         contextMenuVisible = false;
         selectedMessage = null;
+
+        await Task.Delay(50);
+        await editingInputRef.FocusAsync();
+    }
+
+    private async Task SaveEditedMessage()
+    {
+        if (editingMessage == null || hubConnection == null) return;
+
+        await hubConnection.SendAsync("EditMessage",
+            new UserConnection(Guid.Empty, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
+            editingMessage.Id,
+            editingContent);
+
+        editingMessage = null;
+        editingContent = string.Empty;
+    }
+
+    private void CancelEdit()
+    {
+        editingMessage = null;
+        editingContent = string.Empty;
     }
 
     private void ShowContextMenu(MouseEventArgs e, MessageForChat message)

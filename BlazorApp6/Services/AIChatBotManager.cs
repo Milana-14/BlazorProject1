@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.AI.OpenAI;
 using BlazorApp6.Models;
+using BlazorApp6.Services;
 using Microsoft.AspNetCore.SignalR;
 using Npgsql;
 using OpenAI.Chat;
@@ -108,7 +109,7 @@ ORDER BY ""Timestamp""";
     {
         Task ReceiveMessage(Guid id, Guid senderId, string senderName, string message);
         Task DeleteMessage(Guid messageId);
-
+        Task EditMessage(Guid messageId, string newContent);
         Task AiTypingStarted(Guid tempMessageId);
         Task AiTypingChunk(Guid tempMessageId, string chunk);
         Task AiTypingFinished(Guid tempMessageId, Guid finalMessageId);
@@ -163,29 +164,52 @@ ORDER BY ""Timestamp""";
             var tempId = Guid.NewGuid();
             await Clients.Group(studentId.ToString()).AiTypingStarted(tempId);
 
-            var sb = new StringBuilder();
+            //var sb = new StringBuilder();
 
             await foreach (var token in ai.StreamAskAsync(studentId, message.content))
             {
-                sb.Append(token);
+                //sb.Append(token);
                 await Clients.Group(studentId.ToString()).AiTypingChunk(tempId, token);
             }
 
-            var aiFullContent = sb.ToString();
+            //var aiFullContent = sb.ToString();
 
-            var aiMessage = new AiMessage
+            //var aiMessage = new AiMessage
+            //{
+            //    Id = Guid.NewGuid(),
+            //    StudentId = studentId,
+            //    SenderId = AI_ID,
+            //    SenderName = "AI Учител",
+            //    Content = aiFullContent,
+            //    IsFile = false,
+            //    ReplyToMessageId = message.Id
+            //};
+
+            //await db.AddMessageAsync(aiMessage);
+            //await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, aiMessage.Id);
+
+            var aiFullContent = await ai.GetFullResponseAsync(studentId);
+
+            if (!string.IsNullOrWhiteSpace(aiFullContent))
             {
-                Id = Guid.NewGuid(),
-                StudentId = studentId,
-                SenderId = AI_ID,
-                SenderName = "AI Учител",
-                Content = aiFullContent,
-                IsFile = false,
-                ReplyToMessageId = message.Id
-            };
+                var aiMessage = new AiMessage
+                {
+                    Id = Guid.NewGuid(),
+                    StudentId = studentId,
+                    SenderId = AI_ID,
+                    SenderName = "AI Учител",
+                    Content = aiFullContent,
+                    IsFile = false,
+                    ReplyToMessageId = message.Id
+                };
 
-            await db.AddMessageAsync(aiMessage);
-            await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, aiMessage.Id);
+                await db.AddMessageAsync(aiMessage);
+
+                await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, aiMessage.Id);
+            }
+            else
+
+                await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, Guid.Empty);
         }
 
         public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
@@ -247,6 +271,8 @@ ORDER BY ""Timestamp""";
                 throw new HubException("Можно редактировать только своё последнее сообщение.");
 
             await db.UpdateMessageContentAsync(messageId, newContent);
+            await Clients.Group(connection.Student.Id.ToString())
+                .EditMessage(messageId, newContent);
 
             await ai.RestoreHistoryAsync(connection.Student.Id);
 
@@ -262,7 +288,7 @@ ORDER BY ""Timestamp""";
 
                 var aiResponse = await ai.GetFullResponseAsync(connection.Student.Id);
 
-                var newAiId = aiMsg?.Id ?? Guid.NewGuid();
+                var newAiId = Guid.NewGuid();
 
                 await db.AddMessageAsync(new AiMessage
                 {
@@ -276,38 +302,38 @@ ORDER BY ""Timestamp""";
 
                 await Clients.Group(connection.Student.Id.ToString())
                     .ReceiveMessage(newAiId, AI_ID, "AI Учител", aiResponse);
-
             }
         }
 
     }
+}
 
     public class AiChatService
+{
+    private readonly ChatClient chatClient;
+
+    private readonly ConcurrentDictionary<string, List<ChatMessage>> histories = new();
+
+    private readonly AiChatManager aiDb;
+    public AiChatService(IConfiguration config, AiChatManager aiDb)
     {
-        private readonly ChatClient chatClient;
+        var token = Environment.GetEnvironmentVariable("EDUSWAPS_AI_TOKEN");
+        if (string.IsNullOrWhiteSpace(token))
+            throw new Exception("Токен AI не задан. EDUSWAPS_AI_TOKEN");
 
-        private readonly ConcurrentDictionary<string, List<ChatMessage>> histories = new();
+        var endpoint = new Uri("https://models.inference.ai.azure.com");
+        var client = new AzureOpenAIClient(endpoint, new ApiKeyCredential(token));
 
-        private readonly AiChatManager aiDb;
-        public AiChatService(IConfiguration config, AiChatManager aiDb)
-        {
-            var token = Environment.GetEnvironmentVariable("EDUSWAPS_AI_TOKEN");
-            if (string.IsNullOrWhiteSpace(token))
-                throw new Exception("Токен AI не задан. EDUSWAPS_AI_TOKEN");
+        chatClient = client.GetChatClient("gpt-4o");
+        this.aiDb = aiDb;
+    }
 
-            var endpoint = new Uri("https://models.inference.ai.azure.com");
-            var client = new AzureOpenAIClient(endpoint, new ApiKeyCredential(token));
+    private async Task<List<ChatMessage>> GetOrCreateHistoryAsync(Guid studentId)
+    {
+        if (histories.TryGetValue(studentId.ToString(), out var memHistory))
+            return memHistory;
 
-            chatClient = client.GetChatClient("gpt-4o");
-            this.aiDb = aiDb;
-        }
-
-        private async Task<List<ChatMessage>> GetOrCreateHistoryAsync(Guid studentId)
-        {
-            if (histories.TryGetValue(studentId.ToString(), out var memHistory))
-                return memHistory;
-
-            var history = new List<ChatMessage>
+        var history = new List<ChatMessage>
         {
             new SystemChatMessage(
                     "Ти си внимателен и търпелив гимназиален учител." +
@@ -317,80 +343,79 @@ ORDER BY ""Timestamp""";
             )
         };
 
-            var messages = await aiDb.GetMessagesAsync(studentId);
-            foreach (var msg in messages)
+        var messages = await aiDb.GetMessagesAsync(studentId);
+        foreach (var msg in messages)
+        {
+            if (msg.IsFile)
             {
-                if (msg.IsFile)
-                {
-                    var text = $"[Файл] {msg.FileName}";
-                    if (msg.SenderId == studentId)
-                        history.Add(new UserChatMessage(text));
-                    else
-                        history.Add(new AssistantChatMessage(text));
-                }
+                var text = $"[Файл] {msg.FileName}";
+                if (msg.SenderId == studentId)
+                    history.Add(new UserChatMessage(text));
                 else
+                    history.Add(new AssistantChatMessage(text));
+            }
+            else
+            {
+                if (msg.SenderId == studentId)
+                    history.Add(new UserChatMessage(msg.Content));
+                else
+                    history.Add(new AssistantChatMessage(msg.Content));
+            }
+        }
+
+        histories[studentId.ToString()] = history;
+        return history;
+    }
+
+    public async IAsyncEnumerable<string> StreamAskAsync(Guid studentId, string userMessage)
+    {
+        var history = await GetOrCreateHistoryAsync(studentId);
+        history.Add(new UserChatMessage(userMessage));
+
+        var sb = new StringBuilder();
+
+        await foreach (var update in chatClient.CompleteChatStreamingAsync(history))
+        {
+            foreach (var part in update.ContentUpdate)
+                if (!string.IsNullOrEmpty(part.Text))
                 {
-                    if (msg.SenderId == studentId)
-                        history.Add(new UserChatMessage(msg.Content));
-                    else
-                        history.Add(new AssistantChatMessage(msg.Content));
+                    sb.Append(part.Text);
+                    yield return part.Text;
                 }
-            }
-
-            histories[studentId.ToString()] = history;
-            return history;
         }
 
-        public async IAsyncEnumerable<string> StreamAskAsync(Guid studentId, string userMessage)
+        var fullResponse = sb.ToString();
+        history.Add(new AssistantChatMessage(fullResponse));
+
+        if (history.Count > 50)
+            history.RemoveRange(1, history.Count - 50);
+    }
+
+    public async Task<string> GetFullResponseAsync(Guid studentId)
+    {
+        var history = await GetOrCreateHistoryAsync(studentId);
+        var last = history.LastOrDefault() as UserChatMessage;
+        if (last == null) return "";
+
+        var sb = new StringBuilder();
+        await foreach (var update in chatClient.CompleteChatStreamingAsync(history))
         {
-            var history = await GetOrCreateHistoryAsync(studentId);
-            history.Add(new UserChatMessage(userMessage));
-
-            var sb = new StringBuilder();
-
-            await foreach (var update in chatClient.CompleteChatStreamingAsync(history))
-            {
-                foreach (var part in update.ContentUpdate)
-                    if (!string.IsNullOrEmpty(part.Text))
-                    {
-                        sb.Append(part.Text);
-                        yield return part.Text;
-                    }
-            }
-
-            var fullResponse = sb.ToString();
-            history.Add(new AssistantChatMessage(fullResponse));
-
-            if (history.Count > 50)
-                history.RemoveRange(1, history.Count - 50);
+            foreach (var part in update.ContentUpdate)
+                if (!string.IsNullOrEmpty(part.Text))
+                    sb.Append(part.Text);
         }
 
-        public async Task<string> GetFullResponseAsync(Guid studentId)
-        {
-            var history = await GetOrCreateHistoryAsync(studentId);
-            var last = history.LastOrDefault() as UserChatMessage;
-            if (last == null) return "";
+        var full = sb.ToString();
+        history.Add(new AssistantChatMessage(full));
 
-            var sb = new StringBuilder();
-            await foreach (var update in chatClient.CompleteChatStreamingAsync(history))
-            {
-                foreach (var part in update.ContentUpdate)
-                    if (!string.IsNullOrEmpty(part.Text))
-                        sb.Append(part.Text);
-            }
+        if (history.Count > 50)
+            history.RemoveRange(1, history.Count - 50);
 
-            var full = sb.ToString();
-            history.Add(new AssistantChatMessage(full));
+        return full;
+    }
 
-            if (history.Count > 50)
-                history.RemoveRange(1, history.Count - 50);
-
-            return full;
-        }
-
-        public async Task RestoreHistoryAsync(Guid studentId)
-        {
-            var history = await GetOrCreateHistoryAsync(studentId);
-        }
+    public async Task RestoreHistoryAsync(Guid studentId)
+    {
+        var history = await GetOrCreateHistoryAsync(studentId);
     }
 }

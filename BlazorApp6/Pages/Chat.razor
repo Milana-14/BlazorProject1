@@ -131,7 +131,7 @@
                                 @if (editingMessage != null && editingMessage.Id == m.Id)
                                 {
                                     <div class="my-message editing">
-                                        <InputText @bind-Value="editingContent" class="edit-input" />
+                                        <input @bind="editingContent" class="edit-input" @ref="editingInputRef" />
                                         <button class="btn btn-sm btn-success" @onclick="SaveEditedMessage">Запази</button>
                                         <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Откажи</button>
                                     </div>
@@ -485,14 +485,6 @@
 
     }
 
-    private void ShowContextMenu(MouseEventArgs e, MessageForChat message)
-    {
-        selectedMessage = message;
-        contextMenuXpx = $"{e.ClientX}px";
-        contextMenuYpx = $"{e.ClientY}px";
-        contextMenuVisible = true;
-    }
-
     private async Task DeleteMessage()
     {
         if (hubConnection == null) return;
@@ -542,6 +534,13 @@
         editingContent = string.Empty;
     }
 
+    private void ShowContextMenu(MouseEventArgs e, MessageForChat message)
+    {
+        selectedMessage = message;
+        contextMenuXpx = $"{e.ClientX}px";
+        contextMenuYpx = $"{e.ClientY}px";
+        contextMenuVisible = true;
+    }
 
     private void HideContextMenu()
     {
