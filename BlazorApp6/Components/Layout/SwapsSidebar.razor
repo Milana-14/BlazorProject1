@@ -10,9 +10,9 @@
     <h6>Текущи чатове:</h6>
 
     <div class="swap-chat-item ai-chat" @onclick="OpenAiChat">
-        <i class="bi bi-lightning"></i>
+        <i class="bi bi-stars"></i>
         <div class="swap-chat-info">
-            <strong>ИИ чат бот</strong>
+            <strong>ИИ помощник</strong>
         </div>
     </div>
 
@@ -25,10 +25,14 @@
             <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="filter-avatar" />
             <div class="swap-chat-info">
                 <strong>@student.FirstName @((!string.IsNullOrEmpty(student.SecName)) ? student.SecName[0].ToString() : "")</strong>
-                @if (unread > 0)
-                {
-                    <span class="unread-badge">@unread</span>
-                }
+
+                <div class="last-message-row">
+                    <span class="last-message">@LastMessagePreview(swap.Id)</span>
+                    @if (unread > 0)
+                    {
+                        <span class="unread-count">@unread</span>
+                    }
+                </div>
             </div>
         </div>
     }
@@ -39,6 +43,17 @@
 
     private List<Swap> Swaps = new();
     private List<Student> OtherStudents = new();
+    private string LastMessagePreview(Guid swapId)
+    {
+        List<Message> messages = ChatManager.GetMessagesFromDb(swapId);
+        var lastMessage = messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
+        if (lastMessage != null)
+        {
+            var preview = lastMessage.Content.Length > 29 ? lastMessage.Content.Substring(0, 29) + "..." : lastMessage.Content;
+            return preview;
+        }
+        return "";
+    }
 
     protected override void OnInitialized()
     {
