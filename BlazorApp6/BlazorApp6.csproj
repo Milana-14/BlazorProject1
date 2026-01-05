@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\css\components\my-profile7.css" />
+    <None Include="wwwroot\css\components\my-profile8.css" />
   </ItemGroup>
 
 </Project>

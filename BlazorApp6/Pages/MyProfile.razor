@@ -22,7 +22,7 @@
             averageRating = (student.HelpGivenCount == 0) ? 0 : student.HelpRatings.Sum() / student.HelpGivenCount;
             <div class="profile-all-containers">
                 <div class="profile-main-info-container">
-                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="profile-avatar" />
+                    <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="my-profile-avatar" />
                     <div class="profile-username-grade-container">
                         <p class="text-username">@student.FirstName @student.SecName</p>
                         <p class="text-grade">Клас: @student.Grade</p>

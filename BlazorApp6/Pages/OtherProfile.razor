@@ -7,6 +7,7 @@
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
+@inject OnlineUsersService OnlineUsers
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
 
@@ -16,6 +17,7 @@
     {
         <p>Моля, влезте в профила си</p>
     }
+
     else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
     {
         SwapModel? swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, currentStudent.Id);
@@ -52,9 +54,13 @@
 
             <!-- ===== ГОРНА ЧАСТ ===== -->
             <div class="profile-main-info-container">
-                <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)"
-                     class="profile-avatar"
-                     alt="Avatar" />
+                <div class="avatar-wrapper">
+                    <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)"
+                         class="profile-avatar"
+                         alt="Avatar" />
+
+                    <span class="online-dot @(isOnline ? "online" : "offline")"></span>
+                </div>
 
                 <div class="profile-username-grade-container">
                     <p class="text-username">
@@ -63,13 +69,10 @@
                     <p class="text-grade">
                         Клас: @otherStudent.Grade
                     </p>
-
-                    <!-- 🔹 необязательный индикатор онлайна -->
-                    @* <span class="online-indicator">● онлайн</span> *@
                 </div>
             </div>
 
-            <!-- ===== ЛЕВАЯ ЧАСТ ===== -->
+            <!-- ===== ЛЯВА ЧАСТ ===== -->
             <div class="profile-sections">
 
                 <!-- СТАТИСТИКА -->
@@ -128,7 +131,7 @@
                         <p><strong>Имейл:</strong> @otherStudent.Email</p>
                     }
 
-                    <!-- ===== КНОПКИ ДЕЙСТВИЙ ===== -->
+                    <!-- ===== БУТОНИ ЗА ДЕЙСТВИЕ ===== -->
                     @if (!isAlreadyRequested && !isAlreadySwapped)
                     {
                         <button class="btn-profile-secondary"
@@ -195,6 +198,8 @@
     private Student? modalTargetStudent;
     private bool modalIsHelping;
 
+    bool isOnline { get; set; }
+
     private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -220,6 +225,8 @@
 
         if (otherStudent == null)
             errorMessage = "Ученикът не беше намерен.";
+
+        isOnline = OnlineUsers.IsOnline(otherStudent.Id);
     }
 
     private void CancelSwapRequest(SwapModel swap) =>
