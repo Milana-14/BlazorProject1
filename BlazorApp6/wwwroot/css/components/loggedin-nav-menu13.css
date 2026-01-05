@@ -1,0 +1,364 @@
+﻿/* ---------------------------------- */
+/*  ОБЩИ НАСТРОЙКИ НА BODY И CONTAINER  */
+/* ---------------------------------- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.app-layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* ---------------------------------- */
+/*  САЙДБАРЫ (FULL + COLLAPSED)  */
+/* ---------------------------------- */
+.sidebar-full-sidebar,
+.sidebar-collapsed-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    background: linear-gradient(to bottom, #8B6D86, #3E363D);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.sidebar-full-sidebar {
+    width: 240px;
+    padding-top: 84px;
+}
+
+    .sidebar-full-sidebar .logged-nav-menu {
+        margin-top: 24px;
+        padding: 0 12px;
+    }
+
+    .sidebar-full-sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+.sidebar-collapsed-sidebar {
+    width: 72px;
+    top: 84px;
+    padding-top: 0;
+    align-items: center;
+}
+
+    .sidebar-full-sidebar .navbar-container,
+    .sidebar-collapsed-sidebar .navbar-container {
+        display: flex;
+        align-items: center;
+    }
+
+.sidebar-full-sidebar .navbar-container {
+    height: 84px;
+    padding-left: 24px;
+    gap: 18px;
+}
+
+.sidebar-collapsed-sidebar .navbar-container {
+    height: 76px;
+    width: 100%;
+    justify-content: center;
+}
+
+.sidebar-full-sidebar .logged-nav-menu {
+    margin-top: 24px;
+    padding: 0 12px;
+    gap: 18px;
+}
+
+.sidebar-collapsed-sidebar .logged-nav-menu {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+    .sidebar-collapsed-sidebar .logged-nav-menu a {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: white;
+        transition: background 0.2s, transform 0.15s;
+    }
+
+        .sidebar-collapsed-sidebar .logged-nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+.sidebar-collapsed-sidebar i,
+.sidebar-full-sidebar i {
+    font-size: 1.35rem;
+}
+
+/* ---------------------------------- */
+/*  NAVBAR И NAV BRAND  */
+/* ---------------------------------- */
+.navbar-container {
+    height: 84px;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+}
+
+.navbar-brand {
+    color: white;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+/* ---------------------------------- */
+/*  НАВИГАЦИЯ (LOGGED NAV MENU)  */
+/* ---------------------------------- */
+.logged-nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+    .logged-nav-menu a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        transition: background 0.2s, transform 0.15s;
+    }
+
+        .logged-nav-menu a:hover,
+        .logged-nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(2px);
+        }
+
+.logged-nav-item {
+    width: 100%;
+}
+
+.logged-nav-link {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 14px;
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+}
+
+    .logged-nav-link i {
+        font-size: 1.35rem;
+        width: 24px;
+        text-align: center;
+    }
+
+/* ---------------------------------- */
+/*  ДОПЪЛНИТЕЛЕН SWAPS SIDEBAR  */
+/* ---------------------------------- */
+.swaps-sidebar {
+    position: fixed;
+    top: 84px;
+    left: 72px;
+    width: 280px;
+    height: 100vh;
+    background: #F4F3F1;
+    border-right: 1px solid #d6d4d2;
+    padding: 16px 12px;
+    overflow-y: auto;
+    z-index: 90;
+}
+
+    .swaps-sidebar h6 {
+        margin: 8px 8px 18px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+/* ---------------------------------- */
+/*  CHAT ITEM  */
+/* ---------------------------------- */
+.swap-chat-item {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+
+    .swap-chat-item:hover {
+        background: #e2e1df;
+        transform: translateX(2px);
+    }
+
+    .swap-chat-item img,
+    .swap-chat-item i {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #444;
+    }
+
+.swap-chat-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+    .swap-chat-info strong {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #222;
+        line-height: 1;
+    }
+
+.last-message-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.last-message {
+    font-size: 0.8rem;
+    color: #6b7280;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    flex-shrink: 1;
+}
+
+.swap-chat-item.ai-chat {
+    background: transparent;
+    margin-bottom: 16px;
+}
+
+    .swap-chat-item.ai-chat:hover {
+        background: rgba(139, 109, 134, 0.25);
+    }
+
+    .swap-chat-item.ai-chat i {
+        color: #a855f7;
+    }
+
+    .swap-chat-item.ai-chat strong {
+        color: #6b21a8;
+    }
+
+/* ---------------------------------- */
+/*  MAIN CONTENT  */
+/* ---------------------------------- */
+.main-content {
+    margin-left: 240px;
+    flex: 1;
+    padding: 20px;
+}
+
+.app-layout .collapsed-sidebar ~ .main-content {
+    margin-left: 72px;
+}
+
+/* ---------------------------------- */
+/*  SWAPS TOPBAR / HEADER  */
+/* ---------------------------------- */
+.swaps-header-wrapper,
+.navbar-header-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 84px;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    z-index: 110;
+    border-right: 1px solid rgba(255,255,255,0.15);
+}
+
+.swaps-header-wrapper {
+    width: 352px; /* 72 + 280 */
+    background: linear-gradient(to left, #8B6D86, #3E363D);
+}
+
+.navbar-header-wrapper {
+    width: 280px;
+    background: linear-gradient(to left, #8B6D86, #3E363D);
+}
+
+/* ---------------------------------- */
+/*  LOGO И АКЦЕНТЫ  */
+/* ---------------------------------- */
+.swaps-logo {
+    font-size: 26px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.4px;
+}
+
+.unread-count {
+    margin-right: auto;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-bottom: 2px;
+    background-color: #B8AEB6;
+    color: white;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.nav-icon-wrapper {
+    position: relative;
+    display: inline-flex;
+}
+
+.nav-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background-color: #A28E9E;
+    color: white;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -18,12 +18,12 @@
         </div>
     </div> *@
 
-    <CollapsedSidebar />
+    <CollapsedSidebar CurrentStudentId="@currentStudent.Id" />
     <SwapsSidebar CurrentStudentId="@CurrentStudentId" />
 }
 else
 {
-    <NavMenu />
+    <NavMenu CurrentStudentId="@currentStudent.Id" />
 }
 
     <main class="main-content">

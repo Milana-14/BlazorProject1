@@ -7,9 +7,11 @@ namespace BlazorApp6.Services
     public class ChatManager
     {
         private readonly string connectionString;
-        public ChatManager(IConfiguration config)
+        private readonly SwapManager swapManager;
+        public ChatManager(IConfiguration config, SwapManager swapManager)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
+            this.swapManager = swapManager;
         }
         public List<Message> GetMessagesFromDb(Guid swapId)
         {
@@ -119,6 +121,11 @@ namespace BlazorApp6.Services
             cmd.Parameters.AddWithValue("@studentId", studentId);
 
             return Convert.ToInt32(cmd.ExecuteScalar());
+        }
+        public int GetUnreadChatsCount(Guid currentStudentId)
+        {
+            return swapManager.FindSwapsByStudentId(currentStudentId)
+                .Count(swap => GetUnreadCount(swap.Id, currentStudentId) > 0);
         }
     }
 

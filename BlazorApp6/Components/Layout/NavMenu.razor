@@ -1,4 +1,9 @@
-﻿<div class="sidebar-full-sidebar">
+﻿@inject ChatManager ChatManager
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+<div class="sidebar-full-sidebar">
     <div class="top-row navbar navbar-dark">
         <div class="navbar-container">
             <h2 class="navbar-brand">EduSwaps</h2>
@@ -16,7 +21,19 @@
             </div>
 
             <div class="logged-nav-item">
-                <NavLink class="logged-nav-link" href="my-swaps"><i class="bi bi-chat-dots"></i>Текущи свапове</NavLink>
+                <NavLink class="logged-nav-link" href="my-swaps">
+                    @* <i class="bi bi-chat-dots"></i>Текущи свапове *@
+
+                    <span class="nav-icon-wrapper">
+                        <i class="bi bi-chat-dots"></i>
+
+                        @if (UnreadChatsCount > 0)
+                        {
+                            <span class="nav-badge">@UnreadChatsCount</span>
+                        }
+                    </span>
+                    Текущи свапове
+                </NavLink>
             </div>
 
             <div class="logged-nav-item">
@@ -29,3 +46,35 @@
         </nav>
     </div>
 </div>
+
+@code {
+    [Parameter] public Guid CurrentStudentId { get; set; }
+    public int UnreadChatsCount { get; set; }
+    private HubConnection hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UnreadChatsCount = ChatManager.GetUnreadChatsCount(CurrentStudentId);
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/chatHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<Guid>("NewUnread", _ =>
+        {
+            UnreadChatsCount = ChatManager.GetUnreadChatsCount(CurrentStudentId);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
