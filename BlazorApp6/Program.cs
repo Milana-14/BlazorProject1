@@ -71,10 +71,9 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapHub<ChatMessages>("/chathub");
-
 app.MapHub<AiChatHub>("/aichat");
-
 app.MapHub<OnlineHub>("/onlineHub");
+app.MapHub<SwapHub>("/swapHub");
 
 
 app.MapControllers();

@@ -1,4 +1,5 @@
 ﻿@inject ChatManager ChatManager
+@inject SwapManager SwapManager
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 @implements IAsyncDisposable
@@ -12,7 +13,6 @@
         <NavLink href="my-profile"><i class="bi bi-person"></i></NavLink>
         <NavLink href="students-filter"><i class="bi bi-funnel"></i></NavLink>
         <NavLink href="my-swaps">
-            @* <i class="bi bi-chat-dots"></i> *@
             <span class="nav-icon-wrapper">
                 <i class="bi bi-chat-dots"></i>
 
@@ -22,7 +22,16 @@
                 }
             </span>
         </NavLink>
-        <NavLink href="my-incoming-swaps"><i class="bi bi-arrow-left-right"></i></NavLink>
+        <NavLink href="my-incoming-swaps">
+            <span class="nav-icon-wrapper">
+                <i class="bi bi-arrow-left-right"></i>
+
+                @if (SwapIncomesCount > 0)
+                {
+                    <span class="nav-badge">@SwapIncomesCount</span>
+                }
+            </span>
+        </NavLink>
         <NavLink href="chat-history"><i class="bi bi-check-circle"></i></NavLink>
     </nav>
 </div>
@@ -30,11 +39,13 @@
 @code {
     [Parameter] public Guid CurrentStudentId { get; set; }
     public int UnreadChatsCount { get; set; }
+    public int SwapIncomesCount { get; set; }
     private HubConnection hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
         UnreadChatsCount = ChatManager.GetUnreadChatsCount(CurrentStudentId);
+        SwapIncomesCount = SwapManager.GetNewSwapIncomesCount(CurrentStudentId);
 
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/chatHub"))
@@ -46,6 +57,12 @@
             UnreadChatsCount = ChatManager.GetUnreadChatsCount(CurrentStudentId);
             InvokeAsync(StateHasChanged);
         });
+
+        hubConnection.On<Guid>("NewSwaps", _ =>
+{
+    SwapIncomesCount = SwapManager.GetNewSwapIncomesCount(CurrentStudentId);
+    InvokeAsync(StateHasChanged);
+});
 
         await hubConnection.StartAsync();
     }

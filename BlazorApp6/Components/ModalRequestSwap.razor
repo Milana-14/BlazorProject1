@@ -1,6 +1,8 @@
 ﻿@using BlazorApp6.Models
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
+@using Microsoft.AspNetCore.SignalR
+@inject IHubContext<SwapHub> swapHubContext
 
 @if (IsOpen)
 {
@@ -82,9 +84,27 @@
     private async Task SendRequest()
     {
         if (isRequiringHelp)
+        {
             SwapManager.RequestHelp(otherStudent, student, SelectedSubject, otherStudent);
+
+            Swap swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, student.Id);
+            Guid studentId = (swap.RequesterId == swap.Student1Id) ? swap.Student2Id : swap.Student1Id;
+            if (swap != null)
+            {
+                await swapHubContext.Clients.User(studentId.ToString()).SendAsync("NewSwaps");
+            }
+        }
         else
+        {
             SwapManager.OfferHelp(student, otherStudent, SelectedSubject, otherStudent);
+
+            Swap swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, student.Id);
+            Guid studentId = (swap.RequesterId == swap.Student1Id) ? swap.Student2Id : swap.Student1Id;
+            if (swap != null)
+            {
+                await swapHubContext.Clients.User(studentId.ToString()).SendAsync("NewSwaps");
+            }
+        }
         SelectedSubject = SubjectEnum.NotSpecified;
 
         await OnClose.InvokeAsync(SelectedSubject);

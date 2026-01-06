@@ -1,4 +1,5 @@
 ﻿@inject ChatManager ChatManager
+@inject SwapManager SwapManager
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 @implements IAsyncDisposable
@@ -22,8 +23,6 @@
 
             <div class="logged-nav-item">
                 <NavLink class="logged-nav-link" href="my-swaps">
-                    @* <i class="bi bi-chat-dots"></i>Текущи свапове *@
-
                     <span class="nav-icon-wrapper">
                         <i class="bi bi-chat-dots"></i>
 
@@ -37,7 +36,17 @@
             </div>
 
             <div class="logged-nav-item">
-                <NavLink class="logged-nav-link" href="my-incoming-swaps"><i class="bi bi-arrow-left-right"></i>Заявки за свап</NavLink>
+                <NavLink class="logged-nav-link" href="my-incoming-swaps">
+                    <span class="nav-icon-wrapper">
+                        <i class="bi bi-arrow-left-right"></i>
+
+                        @if (SwapIncomesCount > 0)
+                        {
+                            <span class="nav-badge">@SwapIncomesCount</span>
+                        }
+                    </span>
+                    Заявки за свап
+                </NavLink>
             </div>
 
             <div class="logged-nav-item">
@@ -50,11 +59,13 @@
 @code {
     [Parameter] public Guid CurrentStudentId { get; set; }
     public int UnreadChatsCount { get; set; }
+    public int SwapIncomesCount { get; set; }
     private HubConnection hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
         UnreadChatsCount = ChatManager.GetUnreadChatsCount(CurrentStudentId);
+        SwapIncomesCount = SwapManager.GetNewSwapIncomesCount(CurrentStudentId);
 
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/chatHub"))
@@ -64,6 +75,12 @@
         hubConnection.On<Guid>("NewUnread", _ =>
         {
             UnreadChatsCount = ChatManager.GetUnreadChatsCount(CurrentStudentId);
+            InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<Guid>("NewSwaps", _ =>
+        {
+            SwapIncomesCount = SwapManager.GetNewSwapIncomesCount(CurrentStudentId);
             InvokeAsync(StateHasChanged);
         });
 

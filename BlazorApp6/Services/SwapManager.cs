@@ -137,6 +137,13 @@ namespace BlazorApp6.Services
             return history;
         }
 
+        public int GetNewSwapIncomesCount(Guid studentId)
+        {
+            return swaps.Count(s => s.Status == SwapStatus.Pending && 
+                                    s.RequesterId != studentId &&
+                                    (s.Student1Id == studentId || s.Student2Id == studentId));
+        }
+
 
 
         // Работа с база данни
@@ -260,5 +267,9 @@ namespace BlazorApp6.Services
             cmd.Parameters.AddWithValue("@Id", swap.Id);
             cmd.ExecuteNonQuery();
         }
+    }
+
+    public class SwapHub : Hub
+    {
     }
 }
