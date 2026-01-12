@@ -27,9 +27,9 @@ namespace BlazorApp6.Services
 
             var sql = @"
 INSERT INTO ""AiMessages""
-(""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""ReplyToMessageId"")
+(""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""ReplyToMessageId"", ""Timestamp"")
 VALUES
-(@Id, @StudentId, @SenderId, @SenderName, @Content, @IsFile, @FileName, @ReplyToMessageId)";
+(@Id, @StudentId, @SenderId, @SenderName, @Content, @IsFile, @FileName, @ReplyToMessageId, @Timestamp)";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", message.Id);
@@ -40,6 +40,7 @@ VALUES
             cmd.Parameters.AddWithValue("@IsFile", message.IsFile);
             cmd.Parameters.AddWithValue("@FileName", (object?)message.FileName ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@ReplyToMessageId", message.ReplyToMessageId == Guid.Empty ? Guid.Empty : message.ReplyToMessageId);
+            cmd.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
 
             await cmd.ExecuteNonQueryAsync();
         }
@@ -51,7 +52,7 @@ VALUES
             await conn.OpenAsync();
 
             var sql = @"
-SELECT ""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""ReplyToMessageId""
+SELECT ""Id"", ""StudentId"", ""SenderId"", ""SenderName"", ""Content"", ""IsFile"", ""FileName"", ""ReplyToMessageId"", ""Timestamp""
 FROM ""AiMessages""
 WHERE ""StudentId"" = @StudentId
 ORDER BY ""Timestamp""";
@@ -71,7 +72,8 @@ ORDER BY ""Timestamp""";
                     Content = reader.GetString(4),
                     IsFile = reader.GetBoolean(5),
                     FileName = reader.IsDBNull(6) ? null : reader.GetString(6),
-                    ReplyToMessageId = reader.GetGuid(7)
+                    ReplyToMessageId = reader.GetGuid(7),
+                    Timestamp = reader.GetDateTime(8)
                 });
             }
 
