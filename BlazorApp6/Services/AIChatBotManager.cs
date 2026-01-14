@@ -147,8 +147,7 @@ ORDER BY ""Timestamp""";
             var studentId = connection.Student.Id;
             var senderName = $"{connection.Student.FirstName} {connection.Student.SecName}";
 
-            await Clients.Group(studentId.ToString())
-                .ReceiveMessage(message.Id, studentId, senderName, message.content);
+            await Clients.Group(studentId.ToString()).ReceiveMessage(message.Id, studentId, senderName, message.content);
 
             await db.AddMessageAsync(new AiMessage
             {
@@ -164,12 +163,15 @@ ORDER BY ""Timestamp""";
             var tempId = Guid.NewGuid();
             await Clients.Group(studentId.ToString()).AiTypingStarted(tempId);
 
+            var sb = new StringBuilder();
+
             await foreach (var token in ai.StreamAskAsync(studentId, message.content))
             {
+                sb.Append(token);
                 await Clients.Group(studentId.ToString()).AiTypingChunk(tempId, token);
             }
 
-            var aiFullContent = await ai.GetFullResponseAsync(studentId);
+            var aiFullContent = sb.ToString();
             if (aiFullContent == null)
             {
                 throw new HubException("Грешка при генериране на отговор от AI.");
@@ -283,11 +285,12 @@ ORDER BY ""Timestamp""";
                     SenderId = AI_ID,
                     SenderName = "AI Учител",
                     Content = aiResponse,
+                    IsFile = false,
                     ReplyToMessageId = messageId
                 });
 
                 await Clients.Group(connection.Student.Id.ToString())
-                    .ReceiveMessage(newAiId, AI_ID, "AI Учител", aiResponse);
+                    .AiTypingFinished(tempId, newAiId); //ReceiveMessage(newAiId, AI_ID, "AI Учител", aiResponse);
             }
         }
 
