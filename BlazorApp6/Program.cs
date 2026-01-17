@@ -18,11 +18,11 @@ builder.Services.AddScoped<StudentManager>();
 builder.Services.AddScoped<AvatarManager>();
 builder.Services.AddScoped<SubjectsManager>();
 builder.Services.AddScoped<SwapManager>();
+builder.Services.AddScoped<RateHelpManager>();
 builder.Services.AddScoped<ChatManager>();
 builder.Services.AddScoped<AiChatService>();
 builder.Services.AddScoped<AiChatManager>();
 builder.Services.AddSingleton<OnlineUsersService>();
-
 
 
 builder.Services.AddHttpClient("ServerAPI", client =>

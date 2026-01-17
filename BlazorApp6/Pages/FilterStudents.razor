@@ -7,6 +7,7 @@
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
+@inject RateHelpManager RateHelpManager
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
 
@@ -318,17 +319,20 @@ else
         commonCan = student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedCanHelpWith).ToHashSet();
         commonNeeds = student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(selectedNeedsHelpWith).ToHashSet();
 
+
+        List<int> starRatings = RateHelpManager.LoadReviewsForStudentFromDb(student.Id).Select(r => r.Rating).ToList();
+
         if (selectedCanHelpWith.Count == 0 && selectedNeedsHelpWith.Count == 0)
-            return 0 + ((student.HelpGivenCount == 0) ? 0 : (student.HelpRatings.Sum() / student.HelpGivenCount));
+            return 0 + ((student.HelpGivenCount == 0) ? 0 : (starRatings.Sum() / student.HelpGivenCount));
 
         else if (selectedCanHelpWith.Count == 0 && selectedNeedsHelpWith.Count > 0)
-            return ((double)commonNeeds.Count / selectedNeedsHelpWith.Count) * 100 + ((student.HelpGivenCount == 0) ? 0 : (student.HelpRatings.Sum() / student.HelpGivenCount));
+            return ((double)commonNeeds.Count / selectedNeedsHelpWith.Count) * 100 + ((student.HelpGivenCount == 0) ? 0 : (starRatings.Sum() / student.HelpGivenCount));
 
         else if (selectedCanHelpWith.Count > 0 && selectedNeedsHelpWith.Count == 0)
-            return ((double)commonCan.Count / selectedCanHelpWith.Count) * 100 + ((student.HelpGivenCount == 0) ? 0 : (student.HelpRatings.Sum() / student.HelpGivenCount));
+            return ((double)commonCan.Count / selectedCanHelpWith.Count) * 100 + ((student.HelpGivenCount == 0) ? 0 : (starRatings.Sum() / student.HelpGivenCount));
 
         else
-            return (((double)commonCan.Count / selectedCanHelpWith.Count) + ((double)commonNeeds.Count / selectedNeedsHelpWith.Count)) / 2 * 100 + ((student.HelpGivenCount == 0) ? 0 : (student.HelpRatings.Sum() / student.HelpGivenCount));
+            return (((double)commonCan.Count / selectedCanHelpWith.Count) + ((double)commonNeeds.Count / selectedNeedsHelpWith.Count)) / 2 * 100 + ((student.HelpGivenCount == 0) ? 0 : (starRatings.Sum() / student.HelpGivenCount));
     }
 
     private void RequestHelp(Student student1, Student student2, SubjectEnum subject)

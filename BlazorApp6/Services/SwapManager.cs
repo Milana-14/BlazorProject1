@@ -97,7 +97,7 @@ namespace BlazorApp6.Services
         }
         public void AcceptCompletion(Swap swap)
         {
-            CompleteSwap(swap);
+            swap.AcceptCompletion(); // Тук свапът не се завършва докрай -> CompletedNotRated
             UpdateSwapInDb(swap);
         }
         public void RejectCompletion(Swap swap)
@@ -105,7 +105,7 @@ namespace BlazorApp6.Services
             swap.RejectCompletion();
             UpdateSwapInDb(swap);
         }
-        public void CompleteSwap(Swap swap)
+        public void CompleteSwap(Swap swap) // Този метод се повиква в RateHelpManager след оценяване на помощта
         {
             swaps.Remove(swap);
             swap.CompleteSwap();

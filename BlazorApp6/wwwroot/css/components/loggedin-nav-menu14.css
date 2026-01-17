@@ -176,7 +176,7 @@ body {
     position: fixed;
     top: 84px;
     left: 72px;
-    width: 280px;
+    width: 260px;
     height: 100vh;
     background: #F4F3F1;
     border-right: 1px solid #d6d4d2;
@@ -305,12 +305,12 @@ body {
 }
 
 .swaps-header-wrapper {
-    width: 352px; /* 72 + 280 */
+    width: 332px; /* 72 + 260 */
     background: linear-gradient(to left, #8B6D86, #3E363D);
 }
 
 .navbar-header-wrapper {
-    width: 280px;
+    width: 260px;
     background: linear-gradient(to left, #8B6D86, #3E363D);
 }
 

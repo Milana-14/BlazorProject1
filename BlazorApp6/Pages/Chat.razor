@@ -12,6 +12,7 @@
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
 @inject ChatManager ChatManager
+@inject RateHelpManager RateHelpManager
 @inject OnlineUsersService OnlineUsers
 @inject IJSRuntime JS
 @rendermode InteractiveServer
@@ -136,6 +137,25 @@
                         }
                     </div>
                 }
+                @if (swap.Status == SwapStatus.CompletedNotRated && !isStudentToRate)
+                {
+                    <div class="rate-help-inline">
+                        <h5>Оцени помощта на @otherStudent.FirstName</h5>
+
+                        <div class="stars">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span class="star @(i <= selectedRating ? "selected" : "")" @onclick="() => selectedRating = i">&#9733;</span>
+                            }
+                        </div>
+
+                        <textarea placeholder="Добави коментар..." @bind="ratingComment"></textarea>
+
+                        <button class="btn-submit" @onclick="RateStudentsHelp" disabled="@(selectedRating == null)">
+                            Изпрати
+                        </button>
+                    </div>
+                }
             </div>
 
             @* Редактиране *@
@@ -222,7 +242,7 @@
     }
 
     private bool isStudentToRate;
-    private int? SelectedRating { get; set; }
+    private int? selectedRating { get; set; }
     private string ratingComment = "";
 
     private string? errorMessage;
@@ -510,22 +530,35 @@
     }
 
 
-    private void ChooseRating(int rating) => SelectedRating = rating;
+    private void ChooseRating(int rating) => selectedRating = rating;
 
     private async Task RateStudentsHelp()
     {
-        if (SelectedRating == null) return;
+        if (selectedRating == null) return;
+        if (ratingComment == null) return;
 
-        otherStudent.HelpGivenCount++;
-        otherStudent.HelpRatings.Add(SelectedRating.Value);
-        otherStudent.Coins++;
-        StudentManager.UpdateStudent(otherStudent);
+        RateHelpManager.RateSwap(swap, ratingComment, selectedRating.Value);
 
-        currentStudent.Coins--;
-        StudentManager.UpdateStudent(currentStudent);
+        if (isStudentToRate)
+        {
+            currentStudent.HelpGivenCount++;
+            currentStudent.Coins++;
+            StudentManager.UpdateStudent(currentStudent);
+
+            otherStudent.Coins--;
+            StudentManager.UpdateStudent(otherStudent);
+        }
+        else
+        {
+            otherStudent.HelpGivenCount++;
+            otherStudent.Coins++;
+            StudentManager.UpdateStudent(otherStudent);
+
+            currentStudent.Coins--;
+            StudentManager.UpdateStudent(currentStudent);
+        }
 
         SwapManager.CompleteSwap(swap);
-
         await hubConnection.SendAsync("AcceptCompletion", swap.Id, currentStudent.Id);
 
         NavigationManager.NavigateTo("/my-swaps");

@@ -47,6 +47,12 @@
 
             Status = SwapStatus.PendingCompleted;
         }
+        public void AcceptCompletion()
+        {
+            if (Status != SwapStatus.PendingCompleted)
+                throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\".");
+            Status = SwapStatus.CompletedNotRated;
+        }
 
         public void CompleteSwap()
         {

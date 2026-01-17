@@ -6,6 +6,7 @@
 @inject AvatarManager AvatarManager
 @inject SubjectsManager SubjectsManager
 @inject SwapManager SwapManager
+@inject RateHelpManager RateHelpManager
 @rendermode InteractiveServer
 
 <div class="main-page">
@@ -19,7 +20,7 @@
         @if (!isEditing)
         {
             allSwaps = SwapManager.FindSwapsByStudentId(student.Id);
-            averageRating = (student.HelpGivenCount == 0) ? 0 : student.HelpRatings.Sum() / student.HelpGivenCount;
+            averageRating = (student.HelpGivenCount == 0) ? 0 : starRatings.Sum() / student.HelpGivenCount;
             <div class="profile-all-containers">
                 <div class="profile-main-info-container">
                     <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="my-profile-avatar" />
@@ -181,6 +182,7 @@
     private Student? studentBackup;
     private List<SubjectEnum> allSubjects = new();
     private List<Swap> allSwaps = new();
+    private List<int> starRatings = new();
     private double averageRating = 0.0;
     private bool successMessageShown = false;
     private string errorMessage = string.Empty;
@@ -210,6 +212,8 @@
         isEditing = false;
 
         allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
+
+        starRatings = RateHelpManager.LoadReviewsForStudentFromDb(student.Id).Select(r => r.Rating).ToList();
     }
 
     private async Task SelectFile(IBrowserFile file)

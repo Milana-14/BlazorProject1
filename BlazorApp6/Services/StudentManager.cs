@@ -116,8 +116,7 @@ namespace BlazorApp6.Services
                     );
                     student.Id = reader.GetGuid(0);
                     student.HelpGivenCount = reader.GetInt32(8);
-                    student.HelpRatings = reader.GetFieldValue<List<int>>(9);
-                    student.Coins = reader.GetInt32(10);
+                    student.Coins = reader.GetInt32(9);
 
                     studentsFromDb.Add(student);
                 }
@@ -138,8 +137,8 @@ namespace BlazorApp6.Services
                     connection.Open();
 
                     string sql = @"INSERT INTO ""Students"" 
-                           (""Id"", ""FirstName"", ""SecName"", ""Email"", ""Username"", ""Password"", ""Grade"", ""AvatarName"", ""HelpGivenCount"", ""HelpRatings"", ""Coins"")
-                           VALUES (@Id, @FirstName, @SecName, @Email, @Username, @Password, @Grade, @AvatarName, @HelpGivenCount, @HelpRatings, @Coins)";
+                           (""Id"", ""FirstName"", ""SecName"", ""Email"", ""Username"", ""Password"", ""Grade"", ""AvatarName"", ""HelpGivenCount"", ""Coins"")
+                           VALUES (@Id, @FirstName, @SecName, @Email, @Username, @Password, @Grade, @AvatarName, @HelpGivenCount, @Coins)";
 
                     using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
                     cmd.Parameters.AddWithValue("@Id", student.Id);
@@ -151,7 +150,6 @@ namespace BlazorApp6.Services
                     cmd.Parameters.AddWithValue("@Grade", student.Grade);
                     cmd.Parameters.AddWithValue("@AvatarName", (object?)student.AvatarName ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@HelpGivenCount", student.HelpGivenCount);
-                    cmd.Parameters.AddWithValue("@HelpRatings", (object?)student.HelpRatings ?? new int[] { });
                     cmd.Parameters.AddWithValue("@Coins", student.Coins);
 
                     cmd.ExecuteNonQuery();
@@ -173,7 +171,7 @@ namespace BlazorApp6.Services
 
                 string sql = @"UPDATE ""Students""
                                SET ""FirstName""=@FirstName, ""SecName""=@SecName, ""Email""=@Email, ""Username""=@Username, ""Password""=@Password, 
-                                   ""Grade""=@Grade, ""AvatarName""=@AvatarName, ""HelpGivenCount""=@HelpGivenCount, ""HelpRatings""=@HelpRatings, ""Coins""=@Coins
+                                   ""Grade""=@Grade, ""AvatarName""=@AvatarName, ""HelpGivenCount""=@HelpGivenCount, ""Coins""=@Coins
                                WHERE ""Id""=@Id";
 
 
@@ -188,7 +186,6 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@Grade", student.Grade);
                 cmd.Parameters.AddWithValue("@AvatarName", (object?)student.AvatarName ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@HelpGivenCount", student.HelpGivenCount);
-                cmd.Parameters.AddWithValue("@HelpRatings", (object?)student.HelpRatings ?? new int[] { });
                 cmd.Parameters.AddWithValue("@Coins", student.Coins);
 
                 cmd.ExecuteNonQuery();

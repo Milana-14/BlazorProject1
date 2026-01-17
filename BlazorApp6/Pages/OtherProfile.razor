@@ -7,6 +7,7 @@
 @inject StudentManager StudentManager
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
+@inject RateHelpManager RateHelpManager
 @inject OnlineUsersService OnlineUsers
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
@@ -48,7 +49,7 @@
         allSwaps = SwapManager.FindSwapsByStudentId(otherStudent.Id);
         averageRating = (otherStudent.HelpGivenCount == 0)
         ? 0
-        : otherStudent.HelpRatings.Sum() / otherStudent.HelpGivenCount;
+        : starRatings.Sum() / otherStudent.HelpGivenCount;
 
         <div class="profile-all-containers">
 
@@ -192,6 +193,7 @@
     private Student? currentStudent;
 
     private List<Swap> allSwaps = new();
+    private List<int> starRatings = new();
     private double averageRating;
 
     private bool modalOpen;
@@ -227,6 +229,8 @@
             errorMessage = "Ученикът не беше намерен.";
 
         isOnline = OnlineUsers.IsOnline(otherStudent.Id);
+
+        starRatings = RateHelpManager.LoadReviewsForStudentFromDb(otherStudent.Id).Select(r => r.Rating).ToList();
     }
 
     private void CancelSwapRequest(SwapModel swap) =>

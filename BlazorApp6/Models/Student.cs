@@ -33,7 +33,6 @@ public class Student
     public HashSet<SubjectEnum> NeedsHelpWith { get; set; } = new();
 
     public int HelpGivenCount { get; set; } = 0;
-    public List<int> HelpRatings { get; set; } = new();
     public int Coins { get; set; } = 0;
 
     public Student() 
