@@ -6,10 +6,35 @@
 <PageTitle>Home</PageTitle>
 
 <div class="main-page">
-    <h1>EduSwaps</h1>
+    <div class="home-hero">
+        <h1 class="home-title">EduSwaps</h1>
+        <p class="home-subtitle">
+            Платформа за обмен на знания между ученици
+        </p>
 
-    <button class="btn-primary" @onclick="GoToLogin">Вход</button>
-    <button class="btn-secondary" @onclick="GoToRegister">Регистрация</button>
+        <div class="home-actions">
+            <button class="btn-primary-home" @onclick="GoToLogin">Вход</button>
+            <button class="btn-secondary-home" @onclick="GoToRegister">Регистрация</button>
+        </div>
+
+
+        <div class="features">
+            <div class="feature-card">
+                <i class="bi bi-people-fill feature-icon"></i>
+                <h4 class="feature-item">Помагай на други ученици</h4>
+            </div>
+
+            <div class="feature-card">
+                <i class="bi bi-star-fill feature-icon"></i>
+                <h4 class="feature-item">Изграждай доверие</h4>
+            </div>
+
+            <div class="feature-card">
+                <i class="bi bi-arrow-left-right feature-icon"></i>
+                <h4 class="feature-item">Обменяй знания срещу знания</h4>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {

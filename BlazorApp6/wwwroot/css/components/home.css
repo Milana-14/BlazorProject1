@@ -1,0 +1,73 @@
+﻿.home-hero {
+    margin-top: -80px;
+    margin-left: -240px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.home-title {
+    font-size: 64px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.home-subtitle {
+    font-size: 18px;
+    color: #666;
+    max-width: 420px;
+    margin-bottom: 40px;
+}
+
+.home-actions {
+    display: flex;
+    gap: 16px;
+}
+.features {
+    display: flex;
+    gap: 24px;
+    margin-top: 100px;
+}
+
+.feature-card {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    width: 220px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+}
+
+.btn-primary-home {
+    width: 200px;
+    height: 40px;
+    background-color: #70646E;
+    color: #FFFDFB;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 16px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary-home {
+    width: 200px;
+    height: 40px;
+    background-color: #FFF;
+    color: #70646E; /*#453D44;*/
+    border-radius: 10px;
+    border: 2px solid #70646E;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 18px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.feature-item {
+    font-weight: 440;
+    margin-top: 6px;
+}
