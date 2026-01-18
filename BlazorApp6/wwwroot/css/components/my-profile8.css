@@ -225,3 +225,223 @@
     background-color: #FFFDFB;
     color: darkred;
 }
+
+/*.profile-reviews-container {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+.review-card {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 15px;
+    background: #f9f9fb;
+    margin-bottom: 15px;
+    transition: transform 0.2s ease;
+}
+
+    .review-card:hover {
+        transform: translateY(-2px);
+    }
+
+.review-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.review-content {
+    flex: 1;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.review-name {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.review-subject {
+    font-size: 13px;
+    background: #e6e6ff;
+    color: #4b4be0;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.review-stars {
+    margin: 6px 0;
+    font-size: 14px;
+}
+
+.review-comment {
+    font-size: 14px;
+    color: #444;
+}
+
+.no-reviews-text {
+    font-style: italic;
+    color: #888;
+}
+*/
+
+
+/* ---------- ОТЗЫВИ: СПИСЪК ---------- */
+
+.profile-reviews-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ---------- ЕДИН ОТЗИВ ---------- */
+
+.review-card {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background-color: #FFFDFB;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.03);
+    transition: background-color 0.2s ease;
+}
+
+    .review-card:hover {
+        background-color: #F6F3F1;
+    }
+
+/* ---------- АВАТАР ---------- */
+
+.review-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* ---------- СЪДЪРЖАНИЕ ---------- */
+
+.review-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+/* ---------- ГОРЕН РЕД ---------- */
+
+.review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.review-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #453D44;
+}
+
+/* ---------- ПРЕДМЕТ ---------- */
+
+.review-subject {
+    font-size: 13px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    background-color: #E6E1E4;
+    color: #453D44;
+    white-space: nowrap;
+}
+
+/* ---------- ЗВЕЗДИ ---------- */
+
+.review-stars {
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: #B8AEB6;
+}
+
+/* ---------- КОМЕНТАР ---------- */
+
+.review-comment {
+    font-size: 14px;
+    line-height: 1.45;
+    color: rgba(69, 61, 68, 0.85);
+    margin-top: 2px;
+}
+
+/* ---------- ПРАЗНО СЪСТОЯНИЕ ---------- */
+
+.no-reviews-text {
+    font-size: 15px;
+    color: rgba(69, 61, 68, 0.7);
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* ---------- СЕКЦИЯ ОТЗЫВОВ ---------- */
+
+.profile-reviews-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 24px;
+}
+
+/* ---------- ЗАГОЛОВОК ---------- */
+
+.profile-reviews-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+    /* Используем ТВОИ классы, без переопределения дизайна */
+
+    .profile-reviews-header .profile-maintext {
+        margin: 0;
+    }
+
+    .profile-reviews-header .profile-sectext {
+        margin: 0;
+        opacity: 0.75;
+    }
+
+
+/* ---------- ЗАГОЛОВОК СЕКЦИИ ОТЗЫВОВ ---------- */
+
+.profile-maintext {
+    font-size: 22px;
+    font-weight: 450;
+    color: #453D44;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.profile-sectext {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(69, 61, 68, 0.75);
+    margin: -12px 0 14px 0;
+    line-height: 1.4;
+}
+
+.review-subject {
+    font-size: 13px;
+    padding: 3px 7px;
+    border-radius: 7px;
+    background-color: rgba(184, 174, 182, 0.35);
+    color: #453D44;
+    font-weight: 400;
+}

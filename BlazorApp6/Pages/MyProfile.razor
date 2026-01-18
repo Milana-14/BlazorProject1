@@ -26,7 +26,7 @@
                     <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="my-profile-avatar" />
                     <div class="profile-username-grade-container">
                         <p class="text-username">@student.FirstName @student.SecName</p>
-                        <p class="text-grade">Клас: @student.Grade</p>
+                        <p class="text-grade">@student.Grade клас</p>
                     </div>
                 </div>
 
@@ -87,6 +87,43 @@
                 <div class="profile-reviews-container">
                     <p class="profile-maintext">Отзиви за мен</p>
                     <p class="profile-sectext">от ученици, на когото съм помогнал(а)</p>
+
+                    @if (reviews.Count == 0)
+                    {
+                        <p class="no-reviews-text">Все още нямаш отзиви.
+                            <span style="text-decoration-line: underline; text-decoration-thickness: 1px;" @onclick="@(() => Navigation.NavigateTo("/students-filter"))">
+                                Натисни тук, за да намериш ученици за взаимопомощ.
+                            </span>
+                        </p>
+                    }
+                    else
+                    {
+                        @foreach (var r in reviews)
+                        {
+                            var sender = StudentManager.FindStudent(s => s.Id == r.SenderStudentId);
+                            var swap = SwapManager.FindSwapByStudentsId(student.Id, sender.Id);
+
+                            <div class="review-card">
+                                <img src="@AvatarManager.GetAvatarUrl(sender.AvatarName)" class="review-avatar" />
+
+                                <div class="review-content">
+                                    <div class="review-header">
+                                        <span class="review-name" @onclick="() => GoToProfilePage(sender.Id)">@sender.FirstName</span>
+                                        <span class="review-subject">@swap.SubjectForHelp.GetDisplayName()</span>
+                                    </div>
+
+                                    <div class="review-stars">
+                                        @for (int i = 0; i < r.Rating; i++)
+                                        {
+                                            <span>&#9733;</span>
+                                        }
+                                    </div>
+
+                                    <p class="review-comment">“@r.Comment”</p>
+                                </div>
+                            </div>
+                        }
+                    }
                 </div>
             </div>
         }
@@ -185,6 +222,9 @@
     private List<int> starRatings = new();
     private double averageRating = 0.0;
     private bool successMessageShown = false;
+
+    private List<Review> reviews = new();
+
     private string errorMessage = string.Empty;
     private bool isEditing = false;
 
@@ -214,6 +254,8 @@
         allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
 
         starRatings = RateHelpManager.LoadReviewsForStudentFromDb(student.Id).Select(r => r.Rating).ToList();
+
+        reviews = RateHelpManager.LoadReviewsForStudentFromDb(student.Id);
     }
 
     private async Task SelectFile(IBrowserFile file)
@@ -262,6 +304,10 @@
 
     }
 
+    private void GoToProfilePage(Guid senderId)
+    {
+        Navigation.NavigateTo($"/other-profile/{senderId}");
+    }
 
     private void GoToChangePassword()
     {

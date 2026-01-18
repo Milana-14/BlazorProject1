@@ -40,6 +40,8 @@ namespace BlazorApp6.Services
                     connection.Open();
                     using (var command = new Npgsql.NpgsqlCommand(@"SELECT * FROM ""Reviews"" WHERE ""ReceiverStudentId""=@receiverStudentId", connection))
                     {
+                        command.Parameters.AddWithValue("@receiverStudentId", receiverStudentId);
+
                         using (var reader = command.ExecuteReader())
                         {
                             while (reader.Read())

@@ -68,7 +68,7 @@
                         @otherStudent.FirstName @otherStudent.SecName
                     </p>
                     <p class="text-grade">
-                        Клас: @otherStudent.Grade
+                        @otherStudent.Grade клас
                     </p>
                 </div>
             </div>
@@ -106,10 +106,9 @@
 
             <!-- ЛИЧНА ИНФОРМАЦИЯ -->
             <div class="profile-container-persinfo">
-
                 <div>
                     <p class="profile-text-help-with">Мога да помогна по:</p>
-                    <div class="subjects-only-container">
+                    <div class="subjects-only-container mt-lg-2">
                         @foreach (var subj in otherStudent.CanHelpWith)
                             {
                                 <span class="badge badge-match1">@subj.GetDisplayName()</span>
@@ -119,7 +118,7 @@
 
                     <div>
                         <p class="profile-text-help-with">Търся помощ по:</p>
-                        <div class="subjects-only-container">
+                        <div class="subjects-only-container mt-lg-2">
                             @foreach (var subj in otherStudent.NeedsHelpWith)
                             {
                                 <span class="badge badge-match1">@subj.GetDisplayName()</span>
@@ -136,18 +135,16 @@
                     @if (!isAlreadyRequested && !isAlreadySwapped)
                     {
                         <button class="btn-profile-secondary"
-                                disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3
-                                                                      || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
-                                                                                                                                @onclick="() => OpenModal(otherStudent, true)">
-                                                                                                                            Помоли за помощ
-                                                                                                                        </button>
+                                disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3 || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
+                                @onclick="() => OpenModal(otherStudent, true)">
+                            Помоли за помощ
+                        </button>
 
                         <button class="btn-profile-secondary"
-                                disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3
-                                                                      || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
-                        @onclick="() => OpenModal(otherStudent, false)">
-                    Предложи помощ
-                </button>
+                                disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3 || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
+                                @onclick="() => OpenModal(otherStudent, false)">
+                            Предложи помощ
+                        </button>
                                 }
                     else if (isAlreadyRequested && !isAlreadySwapped)
                     {
@@ -170,7 +167,42 @@
             <!-- ===== ОТЗИВИ ===== -->
             <div class="profile-reviews-container">
                 <p class="profile-maintext">Отзиви</p>
-                <p class="profile-sectext">от ученици, на които е помогнал(а)</p>
+                <p class="profile-sectext">от ученици, на когото е помогнал(а)</p>
+
+                @if (reviews.Count == 0)
+                {
+                    <p class="no-reviews-text">Все още няма отзиви за този ученик.</p>
+                }
+                else
+                {
+                    @foreach (var r in reviews)
+                    {
+                        var sender = StudentManager.FindStudent(s => s.Id == r.SenderStudentId);
+                        var otherSwap = SwapManager.FindSwapByStudentsId(otherStudent.Id, sender.Id);
+
+                        <div class="review-card">
+                            <img src="@AvatarManager.GetAvatarUrl(sender.AvatarName)" class="review-avatar" />
+
+                           <div class="review-content">
+                                <div class="review-header">
+                                    <span class="review-name" @onclick="() => GoToOtherProfiile(sender.Id)">
+                                        @sender.FirstName
+                                    </span>
+                                    <span class="review-subject">@otherSwap.SubjectForHelp.GetDisplayName()</span>
+                                </div>
+
+                                <div class="review-stars">
+                                    @for (int i = 0; i < r.Rating; i++)
+                                    {
+                                        <span>&#9733;</span>
+                                    }
+                                </div>
+
+                                <p class="review-comment">“@r.Comment”</p>
+                            </div>
+                        </div>
+                    }   
+                }
             </div>
         </div>
     }
@@ -195,6 +227,7 @@
     private List<Swap> allSwaps = new();
     private List<int> starRatings = new();
     private double averageRating;
+    private List<Review> reviews = new();
 
     private bool modalOpen;
     private Student? modalTargetStudent;
@@ -231,6 +264,8 @@
         isOnline = OnlineUsers.IsOnline(otherStudent.Id);
 
         starRatings = RateHelpManager.LoadReviewsForStudentFromDb(otherStudent.Id).Select(r => r.Rating).ToList();
+
+        reviews = RateHelpManager.LoadReviewsForStudentFromDb(otherStudent.Id);
     }
 
     private void CancelSwapRequest(SwapModel swap) =>
@@ -258,4 +293,9 @@
 
     private void GoToSwapDetails(SwapModel swap) =>
         NavigationManager.NavigateTo($"/SwapDetails/{swap.Id}");
+
+    private void GoToOtherProfiile(Guid studentId)
+    {
+        NavigationManager.NavigateTo($"/other-profile/{studentId}");
+    }
 }
