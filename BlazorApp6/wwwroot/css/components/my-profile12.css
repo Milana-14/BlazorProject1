@@ -429,6 +429,16 @@
     line-height: 1.2;
 }
 
+.profile-maintext-avatar {
+    font-size: 22px;
+    font-weight: 450;
+    color: #453D44;
+    margin: 0;
+    margin-top: 8px;
+    margin-bottom: -6px;
+    line-height: 1.2;
+}
+
 .profile-sectext {
     font-size: 16px;
     font-weight: 400;
@@ -444,4 +454,170 @@
     background-color: rgba(184, 174, 182, 0.35);
     color: #453D44;
     font-weight: 400;
+}
+
+
+/* ---------- EDIT MODE ---------- */
+
+.edit-mode {
+    margin-top: 24px;
+}
+
+.edit-input-title {
+    font-size: 28px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: #453D44;
+}
+
+.edit-input-subtitle {
+    font-size: 16px;
+    border: none;
+    background: transparent;
+    color: rgba(69, 61, 68, 0.7);
+}
+
+.edit-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.edit-section-subjects {
+    display: block;
+    background-color: #F9F7F6;
+    border-radius: 16px;
+    padding: 12px 14px 4px 14px;
+    gap: 6px;
+    margin-bottom: 16px !important;
+    border: none;
+}
+
+.checkbox-group3 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: 8px;
+}
+
+.edit-input1 {
+    width: 100%;
+    height: 41px;
+    border-radius: 12px;
+    border: none;
+    background-color: #FFFDFB;
+    color: #000000;
+    font-size: 1rem;
+    padding-left: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 12px;
+    margin-top: -8px;
+}
+
+    .edit-input1:focus {
+        outline: none;
+    }
+
+.edit-avatar-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.hidden-file-input {
+    display: none;
+}
+
+.avatar-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 12px;
+    background-color: #FFFDFB;
+    color: #453D44;
+    font-size: 17px;
+    font-weight: 450;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-danger-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 16px;
+    background-color: #F0DADA;
+    color: #6A3A3A;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 450;
+    font-size: 17px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.edit-subjects-container {
+    grid-area: reviews;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.edit-buttons-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    justify-content: flex-start;
+}
+
+.edit-buttons-container button {
+    flex: 1;
+}
+
+.btn-secondary-edit {
+    width: 200px;
+    height: 40px;
+    background-color: #F9F7F6;
+    color: #453D44;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 18px;
+    margin-top: -8px;
+    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.btn-primary-home1 {
+    width: 292px;
+    height: 40px;
+    background-color: #70646E;
+    color: #FFFDFB;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 16px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary-home1 {
+    width: 292px;
+    height: 40px;
+    background-color: #FFF;
+    color: #70646E; /*#453D44;*/
+    border-radius: 10px;
+    border: 2px solid #70646E;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 18px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
