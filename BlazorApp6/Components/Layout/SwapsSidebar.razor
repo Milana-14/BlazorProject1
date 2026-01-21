@@ -22,7 +22,7 @@
         var unread = ChatManager.GetUnreadCount(swap.Id, CurrentStudentId);
 
         <div class="swap-chat-item" @onclick="() => OpenChat(student)">
-            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="filter-avatar" />
+            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="sidebar-avatar" />
             <div class="swap-chat-info">
                 <strong>@student.FirstName @((!string.IsNullOrEmpty(student.SecName)) ? student.SecName[0].ToString() : "")</strong>
 

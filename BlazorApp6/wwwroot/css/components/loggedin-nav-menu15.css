@@ -362,3 +362,11 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+.sidebar-avatar {
+    width: 94px;
+    height: 94px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+}
