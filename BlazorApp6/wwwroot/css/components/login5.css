@@ -104,3 +104,21 @@
         width: 90%;
     }
 }
+
+/* =====================================================
+   CHANGE PASSWORD – использует стиль LOGIN
+   ===================================================== */
+
+/* НИЧЕГО нового не нужно, если login.css уже подключён */
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.login-card p {
+    font-size: 0.95rem;
+    color: rgba(69, 61, 68, 0.75);
+    margin-bottom: 10px;
+}
