@@ -8,7 +8,7 @@ namespace BlazorApp6.Services
     public class SwapManager // За управление на матчовете межд учениците
     {
         private readonly string connectionString;
-        private List<Swap> swaps = new List<Swap>(); // Само за свапове със статус Pending или Confirmed
+        private List<Swap> swaps = new List<Swap>(); // Само за свапове със статус Pending, Confirmed, PendingCompleted или CompletedNotRated
         private List<Swap> history = new List<Swap>(); // Само за свапове със статус Rejected, Completed или Canceled (отменените свапове изобщо не се записват - няма смис)
         public string? DbError { get; private set; }
         public SwapManager(IConfiguration config)
@@ -123,6 +123,10 @@ namespace BlazorApp6.Services
         public Swap? FindSwapByStudentsId(Guid student1Id, Guid student2Id)
         {
             return swaps.Where(m => (m.Student1Id == student1Id && m.Student2Id == student2Id) || (m.Student1Id == student2Id && m.Student2Id == student1Id)).FirstOrDefault();
+        }
+        public Swap? FindHistorySwapByStudentsId(Guid student1Id, Guid student2Id)
+        {
+            return history.Where(m => (m.Student1Id == student1Id && m.Student2Id == student2Id) || (m.Student1Id == student2Id && m.Student2Id == student1Id)).FirstOrDefault();
         }
         public Swap? FindSwapById(Guid id)
         {

@@ -9,13 +9,6 @@
 @inject AiChatManager AiChatManager
 @rendermode InteractiveServer
 
-@* <div class="main-page">
-<div class="chat-page"> *@
-    @* <div class="sidebar p-3">
-        <h5>AI Учител</h5>
-        <p>Персонален помощник</p>
-    </div> *@
-
 <div class="main-chat-page">
     <div class="chat-page no-info">
     <div class="chat-container d-flex flex-column flex-grow-1">
@@ -47,9 +40,6 @@
                 else
                 {
                     <div class="other-message-sender">
-                        @* <div class="other-message">
-                            @((MarkupString)m.Content)
-                        </div> *@
                         <div class="ai-message">
                             @((MarkupString)RenderMarkdown(m.Content))
                         </div>
@@ -57,12 +47,14 @@
                 }
             }
 
-            <div class="input-bar no-info d-flex align-items-center">
-                @* <InputFile OnChange="OnInputFileSelected" /> *@
-                <InputText @bind-Value="newMessage" placeholder="Задай въпрос..." />
-                <button class="btn-send" disabled="@string.IsNullOrWhiteSpace(newMessage)"  @onclick="SendMessage">
-                    <i class="bi bi-send"></i>
-                </button>
+            <div class="chat-bottom-fixed">
+                 <div class="input-bar no-info d-flex align-items-center">
+                   @* <InputFile OnChange="OnInputFileSelected" /> *@
+                    <InputText @bind-Value="newMessage" placeholder="Задай въпрос..." />
+                    <button class="btn-send" disabled="@string.IsNullOrWhiteSpace(newMessage)"  @onclick="SendMessage">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

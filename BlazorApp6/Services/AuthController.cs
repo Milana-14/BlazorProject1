@@ -26,13 +26,11 @@ public class AccountController : Controller
     {
         try
         {
-            // Validate input
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Моля, попълнете всички полета."));
             }
 
-            // Find student
             var student = _studentManager.FindStudent(s => s.Username == username);
 
             if (student == null)
@@ -41,14 +39,12 @@ public class AccountController : Controller
                 return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Невалиден юзърнейм или парола."));
             }
 
-            // Verify password
             if (!HashPasswordService.ComparePasswords(student.Password, password))
             {
                 _logger.LogWarning("Failed login attempt for user: {Username}", username);
                 return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Невалиден юзърнейм или парола."));
             }
 
-            // Create authentication claims
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, student.Id.ToString()),
@@ -59,7 +55,6 @@ public class AccountController : Controller
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
-            // Sign in with persistent cookie
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = true,
@@ -74,7 +69,6 @@ public class AccountController : Controller
 
             _logger.LogInformation("User {Username} logged in successfully", student.Username);
 
-            // Redirect to return URL or default page
             return Redirect(returnUrl ?? "/my-profile");
         }
         catch (Exception ex)

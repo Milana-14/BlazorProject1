@@ -178,7 +178,7 @@
                     @foreach (var r in reviews)
                     {
                         var sender = StudentManager.FindStudent(s => s.Id == r.SenderStudentId);
-                        var otherSwap = SwapManager.FindSwapByStudentsId(otherStudent.Id, sender.Id);
+                        var otherSwap = SwapManager.FindHistorySwapByStudentsId(otherStudent.Id, sender.Id);
 
                         <div class="review-card">
                             <img src="@AvatarManager.GetAvatarUrl(sender.AvatarName)" class="review-avatar" />

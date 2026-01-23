@@ -55,7 +55,10 @@
                 </div>
                 <div class="chat-info-actions">
                     <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="() => ViewProfile(otherStudent)">Виж профила</span></div>
-                    <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="ProposeCompletion">Предложи завършване</span></div>
+                    @if (swap.Status == SwapStatus.Confirmed)
+                    {
+                        <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="ProposeCompletion">Предложи завършване</span></div>
+                    }
                     <div class="chat-info-action" @onclick="() => ReportPartner(otherStudent)"><i class="bi bi-x-circle"></i><span>Репортни</span></div>
                 </div>
                 <div class="chat-info-section">
@@ -67,132 +70,149 @@
                 </div>
             </div>
 
-            @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted)
+            @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted || swap.Status == SwapStatus.CompletedNotRated)
             {
-        <div class="chat-container d-flex flex-column flex-grow-1">
-            <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
-                @code {
-                    DateTime? lastDate = null;
-                    MessageForChat? previousMessage = null;
-                }
+                <div class="chat-container d-flex flex-column flex-grow-1">
+                    <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
+                        @code {
+                            DateTime? lastDate = null;
+                            MessageForChat? previousMessage = null;
+                        }
 
-                @foreach (var m in messagesForChat)
-                {
-                    bool showAvatar = previousMessage == null || previousMessage.SenderId != m.SenderId || previousMessage.Timestamp.Date != m.Timestamp.Date;
-                    DateTime date = m.Timestamp.Date;
-
-                    if (lastDate == null || lastDate.Value != date)
-                    {
-                        <div class="chat-date-separator">@date.ToString("dd MMMM yyyy")</div>
-                        lastDate = date;
-                    }
-
-                    if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
-                    {
-                        <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
-                            @((MarkupString)m.Content)
-                            <sub><small><time>@(m.IsEdited ? $"редактирано {m.Timestamp:HH:mm}" : m.Timestamp.ToLocalTime().ToString("HH:mm"))</time></small></sub>
-                        </div>
-                    }
-                    else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
-                    {
-                        <div class="other-message-sender">
-                            @if (showAvatar)
+                        @foreach (var m in messagesForChat)
+                        {
+                            bool showAvatar = previousMessage == null || previousMessage.SenderId != m.SenderId || previousMessage.Timestamp.Date != m.Timestamp.Date;
+                            DateTime date = m.Timestamp.Date;
+                                    
+                            if (lastDate == null || lastDate.Value != date)
                             {
-                                <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
+                                <div class="chat-date-separator">@date.ToString("dd MMMM yyyy")</div>
+                                lastDate = date;
+                            }
+
+                            if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
+                            {
+                                <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
+                                    @((MarkupString)m.Content)
+                                    <sub><small><time>@(m.IsEdited ? $"редактирано {m.Timestamp:HH:mm}" : m.Timestamp.ToLocalTime().ToString("HH:mm"))</time></small></sub>
+                                </div>
+                            }
+                            else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
+                            {
+                                <div class="other-message-sender">
+                                    @if (showAvatar)
+                                    {
+                                        <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
+                                    }
+                                    else
+                                    {
+                                        <div class="chat-avatar-placeholder"></div>
+                                    }
+                                    <div class="other-message">
+                                        @((MarkupString)m.Content)
+                                        <sub><small><time>@(m.IsEdited ? $"редактирано {m.Timestamp:HH:mm}" : m.Timestamp.ToLocalTime().ToString("HH:mm"))</time></small></sub>
+                                    </div>
+                                </div>
                             }
                             else
                             {
-                                <div class="chat-avatar-placeholder"></div>
+                                <div class="system-message"><i>@m.Content</i><small><time>@m.Timestamp.ToLocalTime():HH:mm</time></small></div>
                             }
-                            <div class="other-message">
-                                @((MarkupString)m.Content)
-                                <sub><small><time>@(m.IsEdited ? $"редактирано {m.Timestamp:HH:mm}" : m.Timestamp.ToLocalTime().ToString("HH:mm"))</time></small></sub>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="system-message"><i>@m.Content</i><small><time>@m.Timestamp.ToLocalTime():HH:mm</time></small></div>
-                    }
 
-                    previousMessage = m;
-                }
-
-                @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
-                {
-                    <div class="swap-notification">
-                        @if (swap.CompletionProposedByStudentId.Value != currentStudent.Id)
-                        {
-                            <span>@otherStudent.FirstName е предложил да завършите свапа.</span>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-danger btn-sm" @onclick="AcceptCompletion">Завърши</button>
-                                <button class="btn btn-secondary btn-sm" @onclick="RejectCompletion">Продължи</button>
-                            </div>
+                            previousMessage = m;
                         }
-                        else
-                        {
-                            <span>Вие предложихте да завършите свапа. Очаквайте подтверждението от @otherStudent.FirstName.</span>
-                            <button class="btn btn-warning btn-sm" @onclick="CancelProposeCompletion">Отмяна</button>
-                        }
-                    </div>
-                }
-                @if (swap.Status == SwapStatus.CompletedNotRated && !isStudentToRate)
-                {
-                    <div class="rate-help-inline">
-                        <h5>Оцени помощта на @otherStudent.FirstName</h5>
-
-                        <div class="stars">
-                            @for (int i = 1; i <= 5; i++)
-                            {
-                                <span class="star @(i <= selectedRating ? "selected" : "")" @onclick="() => selectedRating = i">&#9733;</span>
-                            }
-                        </div>
-
-                        <textarea placeholder="Добави коментар..." @bind="ratingComment"></textarea>
-
-                        <button class="btn-submit" @onclick="RateStudentsHelp" disabled="@(selectedRating == null)">
-                            Изпрати
-                        </button>
-                    </div>
-                }
-            </div>
-
-            @* Редактиране *@
-            @if (IsEditing)
-            {
-                <div class="edit-preview">
-                    <div class="edit-preview-header">
-                        <span>Редактиране</span>
-                        <button @onclick="CancelEdit"><i class="bi bi-x-lg"></i></button>
                     </div>
                 </div>
+
+                    <div class="chat-bottom-fixed input-bar-wrapper">
+                         @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
+                        {
+                            <div class="chat-system-card swap-card">
+                                @if (swap.CompletionProposedByStudentId.Value != currentStudent.Id)
+                                {
+                                    <div class="swap-card-title"> @otherStudent.FirstName предложи да завършите свапа</div>
+                                        
+                                    <div class="swap-card-actions">
+                                        <button class="btn-danger" @onclick="AcceptCompletion">Завърши</button>
+                                        <button class="btn-secondary1" @onclick="RejectCompletion">Продължи</button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="swap-card-title"> Вие предложихте да завършите свапа</div>
+                                    <div class="swap-card-sub">Очаквайте потвърждение от @otherStudent.FirstName</div>
+                                        
+                                    <div class="swap-card-actions">
+                                        <button class="btn-secondary" @onclick="CancelProposeCompletion">Отмяна</button>
+                                    </div>
+                                }
+                            </div>
+
+                        }
+                        @if (swap.Status == SwapStatus.CompletedNotRated && !isStudentToRate)
+                        {
+                            <div class="chat-system-card rate-card">
+                                    <div class="rate-card-title">
+                                        Оцени помощта на @otherStudent.FirstName
+                                    </div>
+
+                                    <div class="rate-stars">
+                                        <span class="rate-star @(1 <= selectedRating ? "selected" : "")" @onclick="() => selectedRating = 1">&#9733;</span>
+                                        <span class="rate-star @(2 <= selectedRating ? "selected" : "")" @onclick="() => selectedRating = 2">&#9733;</span>
+                                        <span class="rate-star @(3 <= selectedRating ? "selected" : "")" @onclick="() => selectedRating = 3">&#9733;</span>
+                                        <span class="rate-star @(4 <= selectedRating ? "selected" : "")" @onclick="() => selectedRating = 4">&#9733;</span>
+                                        <span class="rate-star @(5 <= selectedRating ? "selected" : "")" @onclick="() => selectedRating = 5">&#9733;</span>
+                                    </div>
+
+                                    <textarea class="rate-textarea" placeholder="Добави коментар" @bind="ratingComment"></textarea>
+
+                                    <button class="rate-send-btn" @onclick="RateStudentsHelp" disabled="@(selectedRating == null || string.IsNullOrEmpty(ratingComment))">
+                                        Изпрати
+                                    </button>
+                                </div>
+                        }
+                        else if (swap.Status == SwapStatus.CompletedNotRated && isStudentToRate)
+                        {
+                            <div class="chat-system-card rate-card">
+                                <p><strong>Благодарим ти</strong>, че помогна на @otherStudent.FirstName по @swap.SubjectForHelp.GetDisplayName().ToLower().</p>
+                                <p class="sub">@otherStudent.FirstName ще оцени помощта ти.</p>
+                            </div>
+                        }
+
+                        @* Редактиране *@
+                        @if (IsEditing)
+                        {       
+                            <div class="edit-preview">
+                                <div class="edit-preview-header">
+                                    <span>Редактиране</span>
+                                    <button @onclick="CancelEdit"><i class="bi bi-x-lg"></i></button>
+                                </div>
+                            </div>
+                        }
+
+                            <div class="input-bar @(isSidebarHidden ? "no-info" : "with-info") d-flex align-items-center">
+                                <button class="btn-emoji" @onclick="ToggleEmojiPanel">😀</button>
+                                <label for="fileInput" class="btn-file"><i class="bi bi-paperclip"></i></label>
+                                <InputFile id="fileInput" OnChange="OnInputFileSelected" style="display:none;" />
+                                <InputText @bind-Value="CurrentInputText" placeholder="Напиши съобщение..." @onkeydown="HandleSendKeydown" />
+                                <button class="btn-@(IsEditing ? "check" : "send")"
+                                        disabled="@(IsEditing ? string.IsNullOrWhiteSpace(editingText) : string.IsNullOrWhiteSpace(newMessage))"
+                                        @onclick="@(IsEditing? SaveEditedMessage : SendMessage)">
+                                    <i class="bi bi-@(IsEditing ? "check-lg" : "send")"></i>
+                                </button>
+                            </div>
+                        </div>
+                    
             }
 
-            <div class="input-bar @(isSidebarHidden ? "no-info" : "with-info") d-flex align-items-center">
-                <button class="btn-emoji" @onclick="ToggleEmojiPanel">😀</button>
-                <label for="fileInput" class="btn-file"><i class="bi bi-paperclip"></i></label>
-                <InputFile id="fileInput" OnChange="OnInputFileSelected" style="display:none;" />
-                <InputText @bind-Value="CurrentInputText"
-                           placeholder="Напиши съобщение..."
-                           @onkeydown="HandleSendKeydown" />
-                <button class="btn-@(IsEditing ? "check" : "send")"
-                        disabled="@(IsEditing ? string.IsNullOrWhiteSpace(editingText) : string.IsNullOrWhiteSpace(newMessage))"
-                        @onclick="@(IsEditing? SaveEditedMessage : SendMessage)">
-                    <i class="bi bi-@(IsEditing ? "check-lg" : "send")"></i>
-                </button>
-            </div>
-        </div>
+                @if (contextMenuVisible)
+                {
+                    <div class="context-menu" style="top:@contextMenuYpx; left:@contextMenuXpx; position:absolute; z-index:1000;">
+                        <button class="btn btn-sm btn-danger" @onclick="DeleteMessage">Изтрий съобщение</button>
+                        <button class="btn btn-secondary" @onclick="EditMessage">Редактирай</button>
+                    </div>
                 }
-
-        @if (contextMenuVisible)
-        {
-            <div class="context-menu" style="top:@contextMenuYpx; left:@contextMenuXpx; position:absolute; z-index:1000;">
-                <button class="btn btn-sm btn-danger" @onclick="DeleteMessage">Изтрий съобщение</button>
-                <button class="btn btn-secondary" @onclick="EditMessage">Редактирай</button>
-            </div>
         }
-                }
     </div>
 </div>
 

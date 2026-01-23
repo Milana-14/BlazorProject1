@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 
 public class OnlineUsersService
 {
-    // StudentId -> ConnectionId
     private readonly ConcurrentDictionary<Guid, string> _onlineUsers = new();
 
     public void Add(Guid studentId, string connectionId)
