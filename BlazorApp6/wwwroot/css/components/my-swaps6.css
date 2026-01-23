@@ -185,3 +185,28 @@ body {
         padding: 0 8px;
     }
 }
+
+.myswaps-tabs {
+    display: inline-flex;
+    background: #F0EDE9;
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px;
+}
+
+.myswaps-tab {
+    border: none;
+    background: transparent;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #453D44;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+    .myswaps-tab.active {
+        background: #70646E;
+        color: #FFFDFB;
+    }

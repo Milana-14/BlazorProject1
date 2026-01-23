@@ -26,16 +26,16 @@
             <!-- Header / Tabs -->
             <div class="myswaps-header px-4">
                 <div class="myswaps-toprow top-row">
-                    <div class="myswaps-title">
-                        <h2 class="filter-title">Заявки за свап</h2>
-                    </div>
-
                     <div class="myswaps-tabs-wrapper">
-                        <div class="myswaps-tabs-wrapper">
-                            <div class="myswaps-tabs" role="tablist" aria-label="Swaps tabs">
-                                <button class="@GetTabClass("incoming") myswaps-tab" @onclick='@(() => SelectTab("incoming"))' role="tab">Заявки към мен</button>
-                                <button class="@GetTabClass("outgoing") myswaps-tab" @onclick='@(() => SelectTab("outgoing"))' role="tab">Моите заявки</button>
-                            </div>
+                        <div class="myswaps-tabs">
+                            <button class="myswaps-tab @(selectedTab == "incoming" ? "active" : "")"
+                                    @onclick='@(() => SelectTab("incoming"))'>
+                                Към мен
+                            </button>
+                            <button class="myswaps-tab @(selectedTab == "outgoing" ? "active" : "")"
+                                    @onclick='@(() => SelectTab("outgoing"))'>
+                                От мен
+                            </button>
                         </div>
                     </div>
                 </div>

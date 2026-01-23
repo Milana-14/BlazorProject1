@@ -363,10 +363,45 @@ body {
     justify-content: center;
 }
 
+.swap-chat-item img.sidebar-avatar {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+}
+
 .sidebar-avatar {
-    width: 94px;
-    height: 94px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     object-fit: cover;
     margin-right: 8px;
+}
+
+.swap-chat-item {
+    min-height: 64px;
+    padding: 10px 14px;
+    gap: 14px;
+    align-items: center;
+}
+
+    .swap-chat-item img.sidebar-avatar {
+        flex-shrink: 0;
+    }
+
+.swap-chat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+    .swap-chat-info strong {
+        font-size: 0.95rem;
+        line-height: 1.2;
+    }
+
+.last-message-row {
+    margin-top: 2px;
+}
+
+.last-message {
+    max-width: 190px;
 }
