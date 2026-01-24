@@ -305,7 +305,7 @@ ORDER BY ""Timestamp""";
     private readonly StudentManager studentManager;
     public AiChatService(IConfiguration config, AiChatManager aiDb, StudentManager studentManager)
     {
-        var token = Environment.GetEnvironmentVariable("EDUSWAPS_AI_TOKEN");
+        var token = config["EDUSWAPS_AI_TOKEN"];
         if (string.IsNullOrWhiteSpace(token))
             throw new Exception("Токен AI не задан. EDUSWAPS_AI_TOKEN");
 
