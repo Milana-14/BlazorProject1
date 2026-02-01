@@ -2,9 +2,10 @@
 @inject NavigationManager NavigationManager
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject StudentManager StudentManager
+@implements IDisposable
 
 <div class="app-layout">
-@if (IsSwapsMode)
+@if (IsHistorySwapsMode)
 {
     <div class="swaps-header-wrapper">
         <div class="swaps-logo">
@@ -12,11 +13,16 @@
         </div>
     </div>
 
-    @* <div class="top-row navbar navbar-dark">
-        <div class="navbar-container">
-            <h2 class="navbar-brand">EduSwaps</h2>
+    <CollapsedSidebar CurrentStudentId="@currentStudent.Id" />
+    <HistorySwapsSidebar CurrentStudentId="@CurrentStudentId" />
+}
+else if (IsSwapsMode)
+{
+    <div class="swaps-header-wrapper">
+        <div class="swaps-logo">
+            EduSwaps
         </div>
-    </div> *@
+    </div>
 
     <CollapsedSidebar CurrentStudentId="@currentStudent.Id" />
     <SwapsSidebar CurrentStudentId="@CurrentStudentId" />
@@ -33,6 +39,7 @@ else
 
 @code {
     private bool IsSwapsMode;
+    private bool IsHistorySwapsMode;
     private Guid CurrentStudentId;
     private Student currentStudent;
 
@@ -66,7 +73,7 @@ else
 
     private void CheckRoute()
     {
-        // Если текущий URL содержит /my-swaps — показываем сжатый + чатовый сайдбар
         IsSwapsMode = (NavigationManager.Uri.Contains("/my-swaps") || NavigationManager.Uri.Contains("/chat") || NavigationManager.Uri.Contains("/ai-chat"));
+        IsHistorySwapsMode = (NavigationManager.Uri.Contains("/chat-history"));
     }
 }

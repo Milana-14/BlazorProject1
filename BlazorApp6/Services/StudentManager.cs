@@ -78,9 +78,12 @@ namespace BlazorApp6.Services
         {
             Student? student = students.FirstOrDefault(predicate);
 
-            if (student == null) return null;
+            if (student == null)
+            {
+                return null;
+            }
 
-            var subjects = subjectsManager.GetSubjectsByStudent(student);
+                var subjects = subjectsManager.GetSubjectsByStudent(student);
             student.CanHelpWith = subjects.Where(s => s.CanHelp).Select(s => s.Subject).ToHashSet();
             student.NeedsHelpWith = subjects.Where(s => !s.CanHelp).Select(s => s.Subject).ToHashSet();
 

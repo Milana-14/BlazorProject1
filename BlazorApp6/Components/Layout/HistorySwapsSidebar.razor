@@ -1,0 +1,58 @@
+﻿@inject SwapManager SwapManager
+@inject StudentManager StudentManager
+@inject ChatManager ChatManager
+@inject NavigationManager NavigationManager
+@inject AvatarManager AvatarManager
+@rendermode InteractiveServer
+@using BlazorApp6.Models
+
+<div class="swaps-sidebar">
+    <h6>История на сваповете ти:</h6>
+
+    @foreach (var student in OtherStudents)
+    {
+        Swap? swap = SwapManager.FindHistorySwapByStudentsId(student.Id, CurrentStudentId);
+        @if (swap == null) continue;
+
+        <div class="swap-chat-item" @onclick="() => OpenChat(student)">
+            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="sidebar-avatar" />
+            <div class="swap-chat-info">
+                <strong>@student.FirstName @((!string.IsNullOrEmpty(student.SecName)) ? student.SecName[0].ToString() : "")</strong>
+
+                <div class="last-message-row">
+                    <span class="last-message">Завършен на @swap.DateCompleted?.ToString("dd.MM.yyyy")</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid CurrentStudentId { get; set; }
+
+    private List<Swap> Swaps = new();
+    private List<Student> OtherStudents = new();
+
+    protected override void OnInitialized()
+    {
+        Swaps = SwapManager.FindHistorySwapsByStudentId(CurrentStudentId).Where(s => s.Status == SwapStatus.Completed).OrderByDescending(s => s.DateCompleted).ToList();
+        if (Swaps == null) return;
+
+        foreach (var swap in Swaps)
+        {
+            Student? other = StudentManager.FindStudent(s => s.Id == (swap.Student1Id == CurrentStudentId ? swap.Student2Id : swap.Student1Id));
+            if (other != null && swap.Status == SwapStatus.Completed) OtherStudents.Add(other);
+        }
+    }
+
+    private void OpenChat(Student student)
+    {
+        var swap = SwapManager.FindHistorySwapByStudentsId(student.Id, CurrentStudentId);
+        if (swap != null) NavigationManager.NavigateTo($"/chat-history/{swap.Id}");
+    }
+
+    private void OpenAiChat()
+    {
+        NavigationManager.NavigateTo($"/ai-chat");
+    }
+}

@@ -68,6 +68,7 @@ namespace BlazorApp6.Services
                 return reviews;
             }
         }
+
         private bool SaveReviewToDb(Review review)
         {
             try

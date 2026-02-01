@@ -21,6 +21,7 @@
         public SwapStatus Status { get; set; }
         public DateTime DateRequested { get; set; }
         public DateTime? DateConfirmed { get; set; }
+        public DateTime? DateCompleted { get; set; }
 
         public void Confirm()
         {
@@ -60,6 +61,7 @@
                 throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\" или \"Неоценен свап\".");
 
             Status = SwapStatus.Completed;
+            DateCompleted = DateTime.UtcNow;
         }
 
         public void RejectCompletion()  

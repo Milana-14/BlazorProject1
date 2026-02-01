@@ -1,0 +1,126 @@
+﻿@page "/chat-history"
+@inject NavigationManager Navigation
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+@inject StudentManager StudentManager
+@inject AvatarManager AvatarManager
+@inject SwapManager SwapManager
+@rendermode InteractiveServer
+@using SwapModel = BlazorApp6.Models.Swap
+
+<div class="main-chat-page">
+    <div class="chat-page no-info">
+
+        @if (currentStudent == null)
+        {
+            <div class="myswaps-empty">
+                <p>Моля, влезте в профила си</p>
+            </div>
+        }
+        else
+        {
+            <div class="myswaps-container">
+
+                <div class="myswaps-header px-4">
+                    <div class="myswaps-toprow top-row">
+                        <div class="myswaps-title">
+                            <h2 class="filter-title">Архивирани чатове</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content mb-3 myswaps-content">
+                    <section class="myswaps-section">
+
+                        @if (archivedSwaps.Count == 0)
+                        {
+                            <div class="myswaps-empty-state">Все още нямате архивирани чатове.</div>
+                        }
+                        else
+                        {
+                            <p class="text-found-students">
+                                Архивирани чатове: <strong>@archivedSwaps.Count</strong>
+                            </p>
+
+                            <div class="students-container">
+                                @foreach (var swap in archivedSwaps)
+                                {
+                                    var student = StudentManager.FindStudent(s =>
+                                    s.Id == (swap.Student1Id == currentStudent.Id
+                                    ? swap.Student2Id
+                                    : swap.Student1Id));
+
+                                    if (student == null) continue;
+
+                                    bool currentHelps = swap.Student2Id == currentStudent.Id;
+
+                                    <div class="student-card1 archived">
+
+                                        <div class="student-header">
+                                            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" class="filter-avatar" />
+                                            <div class="student-info">
+                                                <h5 class="student-name">@student.FirstName @student.SecName</h5>
+                                                <p class="student-grade">
+                                                    Завършен на: <span style="font-weight:550">@swap.DateCompleted?.ToString("dd MMMM yyyy HH:mm")</span>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="myswaps-card-body">
+                                            <div class="d-flex align-items-center flex-nowrap">
+                                                <span class="text small fw-semibold me-2">
+                                                    @(currentHelps ? "Помагал си по:" : "Получил си помощ по:")
+                                                </span>
+                                                <span class="badge badge-match1">
+                                                    @swap.SubjectForHelp.GetDisplayName()
+                                                </span>
+                                            </div>
+
+                                            <div class="myswaps-actions">
+                                                <button class="myswaps-btn-primary" @onclick="() => OpenArchiveChat(swap.Id)">
+                                                    Преглед
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </section>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private Student? currentStudent;
+    private List<SwapModel> archivedSwaps = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            currentStudent = null;
+            return;
+        }
+
+        currentStudent = StudentManager.FindStudent(s => s.Username == user.Identity.Name);
+        if (currentStudent == null) return;
+
+        LoadArchivedSwaps();
+    }
+
+    private void LoadArchivedSwaps()
+    {
+        archivedSwaps = SwapManager.FindHistorySwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Completed).OrderByDescending(s => s.DateCompleted).ToList();
+    }
+
+    private void OpenArchiveChat(Guid swapId)
+    {
+        Navigation.NavigateTo($"/chat-history/{swapId}");
+    }
+}

@@ -10,8 +10,6 @@
 @rendermode InteractiveServer
 @using SwapModel = BlazorApp6.Models.Swap
 
-
-@* <div class="myswaps-page main-content"> *@
 <div class="main-chat-page">
     <div class="chat-page no-info">
     @if (currentStudent == null)
@@ -24,7 +22,6 @@
     {
         <div class="myswaps-container">
 
-            <!-- Header / Tabs -->
             <div class="myswaps-header px-4">
                 <div class="myswaps-toprow top-row">
                     <div class="myswaps-title">
@@ -38,7 +35,7 @@
                 <section class="myswaps-section" aria-labelledby="pairs-heading">
                     @if (pairs.Count == 0)
                     {
-                        <div class="empty-state">Нямате текущи свапове.</div>
+                        <div class="myswaps-empty-state">Нямате текущи свапове. <span style="text-decoration-line: underline; text-decoration-thickness: 1px;" @onclick="@(() => Navigation.NavigateTo("/students-filter"))">Натисни тук, за да намериш ученици за взаимопомощ.</span></div>
                     }
                     else
                     {

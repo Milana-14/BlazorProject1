@@ -1,1 +1,159 @@
-﻿@page "/chat-history" // страница за история на чатове
+﻿@page "/chat-history/{SwapId:guid}"   // страница за преглед на архивиран чат
+@using SwapModel = BlazorApp6.Models.Swap
+@inject NavigationManager NavigationManager
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+@inject StudentManager StudentManager
+@inject AvatarManager AvatarManager
+@inject SwapManager SwapManager
+@inject ChatManager ChatManager
+@inject RateHelpManager RateHelpManager
+@rendermode InteractiveServer
+
+<div class="main-chat-page">
+
+    <div class="chat-topbar">
+        <div class="chat-topbar-left @(isSidebarHidden ? "no-info" : "with-info")">
+            <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-topbar-avatar" />
+            <div class="chat-topbar-user">
+                <div class="chat-topbar-name">@otherStudent.FirstName @otherStudent.SecName</div>
+                <div class="chat-topbar-sub">
+                    <span class="chat-subject">@swap.SubjectForHelp.GetDisplayName()</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-topbar-right @(isSidebarHidden ? "no-info" : "with-info")">
+            <span class="swap-status status-completed">Завършен</span>
+        </div>
+    </div>
+
+    <div class="chat-page @(isSidebarHidden ? "no-info" : "with-info")">
+
+        <div class="chat-info-sidebar @(isSidebarHidden ? "hidden" : "")">
+            <button class="close-sidebar-btn" @onclick="ToggleSidebar"><i class="bi bi-x-lg"></i></button>
+            <div class="chat-info-profile">
+                <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-info-profile-avatar" />
+                <h4>@otherStudent.FirstName @otherStudent.SecName</h4>
+            </div>
+
+            <div class="chat-info-section">
+                @(currentStudent.Id == swap.Student2Id ? "Помагал си по" : "Получил си помощ по"):
+                <b>@swap.SubjectForHelp.GetDisplayName()</b>
+                <br />
+                Активен от: @swap.DateConfirmed
+                <br />
+                Завършен на: @swap.DateCompleted
+            </div>
+
+            @if (!string.IsNullOrEmpty(review?.Comment))
+            {
+                <div class="chat-info-section">
+                    <div class="review-stars">
+                        @for (int i = 0; i < review?.Rating; i++)
+                        {
+                            <span>&#9733;</span>
+                        }
+                    </div>
+                    <p class="review-comment">“@review?.Comment”</p>
+                </div>
+            }
+        </div>
+
+        <div class="chat-container d-flex flex-column flex-grow-1">
+            <div class="chat-window flex-grow-1 overflow-auto">
+
+                @{
+                    DateTime? lastDate = null;
+                    MessageForChat? previous = null;
+                }
+
+                @foreach (var m in messagesForChat)
+                {
+                    if (lastDate != m.Timestamp.Date)
+                    {
+                        <div class="chat-date-separator">
+                            @m.Timestamp.ToString("dd MMMM yyyy")
+                        </div>
+                        lastDate = m.Timestamp.Date;
+                    }
+
+                    if (m.SenderId == currentStudent.Id)
+                    {
+                        <div class="my-message readonly">
+                            @((MarkupString)m.Content)
+                            <sub><small>@m.Timestamp.ToLocalTime().ToString("HH:mm")</small></sub>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="other-message-sender">
+                            <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
+                            <div class="other-message readonly">
+                                @((MarkupString)m.Content)
+                                <sub><small>@m.Timestamp.ToLocalTime().ToString("HH:mm")</small></sub>
+                            </div>
+                        </div>
+                    }
+
+                    previous = m;
+                }
+            </div>
+        </div>
+    </div>
+    <div class="chat-completed-banner">
+        Този чат е вече завършен.
+    </div>
+</div>
+
+@if (isSidebarHidden)
+{
+    <button class="open-sidebar-btn" @onclick="ToggleSidebar">
+        <i class="bi bi-info-circle-fill"></i>
+    </button>
+}
+
+@code {
+    [Parameter] public Guid SwapId { get; set; }
+
+    private SwapModel swap;
+    private Review review => RateHelpManager.LoadReviewsForStudentFromDb(swap.Student2Id).Where(s => s.SenderStudentId == swap.Student1Id).FirstOrDefault();
+    private Student currentStudent;
+    private Student otherStudent;
+    private List<MessageForChat> messagesForChat = new();
+
+    private bool isSidebarHidden = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        swap = SwapManager.FindHistorySwapById(SwapId);
+        if (swap == null) return;
+
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (!user.Identity.IsAuthenticated) return;
+
+        currentStudent = StudentManager.FindStudent(s => s.Username == user.Identity.Name);
+
+        otherStudent = swap.Student1Id == currentStudent.Id
+            ? StudentManager.FindStudent(s => s.Id == swap.Student2Id)
+            : StudentManager.FindStudent(s => s.Id == swap.Student1Id);
+
+        var messages = ChatManager.GetMessagesFromDb(SwapId);
+
+        messagesForChat = messages.Select(m => new MessageForChat(
+            m.Id,
+            m.SenderId,
+            "",
+            m.Content,
+            m.Timestamp,
+            true,
+            m.IsEdited
+        )).ToList();
+    }
+
+    private void ToggleSidebar()
+    {
+        isSidebarHidden = !isSidebarHidden;
+    }
+}
