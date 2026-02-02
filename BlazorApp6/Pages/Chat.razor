@@ -93,13 +93,31 @@
                             if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
                             {
                                 <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
+                                    @if (m.ReplyToMessageId != null)
+                                    {
+                                        var replied = messagesForChat.FirstOrDefault(x => x.Id == m.ReplyToMessageId);
+                                        if (replied != null)
+                                        {
+                                            <div class="reply-inline">
+                                                <small>
+                                                    Отговор на себе си: @replied.Content
+                                               </small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="reply-inline deleted">
+                                                <small>Съобщението е изтрито</small>
+                                            </div>
+                                        }
+                                    }
                                     @((MarkupString)m.Content)
                                     <sub><small><time>@(m.IsEdited ? $"редактирано {m.Timestamp:HH:mm}" : m.Timestamp.ToLocalTime().ToString("HH:mm"))</time></small></sub>
                                 </div>
                             }
                             else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
                             {
-                                <div class="other-message-sender">
+                                <div class="other-message-sender" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
                                     @if (showAvatar)
                                     {
                                         <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-avatar" />
@@ -107,6 +125,24 @@
                                     else
                                     {
                                         <div class="chat-avatar-placeholder"></div>
+                                    }
+                                    @if (m.ReplyToMessageId != null)
+                                    {
+                                        var replied = messagesForChat.FirstOrDefault(x => x.Id == m.ReplyToMessageId);
+                                        if (replied != null)
+                                        {
+                                            <div class="reply-inline">
+                                                <small>
+                                                    Отговор на <b>@replied.SenderName</b>: @replied.Content
+                                               </small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="reply-inline deleted">
+                                                <small>Съобщението е изтрито</small>
+                                            </div>
+                                        }
                                     }
                                     <div class="other-message">
                                         @((MarkupString)m.Content)
@@ -123,6 +159,23 @@
                         }
                     </div>
                 </div>
+
+                @if (replyToMessage != null)
+                {       
+                    <div class="reply-preview">
+                        <div class="reply-preview-header">
+                            <span>
+                                Отговор на <strong>@replyToMessage.SenderName</strong>
+                            </span>
+                            <button @onclick="CancelReply"><i class="bi bi-x-lg"></i></button>
+                        </div>
+
+                       <div class="reply-preview-content">
+                            @replyToMessage.Content
+                        </div>
+                    </div>
+                }
+
 
                     <div class="chat-bottom-fixed input-bar-wrapper">
                          @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
@@ -190,26 +243,30 @@
                             </div>
                         }
 
-                            <div class="input-bar @(isSidebarHidden ? "no-info" : "with-info") d-flex align-items-center">
-                                <button class="btn-emoji" @onclick="ToggleEmojiPanel">😀</button>
-                                <label for="fileInput" class="btn-file"><i class="bi bi-paperclip"></i></label>
-                                <InputFile id="fileInput" OnChange="OnInputFileSelected" style="display:none;" />
-                                <InputText @bind-Value="CurrentInputText" placeholder="Напиши съобщение..." @onkeydown="HandleSendKeydown" />
-                                <button class="btn-@(IsEditing ? "check" : "send")"
-                                        disabled="@(IsEditing ? string.IsNullOrWhiteSpace(editingText) : string.IsNullOrWhiteSpace(newMessage))"
-                                        @onclick="@(IsEditing? SaveEditedMessage : SendMessage)">
-                                    <i class="bi bi-@(IsEditing ? "check-lg" : "send")"></i>
-                                </button>
-                            </div>
+                        <div class="input-bar @(isSidebarHidden ? "no-info" : "with-info") d-flex align-items-center">
+                            <button class="btn-emoji" @onclick="ToggleEmojiPanel">😀</button>
+                            <label for="fileInput" class="btn-file"><i class="bi bi-paperclip"></i></label>
+                            <InputFile id="fileInput" OnChange="OnInputFileSelected" style="display:none;" />
+                            <InputText @bind-Value="CurrentInputText" placeholder="Напиши съобщение..." @onkeydown="HandleSendKeydown" />
+                            <button class="btn-@(IsEditing ? "check" : "send")"
+                                    disabled="@(IsEditing ? string.IsNullOrWhiteSpace(editingText) : string.IsNullOrWhiteSpace(newMessage))"
+                                    @onclick="@(IsEditing? SaveEditedMessage : SendMessage)">
+                                <i class="bi bi-@(IsEditing ? "check-lg" : "send")"></i>
+                            </button>
                         </div>
+                    </div>
                     
             }
 
                 @if (contextMenuVisible)
                 {
                     <div class="context-menu" style="top:@contextMenuYpx; left:@contextMenuXpx; position:absolute; z-index:1000;">
-                        <button class="btn btn-sm btn-danger" @onclick="DeleteMessage">Изтрий съобщение</button>
-                        <button class="btn btn-secondary" @onclick="EditMessage">Редактирай</button>
+                        <button class="ctx-btn"><i class="bi bi-reply-fill"></i> Отговори</button>
+                        @if (selectedMessage != null && selectedMessage.SenderId == currentStudent.Id)
+                        {
+                            <button class="ctx-btn"><i class="bi bi-pencil-fill"></i> Редактирай</button>
+                            <button class="ctx-btn"><i class="bi bi-trash-fill"></i> Изтрий съобщение</button>
+                        }
                     </div>
                 }
         }
@@ -238,6 +295,7 @@
     private bool contextMenuVisible = false;
     private string contextMenuXpx, contextMenuYpx;
     private MessageForChat? selectedMessage;
+    private MessageForChat? replyToMessage;
 
     private string swapStatusName => swap.Status switch
     {
@@ -315,7 +373,8 @@
         m.Content,
         m.Timestamp,
         m.IsRead,
-        m.IsEdited)).ToList();
+        m.IsEdited, 
+        m.ReplyToMessageId)).ToList();
 
 
         if (hubConnection != null) return;
@@ -330,9 +389,9 @@
             InvokeAsync(StateHasChanged);
         });
 
-        hubConnection.On<Guid, Guid, string, string, DateTime>("ReceiveMessage", async (messageid, senderId, username, message, time) =>
+        hubConnection.On<Guid, Guid, string, string, DateTime, Guid?>("ReceiveMessage", async (messageid, senderId, username, message, time, replyToMessageId) =>
         {
-            messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, time, senderId == currentStudent.Id, false));
+            messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, time, senderId == currentStudent.Id, false, replyToMessageId));
             await InvokeAsync(StateHasChanged);
             await ScrollToBottomAsync();
         });
@@ -389,7 +448,8 @@
                 m.Content,
                 m.Timestamp,
                 m.IsRead,
-                m.IsEdited)).ToList();
+                m.IsEdited,
+                m.ReplyToMessageId)).ToList();
 
             await InvokeAsync(StateHasChanged);
         });
@@ -424,13 +484,14 @@
     {
         if (string.IsNullOrWhiteSpace(newMessage) || hubConnection == null) return;
 
-        var message = new MessageToSend(Guid.NewGuid(), newMessage, DateTime.UtcNow);
+        var message = new MessageToSend(Guid.NewGuid(), newMessage, DateTime.UtcNow, replyToMessage?.Id);
 
         await hubConnection.SendAsync("SendMessage",
             new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
             message);
 
         newMessage = string.Empty;
+        replyToMessage = null;
     }
 
     private void ToggleEmojiPanel() { /* вставка эмодзи */ }
@@ -455,7 +516,7 @@
     {
         if (hubConnection == null) return;
         if (selectedMessage == null) return;
-        if (currentStudent.Id != selectedMessage.SenderId) return;
+        if (currentStudent?.Id != selectedMessage.SenderId) return;
 
         await hubConnection.SendAsync("DeleteMessage",
                 new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
@@ -467,7 +528,7 @@
 
     private void EditMessage()
     {
-        if (selectedMessage == null || currentStudent.Id != selectedMessage.SenderId) return;
+        if (selectedMessage == null || currentStudent?.Id != selectedMessage.SenderId) return;
 
         editingMessage = selectedMessage;
         editingText = selectedMessage.Content;
@@ -505,6 +566,21 @@
                 await SendMessage();
             }
         }
+    }
+
+    private void ReplyToMessage()
+    {
+        if (selectedMessage == null) return;
+
+        replyToMessage = selectedMessage;
+
+        contextMenuVisible = false;
+        selectedMessage = null;
+    }
+
+    private void CancelReply()
+    {
+        replyToMessage = null;
     }
 
 

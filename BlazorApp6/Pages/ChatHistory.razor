@@ -141,15 +141,7 @@
 
         var messages = ChatManager.GetMessagesFromDb(SwapId);
 
-        messagesForChat = messages.Select(m => new MessageForChat(
-            m.Id,
-            m.SenderId,
-            "",
-            m.Content,
-            m.Timestamp,
-            true,
-            m.IsEdited
-        )).ToList();
+        messagesForChat = messages.Select(m => new MessageForChat(m.Id, m.SenderId, "", m.Content, m.Timestamp, true, m.IsEdited, null)).ToList();
     }
 
     private void ToggleSidebar()

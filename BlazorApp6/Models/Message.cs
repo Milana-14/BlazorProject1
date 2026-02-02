@@ -9,6 +9,7 @@
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public bool IsRead { get; set; }
         public bool IsEdited { get; set; }
+        public Guid? ReplyToMessageId { get; set; }
 
         public Message() { }
         public Message(Guid id, Guid swapId, Guid senderId, string content)
@@ -30,8 +31,9 @@
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public bool IsRead { get; set; }
         public bool IsEdited { get; set; }
+        public Guid? ReplyToMessageId { get; set; }
 
-        public MessageForChat(Guid id, Guid senderId, string senderName, string content, DateTime timestamp, bool isRead, bool isEdited)
+        public MessageForChat(Guid id, Guid senderId, string senderName, string content, DateTime timestamp, bool isRead, bool isEdited, Guid? replyToMessageId)
         {
             Id = id;
             SenderId = senderId;
@@ -40,6 +42,7 @@
             Timestamp = timestamp;
             IsRead = isRead;
             IsEdited = isEdited;
+            ReplyToMessageId = replyToMessageId;
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using BlazorApp6.Models;
 using Microsoft.AspNetCore.SignalR;
 using Npgsql;
+using System.Threading;
 
 namespace BlazorApp6.Services
 {
@@ -13,13 +14,36 @@ namespace BlazorApp6.Services
             connectionString = config.GetConnectionString("DefaultConnection");
             this.swapManager = swapManager;
         }
+
+        public Message? GetMessageById(Guid messageId)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Messages"" WHERE ""Id"" = @messageId", connection);
+            cmd.Parameters.AddWithValue("@messageId", messageId);
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                Message message = new Message();
+                message.Id = reader.GetGuid(reader.GetOrdinal("Id"));
+                message.SwapId = reader.GetGuid(reader.GetOrdinal("SwapId"));
+                message.SenderId = reader.GetGuid(reader.GetOrdinal("SenderId"));
+                message.Content = reader.GetString(reader.GetOrdinal("Content"));
+                message.Timestamp = reader.GetDateTime(reader.GetOrdinal("Timestamp"));
+                message.IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead"));
+                message.IsEdited = reader.GetBoolean(reader.GetOrdinal("IsEdited"));
+                message.ReplyToMessageId = reader.IsDBNull(reader.GetOrdinal("ReplyToMessageId")) ? null : reader.GetGuid(reader.GetOrdinal("ReplyToMessageId"));
+                return message;
+            }
+            return null;
+        }
+
         public List<Message> GetMessagesFromDb(Guid swapId)
         {
             List<Message> messages = new List<Message>();
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();
-
-            using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Messages"" WHERE ""SwapId"" = @swapId", connection);
+            using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Messages"" WHERE ""SwapId"" = @swapId ORDER BY ""Timestamp""", connection);
             cmd.Parameters.AddWithValue("@swapId", swapId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -32,13 +56,14 @@ namespace BlazorApp6.Services
                 message.Timestamp = reader.GetDateTime(4);
                 message.IsRead = reader.GetBoolean(5);
                 message.IsEdited = reader.GetBoolean(6);
+                message.ReplyToMessageId = reader.IsDBNull(7) ? null : reader.GetGuid(7);
 
                 messages.Add(message);
             }
 
             return messages;
         }
-        public void AddMessageToDb(Guid Id, Guid swapId, Guid senderId, string content)
+        public void AddMessageToDb(Guid Id, Guid swapId, Guid senderId, string content, Guid? replyToMessageId)
         {
             Message message = new Message(Id, swapId, senderId, content);
             using (var connection = new NpgsqlConnection(connectionString))
@@ -46,8 +71,8 @@ namespace BlazorApp6.Services
                 connection.Open();
 
                 string sql = @"INSERT INTO ""Messages""
-                        (""Id"", ""SwapId"", ""SenderId"", ""Content"", ""Timestamp"", ""IsRead"", ""IsEdited"")
-                        VALUES (@Id, @SwapId, @SenderId, @Content, @Timestamp, @IsRead, @IsEdited)";
+                        (""Id"", ""SwapId"", ""SenderId"", ""Content"", ""Timestamp"", ""IsRead"", ""IsEdited"", ""ReplyToMessageId"")
+                        VALUES (@Id, @SwapId, @SenderId, @Content, @Timestamp, @IsRead, @IsEdited, @ReplyToMessageId)";
 
 
 
@@ -60,6 +85,7 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@Timestamp", message.Timestamp);
                 cmd.Parameters.AddWithValue("@IsRead", false);
                 cmd.Parameters.AddWithValue("@IsEdited", false);
+                cmd.Parameters.AddWithValue("@ReplyToMessageId", (object?)replyToMessageId ?? DBNull.Value);
 
                 cmd.ExecuteNonQuery();
             }
@@ -84,6 +110,17 @@ namespace BlazorApp6.Services
             cmd.Parameters.AddWithValue("@Id", messageId);
             cmd.Parameters.AddWithValue("@Content", newContent);
             cmd.Parameters.AddWithValue("@IsEdited", true);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void UpdateMessageReply(Guid messageId, Guid replyToMessageId)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            string sql = @"UPDATE ""Messages"" SET ""ReplyToMessageId"" = @ReplyToMessageId WHERE ""Id"" = @Id";
+            using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@Id", messageId);
+            cmd.Parameters.AddWithValue("@ReplyToMessageId", (object?)replyToMessageId ?? DBNull.Value);
             cmd.ExecuteNonQuery();
         }
 
@@ -132,7 +169,7 @@ namespace BlazorApp6.Services
 
     public interface IChatClient
     {
-        Task ReceiveMessage(Guid id, Guid studentId, string username, string message, DateTime time);
+        Task ReceiveMessage(Guid id, Guid studentId, string username, string message, DateTime time, Guid? replyToMessageId);
         Task UserJoined(string username);
         Task DeleteMessage(Guid messageId);
         Task EditMessage(Guid messageId, string newContent);
@@ -141,7 +178,7 @@ namespace BlazorApp6.Services
     }
     public record StudentToConnect(Guid Id, string FirstName, string SecName);
     public record UserConnection(Guid SwapId, StudentToConnect Student);
-    public record MessageToSend(Guid Id, string content, DateTime time);
+    public record MessageToSend(Guid Id, string Content, DateTime Time, Guid? ReplyToMessage);
 
 
 
@@ -168,8 +205,8 @@ namespace BlazorApp6.Services
 
         public async Task SendMessage(UserConnection connection, MessageToSend message)
         {
-            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.content, message.time);
-            this.chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.content);
+            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.Content, message.Time, message.ReplyToMessage);
+            this.chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.Content, message.ReplyToMessage);
 
             await Clients.OthersInGroup(connection.SwapId.ToString()).NewUnread(connection.SwapId);
         }
@@ -183,11 +220,11 @@ namespace BlazorApp6.Services
             await File.WriteAllBytesAsync(filePath, fileBytes);
 
             var fileUrl = $"/files/{fileName}";
-            MessageToSend message = new MessageToSend(Guid.NewGuid(), $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>", DateTime.Now);
+            MessageToSend message = new MessageToSend(Guid.NewGuid(), $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>", DateTime.Now, null);
 
-            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.content, DateTime.Now);
+            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.Content, DateTime.Now, message.ReplyToMessage);
 
-            chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.content);
+            chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.Content, message.ReplyToMessage);
         }
 
         public async Task MarkAsRead(UserConnection connection)

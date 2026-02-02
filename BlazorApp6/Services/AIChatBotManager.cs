@@ -147,7 +147,7 @@ ORDER BY ""Timestamp""";
             var studentId = connection.Student.Id;
             var senderName = $"{connection.Student.FirstName} {connection.Student.SecName}";
 
-            await Clients.Group(studentId.ToString()).ReceiveMessage(message.Id, studentId, senderName, message.content);
+            await Clients.Group(studentId.ToString()).ReceiveMessage(message.Id, studentId, senderName, message.Content);
 
             await db.AddMessageAsync(new AiMessage
             {
@@ -155,7 +155,7 @@ ORDER BY ""Timestamp""";
                 StudentId = studentId,
                 SenderId = studentId,
                 SenderName = senderName,
-                Content = message.content,
+                Content = message.Content,
                 IsFile = false,
                 ReplyToMessageId = Guid.Empty
             });
@@ -165,7 +165,7 @@ ORDER BY ""Timestamp""";
 
             var sb = new StringBuilder();
 
-            await foreach (var token in ai.StreamAskAsync(studentId, message.content))
+            await foreach (var token in ai.StreamAskAsync(studentId, message.Content))
             {
                 sb.Append(token);
                 await Clients.Group(studentId.ToString()).AiTypingChunk(tempId, token);

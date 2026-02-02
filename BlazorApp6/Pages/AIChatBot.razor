@@ -91,15 +91,7 @@
     {
         InvokeAsync(() =>
         {
-            messages.Add(new MessageForChat(
-                tempId,
-                Guid.Empty,
-                "AI Учител",
-                "",
-                DateTime.UtcNow,
-                false,
-                false
-            ));
+            messages.Add(new MessageForChat(tempId, Guid.Empty, "AI Учител", "", DateTime.UtcNow, false, false, null));
             StateHasChanged();
         });
     }
@@ -128,7 +120,7 @@
             }
             else
             {
-                messages.Add(new MessageForChat(finalId, Guid.Empty, "AI Учител", "", DateTime.UtcNow, false, false));
+                messages.Add(new MessageForChat(finalId, Guid.Empty, "AI Учител", "", DateTime.UtcNow, false, false, null));
             }
             StateHasChanged();
             ScrollToBottomAsync();
@@ -152,7 +144,7 @@
         hubConnection.On<Guid, Guid, string, string>("ReceiveMessage",
             (id, senderId, sender, content) =>
             {
-                messages.Add(new MessageForChat(id, senderId, sender, content, DateTime.Now, false, false));
+                messages.Add(new MessageForChat(id, senderId, sender, content, DateTime.Now, false, false, null));
                 InvokeAsync(StateHasChanged);
                 InvokeAsync(ScrollToBottomAsync);
             });
@@ -198,7 +190,7 @@
         await hubConnection.SendAsync("SendMessage",
             new UserConnection(Guid.Empty,
                 new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
-            new MessageToSend(Guid.NewGuid(), newMessage, DateTime.UtcNow));
+            new MessageToSend(Guid.NewGuid(), newMessage, DateTime.UtcNow, null));
 
         newMessage = "";
     }
