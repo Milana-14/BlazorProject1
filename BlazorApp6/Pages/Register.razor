@@ -1,7 +1,7 @@
 ﻿@page "/register" // страница за регистрация на нов ученик
 @layout GuestLayout
 @rendermode InteractiveServer
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 @inject StudentManager StudentManager
 
 <div class="register-page">
@@ -35,10 +35,16 @@
             </div>
         }
 
-        @if (alreadyExists)
+        @if (userNameAlreadyExists)
         {
             <div class="alert alert-danger">
                 Ученик с това потребителско име вече съществува.
+            </div>
+        }
+        else if (userNameAlreadyExists)
+        {
+            <div class="alert alert-danger">
+                Ученик с този имейл вече съществува.
             </div>
         }
 
@@ -59,7 +65,8 @@
 @code {
     private Student? registeredStudent = new Student();
 
-    private bool alreadyExists = false;
+    private bool userNameAlreadyExists = false;
+    private bool emailAlreadyExists = false;
     private string errorMessage = string.Empty;
     private bool registeredSuccessfully = false;
 
@@ -70,7 +77,15 @@
             if (StudentManager.FindStudent(s => s.Username == registeredStudent.Username) != null)
             {
                 registeredSuccessfully = false;
-                alreadyExists = true;
+                userNameAlreadyExists = true;
+                registeredStudent = new Student();
+                return;
+            }
+
+            if (StudentManager.FindStudent(s => s.Email == registeredStudent.Email) != null)
+            {
+                registeredSuccessfully = false;
+                emailAlreadyExists = true;
                 registeredStudent = new Student();
                 return;
             }
@@ -89,7 +104,10 @@
             StudentManager.AddStudent(newStudent);
             registeredSuccessfully = true;
             errorMessage = string.Empty;
-            alreadyExists = false;
+            userNameAlreadyExists = false;
+            emailAlreadyExists = false;
+
+            NavigationManager.NavigateTo("/login");
         }
         catch (ApplicationException ex)
         {

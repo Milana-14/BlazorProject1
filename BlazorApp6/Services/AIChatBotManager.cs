@@ -289,8 +289,7 @@ ORDER BY ""Timestamp""";
                     ReplyToMessageId = messageId
                 });
 
-                await Clients.Group(connection.Student.Id.ToString())
-                    .AiTypingFinished(tempId, newAiId); //ReceiveMessage(newAiId, AI_ID, "AI Учител", aiResponse);
+                await Clients.Group(connection.Student.Id.ToString()).AiTypingFinished(tempId, newAiId); //ReceiveMessage(newAiId, AI_ID, "AI Учител", aiResponse);
             }
         }
 
@@ -359,7 +358,10 @@ ORDER BY ""Timestamp""";
         };
 
         var messages = await aiDb.GetMessagesAsync(studentId);
-        foreach (var msg in messages)
+
+        var lastmessages = messages.OrderBy(m => m.Timestamp).TakeLast(19).ToList();
+
+        foreach (var msg in lastmessages)
         {
             if (msg.IsFile)
             {
@@ -402,8 +404,8 @@ ORDER BY ""Timestamp""";
         var fullResponse = sb.ToString();
         history.Add(new AssistantChatMessage(fullResponse));
 
-        if (history.Count > 50)
-            history.RemoveRange(1, history.Count - 50);
+        if (history.Count > 20)
+            history.RemoveRange(1, history.Count - 20);
     }
 
     public async Task<string> GetFullResponseAsync(Guid studentId)
