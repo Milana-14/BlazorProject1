@@ -940,3 +940,26 @@
         .ctx-btn:hover i {
             color: #FFFDFB;
         }
+
+.buttons-rate-container {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: center;
+}
+
+    .buttons-rate-container button {
+        flex: 1;
+        min-width: 200px;
+        flex: none;
+    }
+
+    .buttons-rate-container .btn-danger1,
+    .buttons-rate-container .btn-secondary {
+        width: auto;
+        flex: none;
+    }
+
+.swap.card-title {
+    font-weight: 550 !important;
+}

@@ -7,7 +7,7 @@
 <div class="app-layout">
 @if (IsHistorySwapsMode)
 {
-    <div class="swaps-header-wrapper">
+    <div class="swaps-header-wrapper @(IsFullSidebarActive ? "full" : "collapsed-swaps")" ">
         <div class="swaps-logo">
             EduSwaps
         </div>
@@ -18,7 +18,7 @@
 }
 else if (IsSwapsMode)
 {
-    <div class="swaps-header-wrapper">
+    <div class="swaps-header-wrapper @(IsFullSidebarActive ? "full" : "collapsed-swaps")" ">
         <div class="swaps-logo">
             EduSwaps
         </div>
@@ -42,6 +42,7 @@ else
     private bool IsHistorySwapsMode;
     private Guid CurrentStudentId;
     private Student currentStudent;
+    private bool IsFullSidebarActive => !IsSwapsMode && !IsHistorySwapsMode;
 
     protected override async Task OnInitializedAsync()
     {

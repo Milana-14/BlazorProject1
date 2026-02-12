@@ -34,6 +34,7 @@ public class Student
 
     public int HelpGivenCount { get; set; } = 0;
     public int Coins { get; set; } = 0;
+    public DateTime? LastOnline { get; set; }
 
     public Student() 
     {

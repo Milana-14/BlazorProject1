@@ -4,16 +4,34 @@ using System.Collections.Concurrent;
 
 public class OnlineUsersService
 {
-    private readonly ConcurrentDictionary<Guid, string> _onlineUsers = new();
+    private readonly ConcurrentDictionary<Guid, HashSet<string>> _onlineUsers = new();
 
     public void Add(Guid studentId, string connectionId)
     {
-        _onlineUsers[studentId] = connectionId;
+        var connections = _onlineUsers.GetOrAdd(studentId, _ => new HashSet<string>());
+
+        lock (connections)
+        {
+            connections.Add(connectionId);
+        }
     }
 
-    public void Remove(Guid studentId)
+    public bool Remove(Guid studentId, string connectionId)
     {
-        _onlineUsers.TryRemove(studentId, out _);
+        if (_onlineUsers.TryGetValue(studentId, out var connections))
+        {
+            lock (connections)
+            {
+                connections.Remove(connectionId);
+                if (connections.Count == 0)
+                {
+                    _onlineUsers.TryRemove(studentId, out _);
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
     }
 
     public bool IsOnline(Guid studentId)
@@ -70,7 +88,10 @@ public class OnlineHub : Hub
 
             if (student != null)
             {
-                _onlineUsers.Remove(student.Id);
+                if (_onlineUsers.Remove(student.Id, Context.ConnectionId))
+                {
+                    await _studentManager.UpdateLastSeenAsync(student.Id);
+                }
             }
         }
 

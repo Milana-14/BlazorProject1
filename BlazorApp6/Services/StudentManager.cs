@@ -33,7 +33,7 @@ namespace BlazorApp6.Services
                 return false;
             }
 
-             students.Add(newStudent);
+            students.Add(newStudent);
             if (!SaveStudentToDb(newStudent))
             {
                 DbError += "Не се е получило да се запише ученик в базата данни.";
@@ -83,7 +83,7 @@ namespace BlazorApp6.Services
                 return null;
             }
 
-                var subjects = subjectsManager.GetSubjectsByStudent(student);
+            var subjects = subjectsManager.GetSubjectsByStudent(student);
             student.CanHelpWith = subjects.Where(s => s.CanHelp).Select(s => s.Subject).ToHashSet();
             student.NeedsHelpWith = subjects.Where(s => !s.CanHelp).Select(s => s.Subject).ToHashSet();
 
@@ -120,6 +120,7 @@ namespace BlazorApp6.Services
                     student.Id = reader.GetGuid(0);
                     student.HelpGivenCount = reader.GetInt32(8);
                     student.Coins = reader.GetInt32(9);
+                    student.LastOnline = reader.IsDBNull(10) ? null : reader.GetDateTime(10);
 
                     studentsFromDb.Add(student);
                 }
@@ -140,8 +141,8 @@ namespace BlazorApp6.Services
                     connection.Open();
 
                     string sql = @"INSERT INTO ""Students"" 
-                           (""Id"", ""FirstName"", ""SecName"", ""Email"", ""Username"", ""Password"", ""Grade"", ""AvatarName"", ""HelpGivenCount"", ""Coins"")
-                           VALUES (@Id, @FirstName, @SecName, @Email, @Username, @Password, @Grade, @AvatarName, @HelpGivenCount, @Coins)";
+                           (""Id"", ""FirstName"", ""SecName"", ""Email"", ""Username"", ""Password"", ""Grade"", ""AvatarName"", ""HelpGivenCount"", ""Coins"", ""LastOnline"")
+                           VALUES (@Id, @FirstName, @SecName, @Email, @Username, @Password, @Grade, @AvatarName, @HelpGivenCount, @Coins, @LastOnline)";
 
                     using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
                     cmd.Parameters.AddWithValue("@Id", student.Id);
@@ -154,6 +155,7 @@ namespace BlazorApp6.Services
                     cmd.Parameters.AddWithValue("@AvatarName", (object?)student.AvatarName ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@HelpGivenCount", student.HelpGivenCount);
                     cmd.Parameters.AddWithValue("@Coins", student.Coins);
+                    cmd.Parameters.AddWithValue("@LastOnline", student.LastOnline ?? (object)DBNull.Value);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -164,7 +166,7 @@ namespace BlazorApp6.Services
                 DbError = "Записването на нов ученик в базата не беше успешно." + ex;
                 return false;
             }
-        } 
+        }
         public void UpdateStudentInDb(Student student)
         {
             try
@@ -196,6 +198,26 @@ namespace BlazorApp6.Services
             catch (Exception ex)
             {
                 DbError = $"Обновяването на данните за ученик в базата не беше успешно: {ex}";
+            }
+        }
+
+        public async Task UpdateLastSeenAsync(Guid studentId)
+        {
+            try
+            {
+                using var connection = new NpgsqlConnection(connectionString);
+                await connection.OpenAsync();
+                string sql = @"UPDATE ""Students""
+                               SET ""LastOnline""=@LastOnline
+                               WHERE ""Id""=@Id";
+                using var cmd = new NpgsqlCommand(sql, connection);
+                cmd.Parameters.AddWithValue("@Id", studentId);
+                cmd.Parameters.AddWithValue("@LastOnline", DateTime.UtcNow);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                DbError = $"Обновяването на последно виждане на ученик не беше успешно: {ex}";
             }
         }
     }
