@@ -102,11 +102,19 @@ else
                             @if (m.ReplyToMessageId != null)
                             {
                                 var replied = messagesForChat.FirstOrDefault(x => x.Id == m.ReplyToMessageId);
-                                if (replied != null)
+                                if (replied != null && replied.SenderId == currentStudent.Id)
                                 {
                                     <div class="reply-inline">
                                         <small>
-                                            Отговор на себе си: @replied.Content
+                                            Ти: <span class="reply-to-message">"@replied.Content"</span>
+                                        </small>
+                                    </div>
+                                }
+                                else if (replied != null && replied.SenderId != currentStudent.Id)
+                                {
+                                    <div class="reply-inline">
+                                        <small>
+                                            @otherStudent.FirstName: <span class="reply-to-message">"@replied.Content"</span>
                                         </small>
                                     </div>
                                 }
@@ -135,11 +143,19 @@ else
                             @if (m.ReplyToMessageId != null)
                             {
                                 var replied = messagesForChat.FirstOrDefault(x => x.Id == m.ReplyToMessageId);
-                                if (replied != null)
+                                if (replied != null && replied.SenderId == currentStudent.Id)
                                 {
                                     <div class="reply-inline">
                                         <small>
-                                            Отговор на <b>@replied.SenderName</b>: @replied.Content
+                                            <b>Ти</b>: <span class="reply-to-message">@replied.Content</span>
+                                        </small>
+                                    </div>
+                                }
+                                else if (replied != null && replied.SenderId != currentStudent.Id)
+                                {
+                                    <div class="reply-inline">
+                                        <small>
+                                            <b>@replied.SenderName</b>: <span class="reply-to-message">@replied.Content</span>
                                         </small>
                                     </div>
                                 }
@@ -251,8 +267,14 @@ else
                 </div>
             }
 
+            @if (IsReplying)
+            {
+                <div class="replying-indicator">
+                    <i class="bi bi-reply-fill"></i> Отговаряш на съобщение: "@replyToMessage.Content"
+                </div>
+            }
+
             <div class="input-bar @(isSidebarHidden ? "no-info" : "with-info") d-flex align-items-center">
-                <button class="btn-emoji" @onclick="ToggleEmojiPanel">😀</button>
                 <label for="fileInput" class="btn-file"><i class="bi bi-paperclip"></i></label>
                 <InputFile id="fileInput" OnChange="OnInputFileSelected" style="display:none;" />
                 <InputText @bind-Value="CurrentInputText" placeholder="Напиши съобщение..." @onkeydown="HandleSendKeydown" />
@@ -269,11 +291,11 @@ else
         @if (contextMenuVisible)
         {
             <div class="context-menu" style="top:@contextMenuYpx; left:@contextMenuXpx; position:absolute; z-index:1000;">
-                <button class="ctx-btn"><i class="bi bi-reply-fill"></i> Отговори</button>
+                <button @onclick="ReplyToMessage" class="ctx-btn"><i class="bi bi-reply-fill"></i> Отговори</button>
                 @if (selectedMessage != null && selectedMessage.SenderId == currentStudent.Id)
                 {
-                    <button class="ctx-btn"><i class="bi bi-pencil-fill"></i> Редактирай</button>
-                    <button class="ctx-btn"><i class="bi bi-trash-fill"></i> Изтрий съобщение</button>
+                    <button @onclick="EditMessage" class="ctx-btn"><i class="bi bi-pencil-fill"></i> Редактирай</button>
+                    <button @onclick="DeleteMessage" class="ctx-btn"><i class="bi bi-trash-fill"></i> Изтрий съобщение</button>
                 }
             </div>
         }
@@ -338,6 +360,7 @@ else
     private MessageForChat? editingMessage = null;
     private string editingText = string.Empty;
     private bool IsEditing => editingMessage != null;
+    private bool IsReplying => replyToMessage != null;
 
     private ElementReference chatWindowRef;
     private bool isSidebarHidden = false;
@@ -503,8 +526,6 @@ else
         newMessage = string.Empty;
         replyToMessage = null;
     }
-
-    private void ToggleEmojiPanel() { /* вставка эмодзи */ }
 
     private async Task OnInputFileSelected(InputFileChangeEventArgs e)
     {
