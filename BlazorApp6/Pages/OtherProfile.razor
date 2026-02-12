@@ -131,7 +131,6 @@
                         <p><strong>Имейл:</strong> @otherStudent.Email</p>
                     }
 
-                    <!-- ===== БУТОНИ ЗА ДЕЙСТВИЕ ===== -->
                     @if (!isAlreadyRequested && !isAlreadySwapped)
                     {
                         <button class="btn-profile-secondary"
@@ -292,7 +291,7 @@
     }
 
     private void GoToSwapDetails(SwapModel swap) =>
-        NavigationManager.NavigateTo($"/SwapDetails/{swap.Id}");
+        NavigationManager.NavigateTo($"/chat/{swap.Id}");
 
     private void GoToOtherProfiile(Guid studentId)
     {
