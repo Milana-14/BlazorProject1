@@ -790,12 +790,12 @@
     transition: all 0.25s ease;
 }
 
-    .input-bar no-info {
+    .input-bar.no-info {
         left: 16px;
         right: 16px;
     }
 
-    .input-bar with-info {
+    .input-bar.with-info {
         left: 16px;
         right: 296px;
     }
@@ -962,4 +962,181 @@
 
 .swap.card-title {
     font-weight: 550 !important;
+}
+
+/* ======================= RESPONSIVE ======================= */
+@media (max-width: 1200px) {
+    .chat-page.with-info {
+        margin-left: 240px;
+        margin-right: 200px;
+    }
+
+    .chat-topbar {
+        left: 240px;
+    }
+
+    .chat-topbar-right.with-info {
+        right: 220px;
+    }
+
+    .input-bar.with-info {
+        right: 200px;
+    }
+}
+
+@media (max-width: 992px) {
+    .chat-page.with-info {
+        margin-left: 200px;
+        margin-right: 0;
+    }
+
+    .chat-topbar {
+        left: 200px;
+        padding: 0 16px;
+    }
+
+    .chat-topbar-right.with-info {
+        right: 16px;
+    }
+
+    .input-bar.with-info {
+        right: 16px;
+    }
+
+    .chat-info-sidebar {
+        width: 100%;
+        max-width: 300px;
+        height: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .chat-page,
+    .chat-page.no-info,
+    .chat-page.with-info {
+        margin: 0;
+        flex-direction: column;
+    }
+
+    .chat-topbar {
+        left: 0;
+        right: 0;
+        height: 60px;
+        padding: 0 12px;
+    }
+
+    .chat-topbar-left {
+        gap: 8px;
+    }
+
+    .chat-topbar-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .chat-topbar-name {
+        font-size: 14px;
+    }
+
+    .chat-topbar-sub {
+        font-size: 12px;
+        gap: 4px;
+    }
+
+    .chat-topbar-right {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    .chat-info-sidebar {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        height: 100%;
+        width: 80%;
+        max-width: 280px;
+        transition: transform 0.3s ease;
+        z-index: 105;
+    }
+
+        .chat-info-sidebar.hidden {
+            transform: translateX(100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+    .open-sidebar-btn {
+        top: 12px;
+        right: 12px;
+    }
+
+    .input-bar {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        padding: 6px 8px;
+    }
+
+        .input-bar input {
+            font-size: 14px;
+        }
+
+    .my-message,
+    .other-message {
+        max-width: 80%;
+        font-size: 13px;
+    }
+
+    .chat-window {
+        padding: 12px 10px;
+        padding-bottom: 160px; /* место под input-bar */
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-topbar-name {
+        font-size: 13px;
+    }
+
+    .chat-topbar-sub {
+        font-size: 11px;
+    }
+
+    .chat-avatar,
+    .chat-avatar-placeholder {
+        width: 28px;
+        height: 28px;
+    }
+
+    .my-message,
+    .other-message {
+        max-width: 90%;
+        font-size: 12px;
+    }
+
+    .input-bar input {
+        font-size: 13px;
+    }
+
+    .chat-info-profile-avatar {
+        width: 72px;
+        height: 72px;
+    }
+}
+
+.chat-window {
+    flex-grow: 1;
+    padding-bottom: 180px;
+}
+
+@media (max-width: 768px) {
+    .chat-window {
+        padding-bottom: 160px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-window {
+        padding-bottom: 140px;
+    }
 }

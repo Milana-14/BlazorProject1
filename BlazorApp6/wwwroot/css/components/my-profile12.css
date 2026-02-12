@@ -226,74 +226,6 @@
     color: darkred;
 }
 
-/*.profile-reviews-container {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-}
-
-.review-card {
-    display: flex;
-    gap: 15px;
-    padding: 15px;
-    border-radius: 15px;
-    background: #f9f9fb;
-    margin-bottom: 15px;
-    transition: transform 0.2s ease;
-}
-
-    .review-card:hover {
-        transform: translateY(-2px);
-    }
-
-.review-avatar {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.review-content {
-    flex: 1;
-}
-
-.review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.review-name {
-    font-weight: 600;
-    font-size: 15px;
-}
-
-.review-subject {
-    font-size: 13px;
-    background: #e6e6ff;
-    color: #4b4be0;
-    padding: 4px 10px;
-    border-radius: 12px;
-}
-
-.review-stars {
-    margin: 6px 0;
-    font-size: 14px;
-}
-
-.review-comment {
-    font-size: 14px;
-    color: #444;
-}
-
-.no-reviews-text {
-    font-style: italic;
-    color: #888;
-}
-*/
-
-
 /* ---------- ОТЗЫВИ: СПИСЪК ---------- */
 
 .profile-reviews-container {
@@ -620,4 +552,189 @@
     font-size: 18px;
     margin-top: 6px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+
+
+/* =========================================================
+   ТАБЛЕТИ (≤ 1200px)
+   ========================================================= */
+@media (max-width: 1200px) {
+
+    .main-page {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .profile-all-containers {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "info"
+            "sections"
+            "reviews";
+    }
+
+    .profile-main-info-container {
+        position: static;
+        margin-bottom: 60px;
+    }
+
+    .my-profile-avatar {
+        position: static;
+        margin-right: 20px;
+    }
+
+    .profile-username-grade-container {
+        margin-left: 0;
+    }
+
+    .profile-reviews-container {
+        margin-top: 0;
+    }
+}
+
+/* =========================================================
+   МАЛКИ ТАБЛЕТИ (≤ 900px)
+   ========================================================= */
+@media (max-width: 900px) {
+
+    .profile-container-stats {
+        padding: 24px;
+        justify-content: space-between;
+    }
+
+    .stat-all {
+        flex: 1 1 40%;
+        max-width: none;
+    }
+
+    .text-username {
+        font-size: 26px;
+    }
+
+    .profile-maintext {
+        font-size: 20px;
+    }
+}
+
+/* =========================================================
+   ТЕЛЕФОНИ (≤ 640px)
+   ========================================================= */
+@media (max-width: 640px) {
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .main-page {
+        margin-left: 0;
+        padding: 16px;
+    }
+
+    .profile-main-info-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .my-profile-avatar {
+        width: 96px;
+        height: 96px;
+        margin: 0;
+    }
+
+    .text-username {
+        font-size: 22px;
+    }
+
+    .text-grade {
+        font-size: 14px;
+    }
+
+    .profile-sections {
+        gap: 16px;
+        margin-top: 0;
+    }
+
+    .profile-container-persinfo {
+        padding: 20px;
+    }
+
+    .profile-container-stats {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .stat-all {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        max-width: none;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+    }
+
+    .review-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .review-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+/* =========================================================
+   МН МАЛКИ ЕКРАНИ (≤ 400px)
+   ========================================================= */
+@media (max-width: 400px) {
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .main-page {
+        margin-left: 0;
+        padding: 16px;
+    }
+
+    .profile-container-persinfo {
+        padding: 16px;
+    }
+
+    .profile-reviews-container {
+        padding: 16px;
+    }
+
+    .profile-maintext {
+        font-size: 18px;
+    }
+
+    .profile-sectext {
+        font-size: 14px;
+    }
+
+    .edit-avatar-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .edit-buttons-container {
+        flex-direction: column;
+    }
+
+    .btn-primary-home1,
+    .btn-secondary-home1 {
+        width: 100%;
+    }
 }

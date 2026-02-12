@@ -4,8 +4,8 @@
 @inject NavigationManager NavigationManager
 @inject StudentManager StudentManager
 
-<div class="register-page">
-    <div class="register-card">
+<div class="login-page">
+    <div class="login-card">
         <h3>Регистрация</h3>
 
         <EditForm Model="@registeredStudent" OnValidSubmit="Submit">
@@ -25,7 +25,7 @@
             </div>
 
 
-            <button type="submit" class="btn-register">Регистрирай се</button>
+            <button type="submit" class="btn-login">Регистрирай се</button>
         </EditForm>
 
         @if (registeredSuccessfully)

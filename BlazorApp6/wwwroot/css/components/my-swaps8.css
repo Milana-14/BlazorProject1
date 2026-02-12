@@ -1,0 +1,432 @@
+﻿/* ---------- ОБЩ ФОН / КОНТЕЙНЕР ---------- */
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #453D44;
+}
+
+.main-content {
+    margin-left: 0;
+}
+
+.myswaps-page {
+    min-height: 90vh;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 28px 20px;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.myswaps-container {
+    width: 100%;
+    max-width: 1180px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.myswaps-header {
+    display: flex;
+    width: 100%;
+    background: transparent;
+    padding: 8px 12px;
+}
+
+.myswaps-toprow {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.myswaps-title {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #453D44;
+    margin: 0;
+}
+
+.myswaps-tabs {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    background: transparent;
+    padding: 6px;
+    border-radius: 12px;
+}
+
+.myswaps-tab {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    background: transparent;
+    color: #453D44;
+    box-shadow: none;
+}
+
+.btn-primary {
+    width: 100%;
+    height: 40px;
+    background-color: #70646E;
+    color: #FFFDFB;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 16px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.myswaps-content {
+    padding: 6px 8px 20px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.empty-state {
+    background: #FAF7F3;
+    color: rgba(69,61,68,0.9);
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    font-weight: 500;
+}
+
+.myswaps-empty-state {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* ---------- БУТОНИ ---------- */
+.myswaps-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.myswaps-btn-primary {
+    width: 160px;
+    height: 40px;
+    background-color: #70646E;
+    color: #FFFDFB;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 470;
+    font-size: 16px;
+    margin-top: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 991px) {
+    .myswaps-container {
+        max-width: 920px;
+        padding: 0 8px;
+    }
+
+    .myswaps-toprow {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .myswaps-tabs {
+        justify-content: flex-start;
+    }
+
+    .myswaps-title .filter-title {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 575px) {
+    .myswaps-tabs {
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .myswaps-tab {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+
+    .myswaps-container {
+        padding: 0 8px;
+    }
+}
+
+.myswaps-tabs {
+    display: inline-flex;
+    background: #F0EDE9;
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px;
+}
+
+.myswaps-tab {
+    border: none;
+    background: transparent;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #453D44;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+    .myswaps-tab.active {
+        background: #70646E;
+        color: #FFFDFB;
+    }
+
+.myswaps-card-body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.myswaps-card-body span {
+    line-height: 1.4;
+}
+
+.student-card2 {
+    background-color: #F9F7F6;
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.btn-warn.incoming {
+    margin-left: auto;
+    min-width: 120px;
+}
+
+.myswaps-btn-primary {
+    margin-left: auto;
+    margin-bottom: 6px;
+    margin-right: 6px;
+}
+
+@media (max-width: 1400px) {
+    .myswaps-container {
+        max-width: 100%;
+        padding: 0 16px;
+    }
+
+    .students-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        align-items: start;
+    }
+
+    .student-card2 {
+        padding: 14px;
+    }
+
+    .student-name {
+        font-size: 24px;
+    }
+}
+
+@media (min-width: 901px) {
+
+    .students-container {
+        align-items: start;
+    }
+
+    .student-card2 {
+        padding: 12px 14px;
+    }
+
+    .myswaps-card-body {
+        gap: 6px;
+    }
+}
+
+@media (max-width: 900px) {
+
+    .students-container {
+        align-items: start;
+    }
+
+    .myswaps-page {
+        padding: 20px 12px;
+    }
+
+    .myswaps-header {
+        padding: 0;
+    }
+
+    .myswaps-toprow {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .myswaps-tabs {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .students-container {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .student-header {
+        gap: 10px;
+    }
+
+    .filter-avatar {
+        width: 64px;
+        height: 64px;
+    }
+
+    .student-name {
+        font-size: 22px;
+    }
+
+    .student-card2 {
+        padding: 14px;
+    }
+
+    .myswaps-card-body {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 640px) {
+
+    .students-container {
+        align-items: start;
+    }
+
+    .myswaps-content {
+        padding: 0;
+    }
+
+    .myswaps-tabs {
+        padding: 3px;
+        border-radius: 12px;
+    }
+
+    .myswaps-tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px 6px;
+        font-size: 14px;
+    }
+
+    .student-card2 {
+        border-radius: 14px;
+        padding: 12px;
+        min-height: auto;
+    }
+
+    .myswaps-card-body {
+        gap: 8px;
+    }
+
+    .myswaps-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+        .myswaps-actions button {
+            width: 100%;
+        }
+
+    .filter-avatar {
+        width: 58px;
+        height: 58px;
+    }
+
+    .student-name {
+        font-size: 20px;
+    }
+
+    .student-grade {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .students-container {
+        align-items: start;
+    }
+
+    .myswaps-page {
+        padding: 14px 8px;
+    }
+
+    .myswaps-container {
+        gap: 10px;
+    }
+
+    .student-card2 {
+        padding: 10px;
+    }
+
+    .myswaps-tab {
+        font-size: 13px;
+        padding: 8px 4px;
+    }
+
+    .student-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-avatar {
+        width: 52px;
+        height: 52px;
+    }
+
+    .student-name {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 360px) {
+
+    .students-container {
+        align-items: start;
+    }
+
+    .myswaps-tab {
+        font-size: 12px;
+    }
+
+    .student-name {
+        font-size: 17px;
+    }
+
+    .myswaps-actions button {
+        height: 36px;
+        font-size: 14px;
+    }
+}

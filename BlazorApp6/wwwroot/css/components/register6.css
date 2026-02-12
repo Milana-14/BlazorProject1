@@ -1,24 +1,4 @@
-﻿/* ---------- ФОН ---------- */
-.register-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 240px;
-    margin-bottom: -40px;
-    margin-top: -40px;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-}
-
-    .register-page .page,
-    .register-page main {
-        background-color: #FFFDFB !important;
-    }
-
-
-
-
-/* ---------- КАРТИЧКА ---------- */
+﻿/* ---------- КАРТИЧКА ---------- */
 .register-card {
     background-color: #F0EDE9;
     width: 440px;
@@ -45,7 +25,6 @@
 .register-form {
     text-align: left;
     margin-bottom: 20px;
-    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -82,21 +61,6 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* ---------- БУТОН ---------- */
-.btn-register {
-    width: 400px;
-    height: 45px;
-    background-color: #70646E;
-    color: #FFFDFB;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    margin-top: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
 @media (max-width: 480px) {
     .register-card {
         width: 90%;
@@ -106,5 +70,74 @@
     .register-input,
     .btn-register {
         width: 90%;
+    }
+}
+
+/* ===========================================
+   ТАБЛЕТИ (641px — 1024px)
+   =========================================== */
+@media (max-width: 1024px) and (min-width: 641px) {
+    .register-page {
+        margin-left: 0;
+        padding: 0 24px;
+    }
+
+    .register-card {
+        width: 360px;
+        padding: 35px 40px;
+    }
+
+    .register-input,
+    .btn-register {
+        width: 100%;
+    }
+
+    .name-row {
+        flex-direction: row;
+        gap: 12px;
+    }
+}
+
+/* ===========================================
+   МАЛКИ ЕКРАНИ (≤ 640px)
+   =========================================== */
+@media (max-width: 640px) {
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .register-input,
+    .btn-register {
+        width: 100%;
+    }
+
+    .register-input {
+        width: 400px;
+    }
+
+        .name-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+/* ===========================================
+   СУПЕР МАЛКИ ЕКРАНИ (≤ 375px)
+   =========================================== */
+@media (max-width: 375px) {
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .register-input,
+    .btn-register {
+        font-size: 0.95rem;
+        height: 38px;
+    }
+
+    .btn-register {
+        height: 42px;
     }
 }

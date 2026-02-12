@@ -102,22 +102,25 @@
 
 /* ---------- КОНТЕЙНЕР ЗА УЧЕНИЦИТЕ ---------- */
 .students-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    align-items: stretch;
 }
 
 /* ---------- КАРТИЧКА НА УЧЕНИКА ---------- */
 .student-card1 {
-    flex: 0 0 calc(50% - 0.5rem);
+    height: 100%;
+    min-height: 260px;
     background-color: #F9F7F6;
     border-radius: 16px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     gap: 12px;
     box-sizing: border-box;
-    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);             
+    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
 .subjects-and-label-container {
@@ -411,4 +414,190 @@ hr {
     background-color: rgba(0, 0, 0, 0.15);
     margin-top: 4px;
     margin-bottom: 24px;
+}
+
+/* ======================================================
+   ТАБЛЕТ
+   ====================================================== */
+@media (max-width: 1200px) {
+
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .filter-all-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-section-grade1 {
+        width: 100%;
+    }
+
+    .filter-section1 {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .students-container {
+        gap: 14px;
+    }
+}
+
+/* ======================================================
+   МАЛЪК ТАБЛЕТ
+   ====================================================== */
+@media (max-width: 900px) {
+
+    .students-container {
+        grid-template-columns: 1fr;
+    }
+
+    .student-name {
+        font-size: 24px;
+    }
+
+    .filter-title {
+        font-size: 22px;
+    }
+
+    .checkbox-group2 {
+        margin-left: 0;
+    }
+
+    .subjects-and-label-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+/* ======================================================
+   ТЕЛЕФОН
+   ====================================================== */
+@media (max-width: 640px) {
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .filter-header {
+        padding: 0 8px 12px 8px;
+    }
+
+    .filter-title {
+        font-size: 20px;
+    }
+
+    .filter-legend {
+        font-size: 18px;
+    }
+
+    .checkbox-group1,
+    .checkbox-group2 {
+        gap: 6px;
+    }
+
+    .circle {
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
+    }
+
+    .student-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .filter-avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .student-name {
+        font-size: 20px;
+    }
+
+    .student-grade {
+        font-size: 14px;
+    }
+}
+
+/* ======================================================
+   МАЛЪК ТЕЛЕФОН
+   ====================================================== */
+@media (max-width: 480px) {
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .btn-filter-primary,
+    .btn-filter-secondary {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .sf-btn-row-noflex {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-success,
+    .btn-danger,
+    .btn-warn {
+        width: 100%;
+    }
+
+    .sf-btn-row {
+        flex-direction: column;
+    }
+
+    .badge-filter-active,
+    .badge-filter-nonactive {
+        font-size: 14px;
+        padding: 4px 6px;
+    }
+
+    .student-card1 {
+        padding: 12px;
+    }
+}
+
+/* ======================================================
+   СУПЕР МАЛЪК ТЕЛЕФОН
+   ====================================================== */
+@media (max-width: 360px) {
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .filter-title {
+        font-size: 18px;
+    }
+
+    .student-name {
+        font-size: 18px;
+    }
+
+    .filter-section1,
+    .filter-section-grade1 {
+        padding: 10px;
+    }
+
+    .badge {
+        font-size: 13px;
+    }
 }
