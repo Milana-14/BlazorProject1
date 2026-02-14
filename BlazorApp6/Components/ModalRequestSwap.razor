@@ -41,21 +41,30 @@
             <hr />
 
             <div class="filter-row">
-                <h5>Избери предмет:</h5>
+                <h5 class="field-label">Избери предмет:</h5>
                 <div class="radio-group">
                     @foreach (var subject in ((isRequiringHelp) ? otherStudent.NeedsHelpWith.Intersect(student.CanHelpWith).Where(s => s != SubjectEnum.NotSpecified)
                                     : otherStudent.CanHelpWith.Intersect(student.NeedsHelpWith).Where(s => s != SubjectEnum.NotSpecified)))
                     {
                         <div class="form-check">
-                            <input class="form-check-input" type="radio"  name="subjectChoice"
+                            <input class="form-check-input" type="radio" name="subjectChoice"
                                    checked="@(SelectedSubject == subject)"
                                    @onchange="() => ChooseSubject(subject)" />
                             <label class="form-check-label">@subject.GetDisplayName()</label>
                         </div>
                     }
                 </div>
-            </div>
 
+                <div class="comment-block">
+                    <label class="field-label">Коментар (по желание):</label>
+                    <textarea class="comment-input"
+                              placeholder="Например: Мога да помогна с този раздел, ако искаш..."
+                              maxlength="250"
+                              @bind="Comment">
+            </textarea>
+                    <div class="comment-counter">@($"{Comment?.Length ?? 0}/250")</div>
+                </div>
+            </div>
 
             <div class="modal-buttons-group">
                 <button class="btn btn-secondary" @onclick="Cancel">Назад</button>
@@ -67,7 +76,7 @@
 
 @code {
     [Parameter] public bool IsOpen { get; set; }
-    [Parameter] public EventCallback<SubjectEnum?> OnClose { get; set; }
+    [Parameter] public EventCallback<(SubjectEnum?, string?)> OnClose { get; set; }
 
     [Parameter] public Student student { get; set; }
     [Parameter] public Student otherStudent { get; set; }
@@ -75,6 +84,7 @@
 
     private SubjectEnum SelectedSubject { get; set; } = SubjectEnum.NotSpecified;
     private bool isChosen => SelectedSubject != SubjectEnum.NotSpecified;
+    private string? Comment = null;
 
     private void ChooseSubject(SubjectEnum subject)
     {
@@ -83,37 +93,16 @@
 
     private async Task SendRequest()
     {
-        if (isRequiringHelp)
-        {
-            SwapManager.RequestHelp(otherStudent, student, SelectedSubject, otherStudent);
-
-            Swap swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, student.Id);
-            Guid studentId = (swap.RequesterId == swap.Student1Id) ? swap.Student2Id : swap.Student1Id;
-            if (swap != null)
-            {
-                await swapHubContext.Clients.User(studentId.ToString()).SendAsync("NewSwaps");
-            }
-        }
-        else
-        {
-            SwapManager.OfferHelp(student, otherStudent, SelectedSubject, otherStudent);
-
-            Swap swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, student.Id);
-            Guid studentId = (swap.RequesterId == swap.Student1Id) ? swap.Student2Id : swap.Student1Id;
-            if (swap != null)
-            {
-                await swapHubContext.Clients.User(studentId.ToString()).SendAsync("NewSwaps");
-            }
-        }
+        await OnClose.InvokeAsync((SelectedSubject, Comment));
         SelectedSubject = SubjectEnum.NotSpecified;
-
-        await OnClose.InvokeAsync(SelectedSubject);
+        Comment = null;
     }
 
-    private void Cancel()
+    private async Task Cancel()
     {
-        OnClose.InvokeAsync(null);
+        await OnClose.InvokeAsync((null, null));
         SelectedSubject = SubjectEnum.NotSpecified;
+        Comment = null;
     }
 }
 
@@ -127,4 +116,62 @@
         color: #333;
         cursor: pointer;
     }
+
+    /* ===== Единый стиль заголовков для полей ===== */
+    .field-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: #453D44;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    /* ===== Стиль textarea для комментария ===== */
+    .comment-input {
+        width: 100%;
+        min-height: 80px;
+        padding: 12px 14px;
+        font-size: 14px;
+        border-radius: 12px;
+        border: 1px solid #D3D0CC;
+        background-color: #F7F6F5;
+        color: #453D44;
+        transition: all 0.2s ease;
+        resize: none;
+        box-sizing: border-box;
+    }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: #70646E;
+            background-color: #FFFDFB;
+            box-shadow: 0 0 0 3px rgba(112, 100, 110, 0.15);
+        }
+
+    /* ===== Счётчик символов ===== */
+    .comment-counter {
+        font-size: 12px;
+        color: #9A8F98;
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    /* ===== Радиокнопки ===== */
+    .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+
+    .form-check-input {
+        margin-right: 8px;
+        accent-color: #70646E;
+    }
+
+    .form-check-label {
+        font-size: 14px;
+        color: #453D44;
+    }
+
 </style>

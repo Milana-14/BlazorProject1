@@ -22,6 +22,7 @@
         public DateTime DateRequested { get; set; }
         public DateTime? DateConfirmed { get; set; }
         public DateTime? DateCompleted { get; set; }
+        public string? Comment { get; set; }
 
         public void Confirm()
         {

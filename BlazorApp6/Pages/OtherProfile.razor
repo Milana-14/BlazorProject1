@@ -9,7 +9,9 @@
 @inject SwapManager SwapManager
 @inject RateHelpManager RateHelpManager
 @inject OnlineUsersService OnlineUsers
+@inject IHubContext<SwapHub> swapHubContext
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.SignalR
 @using SwapModel = BlazorApp6.Models.Swap
 
 <div class="main-page">
@@ -133,22 +135,24 @@
 
                     @if (!isAlreadyRequested && !isAlreadySwapped)
                     {
-                        <button class="btn-profile-secondary"
-                                disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3 || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
-                                @onclick="() => OpenModal(otherStudent, true)">
-                            Помоли за помощ
-                        </button>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-profile-secondary"
+                                    disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 3 || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
+                                    @onclick="() => OpenModal(otherStudent, true)">
+                                Помоли за помощ
+                            </button>
 
-                        <button class="btn-profile-secondary"
-                                disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3 || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
-                                @onclick="() => OpenModal(otherStudent, false)">
-                            Предложи помощ
-                        </button>
-                                }
+                            <button class="btn-profile-secondary"
+                                    disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 3 || otherSwapRequestCount > 10 || otherSwapActiveCount > 3)"
+                                    @onclick="() => OpenModal(otherStudent, false)">
+                                Предложи помощ
+                            </button>
+                        </div>
+                    }
                     else if (isAlreadyRequested && !isAlreadySwapped)
                     {
                         <p>Очаква се приемане на заявката ти</p>
-                        <button class="btn-profile-secondary-warn"
+                        <button class="btn-warn"
                                 @onclick="() => CancelSwapRequest(swap!)">
                             Отмени заявката ми
                         </button>
@@ -215,7 +219,8 @@
                   student="@modalTargetStudent"
                   otherStudent="@currentStudent"
                   isRequiringHelp="@modalIsHelping"
-                  OnClose="SendRequestForSwapAndCloseModal" />
+                  OnClose="HandleSwapRequest" />
+
 
 @code {
     [Parameter] public Guid Id { get; set; }
@@ -277,18 +282,34 @@
         modalOpen = true;
     }
 
-    private void SendRequestForSwapAndCloseModal(SubjectEnum? subject)
+    private async Task HandleSwapRequest((SubjectEnum? subject, string? comment) data)
     {
         modalOpen = false;
 
-        if (subject.HasValue && modalTargetStudent != null && currentStudent != null)
+        if (!data.subject.HasValue || modalTargetStudent == null || currentStudent == null)
+            return;
+
+        Swap swap;
+
+        if (modalIsHelping)
         {
-            if (modalIsHelping)
-                SwapManager.OfferHelp(modalTargetStudent, currentStudent, subject.Value, currentStudent);
-            else
-                SwapManager.RequestHelp(currentStudent, modalTargetStudent, subject.Value, currentStudent);
+            swap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, data.subject.Value, currentStudent, data.comment);
         }
+        else
+        {
+            swap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, data.subject.Value, currentStudent, data.comment);
+        }
+
+        if (swap != null)
+        {
+            Guid studentId = (swap.RequesterId == swap.Student1Id) ? swap.Student2Id : swap.Student1Id;
+            await swapHubContext.Clients.User(studentId.ToString()).SendAsync("NewSwaps");
+        }
+
+        modalTargetStudent = null;
+        await InvokeAsync(StateHasChanged);
     }
+
 
     private void GoToSwapDetails(SwapModel swap) =>
         NavigationManager.NavigateTo($"/chat/{swap.Id}");

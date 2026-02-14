@@ -31,3 +31,99 @@
     flex-direction: row;
     flex: 1;
 }
+
+.comment-block {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #453D44;
+    margin-bottom: 6px;
+}
+
+.comment-input {
+    resize: none;
+    border-radius: 10px;
+    border: 1px solid #E3E0DC;
+    padding: 10px 12px;
+    font-size: 14px;
+    min-height: 70px;
+    background-color: #F9F7F5;
+    color: #453D44;
+    transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+    .comment-input:focus {
+        outline: none;
+        border: 1px solid #70646E;
+        background-color: #FFFDFB;
+        box-shadow: 0 0 0 3px rgba(112, 100, 110, 0.15);
+    }
+
+.comment-counter {
+    align-self: flex-end;
+    font-size: 12px;
+    color: #9A8F98;
+    margin-top: 4px;
+}
+
+/* ===== Единый стиль заголовков для полей ===== */
+.field-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #453D44;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* ===== Стиль textarea для комментария ===== */
+.comment-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px 14px;
+    font-size: 14px;
+    border-radius: 12px;
+    border: 1px solid #D3D0CC;
+    background-color: #F7F6F5;
+    color: #453D44;
+    transition: all 0.2s ease;
+    resize: none;
+    box-sizing: border-box;
+}
+
+    .comment-input:focus {
+        outline: none;
+        border-color: #70646E;
+        background-color: #FFFDFB;
+        box-shadow: 0 0 0 3px rgba(112, 100, 110, 0.15);
+    }
+
+/* ===== Счётчик символов ===== */
+.comment-counter {
+    font-size: 12px;
+    color: #9A8F98;
+    text-align: right;
+    margin-top: 4px;
+}
+
+/* ===== Радиокнопки ===== */
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.form-check-input {
+    margin-right: 8px;
+    accent-color: #70646E;
+}
+
+.form-check-label {
+    font-size: 14px;
+    color: #453D44;
+}

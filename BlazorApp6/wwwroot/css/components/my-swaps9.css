@@ -430,3 +430,28 @@ body {
         font-size: 14px;
     }
 }
+
+/* ===== Комментарии свапов ===== */
+.swap-comment {
+    margin-top: 6px;
+    padding: 8px 12px;
+    background-color: #F7F6F5;
+    border-left: 3px solid #70646E;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #453D44;
+    line-height: 1.4;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    max-width: 100%;
+}
+
+.swap-comment {
+    font-style: italic;
+    background-color: #FBF9F8;
+    padding: 8px 12px;
+    border-left: 4px solid #70646E;
+    border-radius: 8px;
+    color: #453D44;
+    margin-top: 6px;
+}

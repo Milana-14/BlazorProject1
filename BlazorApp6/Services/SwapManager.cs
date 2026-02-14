@@ -30,7 +30,7 @@ namespace BlazorApp6.Services
             history = historyFromDb;
         }
 
-        public Swap? RequestHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester)
+        public Swap? RequestHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester, string? comment)
         {
             if (swaps.FirstOrDefault(m =>
                 (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
@@ -43,14 +43,15 @@ namespace BlazorApp6.Services
                 RequesterId = requester.Id,
                 SubjectForHelp = subject,
                 DateRequested = DateTime.UtcNow,
-                Status = SwapStatus.Pending
+                Status = SwapStatus.Pending,
+                Comment = comment
             };
 
             swaps.Add(swap);
             SaveSwapToDb(swap);
             return swap;
         }
-        public Swap? OfferHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester)
+        public Swap? OfferHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester, string? comment)
         {
             if (swaps.FirstOrDefault(m =>
                 (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
@@ -63,7 +64,8 @@ namespace BlazorApp6.Services
                 RequesterId = requester.Id,
                 SubjectForHelp = subject,
                 DateRequested = DateTime.UtcNow,
-                Status = SwapStatus.Pending
+                Status = SwapStatus.Pending,
+                Comment = comment
             };
             swaps.Add(swap);
             SaveSwapToDb(swap);
@@ -187,6 +189,7 @@ namespace BlazorApp6.Services
                     swap.RequesterId = reader.GetGuid(7);
                     swap.CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8);
                     swap.DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9);
+                    swap.Comment = reader.IsDBNull(10) ? null : reader.GetString(10);
 
                     loadedSwapsFromDb.Add(swap);
                 }
@@ -221,7 +224,7 @@ namespace BlazorApp6.Services
                     swap.RequesterId = reader.GetGuid(7);
                     swap.CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8);
                     swap.DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9);
-
+                    swap.Comment = reader.IsDBNull(10) ? null : reader.GetString(10);
 
                     historyFromDb.Add(swap);
                 }
@@ -238,8 +241,8 @@ namespace BlazorApp6.Services
             {
                 connection.Open();
 
-                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"", ""SubjectForHelp"", ""RequesterId"", ""CompletionProposedByStudentId"", ""DateCompleted"") 
-                                VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed, @SubjectForHelp, @RequesterId, @CompletionProposedByStudentId, @DateCompleted)";
+                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"", ""SubjectForHelp"", ""RequesterId"", ""CompletionProposedByStudentId"", ""DateCompleted"", ""Comment"") 
+                                VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed, @SubjectForHelp, @RequesterId, @CompletionProposedByStudentId, @DateCompleted, @Comment)";
 
 
                 using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
@@ -254,6 +257,7 @@ namespace BlazorApp6.Services
                 cmd.Parameters.AddWithValue("@RequesterId", swap.RequesterId);
                 cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@DateCompleted", (object?)swap.DateCompleted ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Comment", (object?)swap.Comment ?? DBNull.Value);
 
                 cmd.ExecuteNonQuery();
             }

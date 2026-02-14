@@ -92,14 +92,19 @@
                                             <div class="d-flex align-items-center flex-nowrap">
                                                 @if (swap.Student1Id == student.Id)
                                                 {
-                                                    <span class="text small fw-semibold me-2">Иска да му помогнеш по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                                    <span class="text small fw-semibold me-2">Иска да помогнеш по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
                                                 }
                                                 else
                                                 {
                                                     <span class="text small fw-semibold me-2">Предлага ти помощ по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
                                                 }
-                                                @* <p class="badge badge-match1">@swap.SubjectForHelp.GetDisplayName()</p> *@
                                             </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(swap.Comment))
+                                            {
+                                                <span class="swap-comment mt-1">"@swap.Comment"</span>
+                                            }
+
                                             @* Бутони *@
                                             <div class="myswaps-actions">
                                                 <button class="btn-success" disabled="@((swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => ConfirmSwap(swap)"><i class="bi bi-check fs-6"></i> Приеми</button>
@@ -153,8 +158,13 @@
                                                 {
                                                     <span class="text small fw-semibold me-2">Предлагаш помощ по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
                                                 }
-                                                @* <p class="badge badge-match1">@swap.SubjectForHelp.GetDisplayName()</p> *@
                                             </div>
+
+                                                @if (!string.IsNullOrWhiteSpace(swap.Comment))
+                                                {
+                                                <span class="swap-comment mt-1">"@swap.Comment"</span>
+                                                }
+
                                             @* Бутони *@
                                             <div class="myswaps-actions">
                                                 <button class="btn-warn incoming" @onclick="() => CancelSwapRequest(swap)">Отмяна</button>

@@ -8,7 +8,9 @@
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
 @inject RateHelpManager RateHelpManager
+@inject IHubContext<SwapHub> swapHubContext
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.SignalR
 @using SwapModel = BlazorApp6.Models.Swap
 
 <div class="main-page">
@@ -180,7 +182,7 @@ else
                                     <div class="d-flex align-items-center flex-nowrap">
                                         @if (swap.Student1Id == student.student.Id)
                                         {
-                                            <span class="text small fw-semibold me-2">Иска да му помогнеш по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                            <span class="text small fw-semibold me-2">Иска да помогнеш по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
                                         }
                                         else
                                         {
@@ -207,11 +209,11 @@ else
     }
 }
 
-<ModalRequestSwap IsOpen="@modalOpen"
-                  student="@modalTargetStudent"
-                  otherStudent="@currentStudent"
-                  isRequiringHelp="@modalIsHelping"
-                  OnClose="SendRequestForSwapAndCloseModal" />
+    <ModalRequestSwap IsOpen="@modalOpen"
+                      student="@modalTargetStudent"
+                      otherStudent="@currentStudent"
+                      isRequiringHelp="@modalIsHelping"
+                      OnClose="HandleSwapRequest" />
 
 </div>
 
@@ -335,14 +337,6 @@ else
             return (((double)commonCan.Count / selectedCanHelpWith.Count) + ((double)commonNeeds.Count / selectedNeedsHelpWith.Count)) / 2 * 100 + ((student.HelpGivenCount == 0) ? 0 : (starRatings.Sum() / student.HelpGivenCount));
     }
 
-    private void RequestHelp(Student student1, Student student2, SubjectEnum subject)
-    {
-        SwapModel newSwap = SwapManager.RequestHelp(student1, student2, subject, currentStudent);
-    }
-    private void OfferHelp(Student student1, Student student2, SubjectEnum subject)
-    {
-        SwapModel newSwap = SwapManager.OfferHelp(student1, student2, subject, currentStudent);
-    }
     private void ConfirmSwaps(SwapModel swap)
     {
         SwapManager.ConfirmSwap(swap);
@@ -368,23 +362,35 @@ else
         modalIsHelping = isHelping;
         modalOpen = true;
     }
-    private void SendRequestForSwapAndCloseModal(SubjectEnum? selectedSubject)
+
+    private async Task HandleSwapRequest((SubjectEnum? subject, string? comment) data)
     {
         modalOpen = false;
 
-        if (selectedSubject.HasValue && modalTargetStudent != null && currentStudent != null)
+        if (!data.subject.HasValue || modalTargetStudent == null || currentStudent == null)
+            return;
+
+        Swap swap;
+
+        if (modalIsHelping)
         {
-            SwapModel? newSwap;
-            if 
-                (modalIsHelping) newSwap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, selectedSubject.Value, currentStudent);
-            else 
-                newSwap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, selectedSubject.Value, currentStudent);
+            swap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, data.subject.Value, currentStudent, data.comment);
+        }
+        else
+        {
+            swap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, data.subject.Value, currentStudent, data.comment);
+        }
+
+        if (swap != null)
+        {
+            Guid studentId = (swap.RequesterId == swap.Student1Id) ? swap.Student2Id : swap.Student1Id;
+            await swapHubContext.Clients.User(studentId.ToString()).SendAsync("NewSwaps");
         }
 
         modalTargetStudent = null;
-
-        InvokeAsync(StateHasChanged);
+        await InvokeAsync(StateHasChanged);
     }
+
 
     private void GoToSwapDetails(SwapModel swap)
     {
