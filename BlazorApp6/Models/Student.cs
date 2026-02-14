@@ -18,6 +18,7 @@ public class Student
     public int Grade { get; set; }
 
     [Required(ErrorMessage = "Имейлът е задължителен")]
+    [EmailAddress(ErrorMessage = "Невалиден имейл адрес")]
     public string Email { get; set; }
 
     [Required(ErrorMessage = "Потребителското име е задължително")]
