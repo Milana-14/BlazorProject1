@@ -59,7 +59,7 @@
 
         foreach (var swap in Swaps)
         {
-            var other = StudentManager.FindStudent(s => s.Id == (swap.Student1Id == CurrentStudentId ? swap.Student2Id : swap.Student1Id));
+            var other = await StudentManager.FindStudentById((swap.Student1Id == CurrentStudentId ? swap.Student2Id : swap.Student1Id));
             if (other != null && (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted || swap.Status == SwapStatus.CompletedNotRated)) OtherStudents.Add(other);
         }
 

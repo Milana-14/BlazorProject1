@@ -133,11 +133,11 @@
 
         if (!user.Identity.IsAuthenticated) return;
 
-        currentStudent = StudentManager.FindStudent(s => s.Username == user.Identity.Name);
+        currentStudent = await StudentManager.FindStudentByUsername( user.Identity.Name);
 
         otherStudent = swap.Student1Id == currentStudent.Id
-            ? StudentManager.FindStudent(s => s.Id == swap.Student2Id)
-            : StudentManager.FindStudent(s => s.Id == swap.Student1Id);
+            ? await StudentManager.FindStudentById(swap.Student2Id)
+            : await StudentManager.FindStudentById(swap.Student1Id);
 
         var messages = ChatManager.GetMessagesFromDb(SwapId);
 

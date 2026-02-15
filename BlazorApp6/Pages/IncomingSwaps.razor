@@ -67,7 +67,7 @@
                             <div class="students-container">
                                 @foreach (SwapModel swap in incomingSwaps)
                                 {
-                                    var student = StudentManager.FindStudent(s => s.Id == swap.RequesterId);
+                                    studentsById.TryGetValue(swap.RequesterId, out var student);
 
                                     if (student == null) continue;
 
@@ -128,7 +128,9 @@
                             <div class="students-container">
                                 @foreach (SwapModel swap in outgoingSwaps)
                                 {
-                                    var student = StudentManager.FindStudent(s => (s.Id == swap.Student1Id || s.Id == swap.Student2Id) && s.Id != currentStudent.Id);
+                                    var otherId = swap.Student1Id == currentStudent.Id ? swap.Student2Id : swap.Student1Id;
+                                    studentsById.TryGetValue(otherId, out var student);
+
                                     if (student == null) continue;
 
                                     <div class="student-card2">
@@ -184,6 +186,8 @@
     private List<SwapModel> incomingSwaps = new();
     private List<SwapModel> outgoingSwaps = new();
 
+    private Dictionary<Guid, Student> studentsById = new();
+
     protected override async Task OnParametersSetAsync()
     {
         var state = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -197,7 +201,7 @@
 
         var username = user.Identity.Name;
 
-        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+        currentStudent = await StudentManager.FindStudentByUsername(username);
 
         if (currentStudent == null)
         {
@@ -211,11 +215,25 @@
 
     private async Task LoadData()
     {
+        if (currentStudent == null)
+            return;
+
         List<SwapModel> swaps = await SwapManager.FindSwapsByStudentId(currentStudent.Id);
 
-        pairs = swaps.Where(m => m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted).ToList();
+        pairs = swaps.Where(m => m.Status == SwapStatus.Confirmed
+                              || m.Status == SwapStatus.CompletedNotRated
+                              || m.Status == SwapStatus.PendingCompleted).ToList();
+
         incomingSwaps = swaps.Where(m => m.RequesterId != currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
         outgoingSwaps = swaps.Where(m => m.RequesterId == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
+
+        var neededIds = swaps
+            .SelectMany(s => new[] { s.Student1Id, s.Student2Id, s.RequesterId })
+            .Distinct()
+            .ToList();
+
+        var allStudents = await StudentManager.GetAllStudents();
+        studentsById = allStudents.Where(s => neededIds.Contains(s.Id)).ToDictionary(s => s.Id, s => s);
     }
 
     private void SelectTab(string tab)

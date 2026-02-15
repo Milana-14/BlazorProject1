@@ -381,7 +381,7 @@ else
 
         var username = user.Identity.Name;
 
-        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+        currentStudent = await StudentManager.FindStudentByUsername(username);
 
         isStudentToRate = swap.Student2Id == currentStudent.Id;
 
@@ -392,8 +392,8 @@ else
         }
 
         otherStudent = swap.Student1Id == currentStudent.Id
-            ? StudentManager.FindStudent(s => s.Id == swap.Student2Id)
-            : StudentManager.FindStudent(s => s.Id == swap.Student1Id);
+            ? await StudentManager.FindStudentById(swap.Student2Id)
+            : await StudentManager.FindStudentById(swap.Student1Id);
         if (otherStudent == null) { errorMessage = "Другият ученик не е намерен."; return; }
 
         messages = ChatManager.GetMessagesFromDb(swapId);

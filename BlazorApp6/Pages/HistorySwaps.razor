@@ -42,25 +42,25 @@
                             </p>
 
                             <div class="students-container">
-                                @foreach (var swap in archivedSwaps)
+                                @foreach (var swap in info)
                                 {
                                     var student = StudentManager.FindStudent(s =>
-                                    s.Id == (swap.Student1Id == currentStudent.Id
-                                    ? swap.Student2Id
-                                    : swap.Student1Id));
+                                    s.Id == (swap.Swap.Student1Id == currentStudent.Id
+                                    ? swap.Swap.Student2Id
+                                    : swap.Swap.Student1Id));
 
                                     if (student == null) continue;
 
-                                    bool currentHelps = swap.Student2Id == currentStudent.Id;
+                                    bool currentHelps = swap.Swap.Student2Id == currentStudent.Id;
 
                                     <div class="student-card2 archived">
 
                                         <div class="student-header">
-                                            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" class="filter-avatar" />
+                                            <img src="@AvatarManager.GetAvatarUrl(swap.Student.AvatarName)" class="filter-avatar" />
                                             <div class="student-info">
-                                                <h5 class="student-name">@student.FirstName @student.SecName</h5>
+                                                <h5 class="student-name">@swap.Student.FirstName @swap.Student.SecName</h5>
                                                 <p class="student-grade">
-                                                    Завършен на: <span style="font-weight:550">@swap.DateCompleted?.ToString("dd MMMM yyyy HH:mm")</span>
+                                                    Завършен на: <span style="font-weight:550">@swap.Swap.DateCompleted?.ToString("dd MMMM yyyy HH:mm")</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -71,12 +71,12 @@
                                                     @(currentHelps ? "Помагал си по:" : "Получил си помощ по:")
                                                 </span>
                                                 <span class="badge badge-match1">
-                                                    @swap.SubjectForHelp.GetDisplayName()
+                                                    @swap.Swap.SubjectForHelp.GetDisplayName()
                                                 </span>
                                             </div>
 
                                             <div class="myswaps-actions">
-                                                <button class="myswaps-btn-primary" @onclick="() => OpenArchiveChat(swap.Id)">
+                                                <button class="myswaps-btn-primary" @onclick="() => OpenArchiveChat(swap.Swap.Id)">
                                                     Преглед
                                                 </button>
                                             </div>
@@ -96,6 +96,7 @@
 @code {
     private Student? currentStudent;
     private List<SwapModel> archivedSwaps = new();
+    private List<(Student Student, SwapModel Swap)> info = new();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -108,7 +109,7 @@
             return;
         }
 
-        currentStudent = StudentManager.FindStudent(s => s.Username == user.Identity.Name);
+        currentStudent = await StudentManager.FindStudentByUsername(user.Identity.Name);
         if (currentStudent == null) return;
 
         await LoadArchivedSwaps();
@@ -118,6 +119,16 @@
     {
         List<Swap> allArchivedSwaps = await SwapManager.FindHistorySwapsByStudentId(currentStudent.Id);
         archivedSwaps = allArchivedSwaps.Where(s => s.Status == SwapStatus.Completed).OrderByDescending(s => s.DateCompleted).ToList();
+
+        foreach (var swap in archivedSwaps)
+        {
+            Guid otherStudentId = (swap.Student1Id == currentStudent.Id) ? swap.Student2Id : swap.Student1Id;
+            Student? otherStudent = await StudentManager.FindStudentById(otherStudentId);
+            if (otherStudent != null)
+            {
+                info.Add((otherStudent, swap));
+            }
+        }
     }
 
     private void OpenArchiveChat(Guid swapId)

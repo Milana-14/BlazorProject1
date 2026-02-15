@@ -240,7 +240,7 @@ else
 
         var username = user.Identity.Name;
 
-        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+        currentStudent = await StudentManager.FindStudent(s => s.Username == username);
 
         if (currentStudent == null)
         {
@@ -249,7 +249,8 @@ else
 
         if (currentStudent != null)
         {
-            allStudents = StudentManager.GetAllStudents().Where(s => s.Id != currentStudent.Id).GroupBy(s => s.Id).Select(g => g.First()).ToList();
+            List<Student> allStudents1 = await StudentManager.GetAllStudents();
+            allStudents = allStudents1.Where(s => s.Id != currentStudent.Id).GroupBy(s => s.Id).Select(g => g.First()).ToList();
 
 
             allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToHashSet();

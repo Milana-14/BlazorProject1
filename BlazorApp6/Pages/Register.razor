@@ -8,7 +8,7 @@
     <div class="login-card">
         <h3>Регистрация</h3>
 
-        <EditForm Model="@registeredStudent" OnValidSubmit="Submit">
+        <EditForm Model="@registeredStudent" OnValidSubmit="async () => await Submit()">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
@@ -70,11 +70,11 @@
     private string errorMessage = string.Empty;
     private bool registeredSuccessfully = false;
 
-    private void Submit()
+    private async Task Submit()
     {
         try
         {
-            if (StudentManager.FindStudent(s => s.Username == registeredStudent.Username) != null)
+            if (await StudentManager.FindStudentByUsername(registeredStudent.Username) != null)
             {
                 registeredSuccessfully = false;
                 userNameAlreadyExists = true;

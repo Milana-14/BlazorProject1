@@ -133,7 +133,7 @@
         var state = await AuthStateProvider.GetAuthenticationStateAsync();
         var username = state.User.Identity?.Name;
 
-        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+        currentStudent = await StudentManager.FindStudentByUsername(username);
         if (currentStudent == null) return;
 
         hubConnection = new HubConnectionBuilder()

@@ -235,7 +235,7 @@
             return;
         }
 
-        currentStudent = StudentManager.FindStudent(s => s.Username == user.Identity.Name);
+        currentStudent = await StudentManager.FindStudentByUsername(user.Identity.Name);
 
         if (Id == Guid.Empty)
         {
@@ -243,7 +243,7 @@
             return;
         }
 
-        otherStudent = StudentManager.FindStudent(s => s.Id == Id);
+        otherStudent = await StudentManager.FindStudent(s => s.Id == Id);
 
         if (otherStudent == null)
             errorMessage = "Ученикът не беше намерен.";
@@ -260,7 +260,7 @@
 
         @foreach (var r in reviews)
         {
-            var sender = StudentManager.FindStudent(s => s.Id == r.SenderStudentId);
+            var sender = await StudentManager.FindStudentById(r.SenderStudentId);
             var otherSwap = await SwapManager.FindHistorySwapByStudentsId(otherStudent.Id, sender.Id);
             info.Add((r, sender, otherSwap));
         }

@@ -41,7 +41,8 @@
 
         foreach (var swap in Swaps)
         {
-            Student? other = StudentManager.FindStudent(s => s.Id == (swap.Student1Id == CurrentStudentId ? swap.Student2Id : swap.Student1Id));
+            Guid idToFind = (swap.Student1Id == CurrentStudentId) ? swap.Student2Id : swap.Student1Id;
+            Student? other = await StudentManager.FindStudentById(idToFind);
             if (other != null && swap.Status == SwapStatus.Completed) OtherStudents.Add(other);
             info.Add((other, swap));
         }

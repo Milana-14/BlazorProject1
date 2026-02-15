@@ -42,19 +42,18 @@
                         <p class="text-found-students">Активните ви свапове: <strong>@pairs.Count</strong></p>
 
                         <div class="students-container">
-                            @foreach (SwapModel swap in pairs)
+                            @foreach (var swap in pairsWithStudents)
                             {
-                                var student = StudentManager.FindStudent(s => s.Id == ((swap.Student1Id == currentStudent.Id) ? swap.Student2Id : swap.Student1Id));
-                                bool currentStHelps = swap.Student2Id == currentStudent.Id;
-                                @if (student == null) continue;
+                                bool currentStHelps = swap.swap.Student2Id == currentStudent.Id;
+                                @if (swap.student == null) continue;
 
                                 <div class="student-card2">
                                     @* Профилна, име и дата на начало *@
                                     <div class="student-header">
-                                        <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="filter-avatar" />
+                                        <img src="@AvatarManager.GetAvatarUrl(swap.student.AvatarName)" alt="Avatar" class="filter-avatar" />
                                         <div class="student-info">
-                                            <h5 class="student-name">@student.FirstName @student.SecName</h5>
-                                            <p class="student-grade">Активен от: @(swap.DateConfirmed?.ToString("dd MMMM yyyy HH:mm"))</p>
+                                            <h5 class="student-name">@swap.student.FirstName @swap.student.SecName</h5>
+                                            <p class="student-grade">Активен от: @(swap.swap.DateConfirmed?.ToString("dd MMMM yyyy HH:mm"))</p>
                                         </div>
                                     </div>
 
@@ -69,12 +68,12 @@
                                             {
                                                 <span class="text small fw-semibold me-2">Помага ти по:</span>
                                             }
-                                            <span class="badge badge-match1">@swap.SubjectForHelp.GetDisplayName()</span>
+                                            <span class="badge badge-match1">@swap.swap.SubjectForHelp.GetDisplayName()</span>
                                         </div>
 
                                         @* Бутони *@
                                         <div class="myswaps-actions">
-                                            <button class="myswaps-btn-primary" @onclick="() => GoToSwap(swap.Id)">Отвори чата</button>
+                                            <button class="myswaps-btn-primary" @onclick="() => GoToSwap(swap.swap.Id)">Отвори чата</button>
                                         </div>
                                     </div>
                                 </div>
@@ -93,6 +92,7 @@
     private string selectedTab = "pairs";
 
     private List<SwapModel> pairs = new();
+    private List<(SwapModel swap, Student student)> pairsWithStudents = new();
     private List<SwapModel> incomingSwaps = new();
     private List<SwapModel> outgoingSwaps = new();
 
@@ -109,7 +109,7 @@
 
         var username = user.Identity.Name;
 
-        currentStudent = StudentManager.FindStudent(s => s.Username == username);
+        currentStudent = await StudentManager.FindStudentByUsername(username);
 
         if (currentStudent == null)
         {
@@ -128,6 +128,12 @@
         pairs = swaps.Where(m => m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted).ToList();
         incomingSwaps = swaps.Where(m => m.RequesterId != currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
         outgoingSwaps = swaps.Where(m => m.RequesterId == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
+
+        foreach (var swap in pairs)
+        {
+            var student = await StudentManager.FindStudentById((swap.Student1Id == currentStudent.Id) ? swap.Student2Id : swap.Student1Id);
+            if (student != null) pairsWithStudents.Add((swap, student));
+        }
     }
 
     private async Task ConfirmSwap(SwapModel swap)

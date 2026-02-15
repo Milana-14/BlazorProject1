@@ -31,7 +31,7 @@ public class AccountController : Controller
                 return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Моля, попълнете всички полета."));
             }
 
-            var student = _studentManager.FindStudent(s => s.Username == username);
+            var student = await _studentManager.FindStudentByUsername(username);
 
             if (student == null)
             {

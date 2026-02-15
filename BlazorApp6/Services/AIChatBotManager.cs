@@ -321,7 +321,7 @@ ORDER BY ""Timestamp""";
         if (histories.TryGetValue(studentId.ToString(), out var memHistory))
             return memHistory;
 
-        Student student = studentManager.FindStudent(s => s.Id == studentId);
+        Student student = await studentManager.FindStudentById(studentId);
 
         var history = new List<ChatMessage>
         {

@@ -19,7 +19,6 @@
     {
         @if (!isEditing)
         {
-            averageRating = (student.HelpGivenCount == 0) ? 0 : starRatings.Sum() / student.HelpGivenCount;
             <div class="profile-all-containers">
                 <div class="profile-main-info-container">
                     <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="my-profile-avatar" />
@@ -40,7 +39,7 @@
                             <p class="stat-label">Общо свапове</p>
                         </div>
                         <div class="stat-all">
-                            <p class="stat-value">@Math.Round(averageRating, 1)</p>
+                            <p class="stat-value">@averageRating.ToString("0,00")</p>
                             <p class="stat-label">Рейтинг</p>
                         </div>
                         <div class="stat-all">
@@ -254,14 +253,11 @@
         var user = state.User;
 
         if (!user.Identity.IsAuthenticated)
-        {
-            student = null;
             return;
-        }
 
         var username = user.Identity.Name;
 
-        student = StudentManager.FindStudent(s => s.Username == username);
+        student = await StudentManager.FindStudent(s => s.Username == username);
 
         if (student == null)
         {
@@ -271,21 +267,31 @@
 
         isEditing = false;
 
-        allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
+        allSubjects = Enum.GetValues(typeof(SubjectEnum))
+            .Cast<SubjectEnum>()
+            .Where(s => s != SubjectEnum.NotSpecified)
+            .ToList();
 
         allSwaps = await SwapManager.FindSwapsByStudentId(student.Id);
 
-        starRatings = RateHelpManager.LoadReviewsForStudentFromDb(student.Id).Select(r => r.Rating).ToList();
-
         reviews = RateHelpManager.LoadReviewsForStudentFromDb(student.Id);
 
-        @foreach (var r in reviews)
+        starRatings = reviews.Select(r => r.Rating).ToList();
+
+        foreach (var r in reviews)
         {
-            var sender = StudentManager.FindStudent(s => s.Id == r.SenderStudentId);
+            var sender = await StudentManager.FindStudent(s => s.Id == r.SenderStudentId);
+            if (sender == null) continue;
+
             var swap = await SwapManager.FindHistorySwapByStudentsId(student.Id, sender.Id);
-            reviewsInfo.Add((sender.AvatarName, sender.Id, sender.FirstName, swap.SubjectForHelp, r.Rating, r.Comment));
+
+            reviewsInfo.Add((sender.AvatarName, sender.Id, sender.FirstName,
+                             swap.SubjectForHelp, r.Rating, r.Comment));
         }
+
+        averageRating = (student.HelpGivenCount == 0) ? 0 : starRatings.Sum() / (double)student.HelpGivenCount;
     }
+
 
     private async Task SelectFile(IBrowserFile file)
     {
@@ -342,13 +348,13 @@
         Navigation.NavigateTo("/change-password");
     }
 
-    private void SaveChanges()
+    private async Task SaveChanges()
     {
         if (student is not null)
         {
             try
             {
-                StudentManager.UpdateStudent(student);
+                await StudentManager.UpdateStudent(student);
                 SubjectsManager.UpdateStudentSubjects(student);
                 isEditing = false;
             }
@@ -358,6 +364,7 @@
             }
         }
     }
+
     private void CancelEdit()
     {
         if (studentBackup != null)

@@ -66,7 +66,7 @@ public class OnlineHub : Hub
         if (user?.Identity?.IsAuthenticated == true)
         {
             var username = user.Identity.Name;
-            var student = _studentManager.FindStudent(s => s.Username == username);
+            var student = await _studentManager.FindStudentByUsername(username);
 
             if (student != null)
             {
@@ -84,7 +84,7 @@ public class OnlineHub : Hub
         if (user?.Identity?.IsAuthenticated == true)
         {
             var username = user.Identity.Name;
-            var student = _studentManager.FindStudent(s => s.Username == username);
+            var student = await _studentManager.FindStudentByUsername(username);
 
             if (student != null)
             {
