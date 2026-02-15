@@ -196,36 +196,36 @@ ORDER BY ""Timestamp""";
             else await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, Guid.Empty);
         }
 
-        public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
-        {
-            var studentId = connection.Student.Id;
+        //public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
+        //{
+        //    var studentId = connection.Student.Id;
 
-            var folder = Path.Combine("wwwroot", "ai-files");
-            Directory.CreateDirectory(folder);
+        //    var folder = Path.Combine("wwwroot", "ai-files");
+        //    Directory.CreateDirectory(folder);
 
-            var path = Path.Combine(folder, $"{Guid.NewGuid()}_{fileName}");
-            await File.WriteAllBytesAsync(path, fileBytes);
+        //    var path = Path.Combine(folder, $"{Guid.NewGuid()}_{fileName}");
+        //    await File.WriteAllBytesAsync(path, fileBytes);
 
-            var content = $"<a href='/ai-files/{Path.GetFileName(path)}' target='_blank'>{fileName}</a>";
-            var msgId = Guid.NewGuid();
+        //    var content = $"<a href='/ai-files/{Path.GetFileName(path)}' target='_blank'>{fileName}</a>";
+        //    var msgId = Guid.NewGuid();
 
-            await Clients.Group(studentId.ToString())
-                .ReceiveMessage(msgId, studentId,
-                    $"{connection.Student.FirstName} {connection.Student.SecName}",
-                    content);
+        //    await Clients.Group(studentId.ToString())
+        //        .ReceiveMessage(msgId, studentId,
+        //            $"{connection.Student.FirstName} {connection.Student.SecName}",
+        //            content);
 
-            await db.AddMessageAsync(new AiMessage
-            {
-                Id = msgId,
-                StudentId = studentId,
-                SenderId = studentId,
-                SenderName = $"{connection.Student.FirstName} {connection.Student.SecName}",
-                Content = content,
-                IsFile = true,
-                FileName = fileName,
-                ReplyToMessageId = Guid.Empty
-            });
-        }
+        //    await db.AddMessageAsync(new AiMessage
+        //    {
+        //        Id = msgId,
+        //        StudentId = studentId,
+        //        SenderId = studentId,
+        //        SenderName = $"{connection.Student.FirstName} {connection.Student.SecName}",
+        //        Content = content,
+        //        IsFile = true,
+        //        FileName = fileName,
+        //        ReplyToMessageId = Guid.Empty
+        //    });
+        //}
 
         public async Task EditMessage(UserConnection connection, Guid messageId, string newContent)
         {

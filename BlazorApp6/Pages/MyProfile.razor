@@ -120,7 +120,9 @@
                                         }
                                     </div>
 
-                                    <p class="review-comment">“@r.Comment”</p>
+                                    <p class="review-comment">
+                                        “@r.Comment” - @(swap.DateCompleted?.ToString("dd.MM.yyyy") ?? "—")
+                                    </p>
                                 </div>
                             </div>
                         }

@@ -6,7 +6,7 @@
         public Guid SwapId { get; set; }
         public Guid SenderId { get; set; }
         public string Content { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
         public bool IsRead { get; set; }
         public bool IsEdited { get; set; }
         public Guid? ReplyToMessageId { get; set; }
@@ -28,7 +28,7 @@
         public Guid SenderId { get; set; }
         public string SenderName { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
         public bool IsRead { get; set; }
         public bool IsEdited { get; set; }
         public Guid? ReplyToMessageId { get; set; }
@@ -55,7 +55,7 @@
         public string Content { get; set; } = "";
         public bool IsFile { get; set; }
         public string? FileName { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
         public Guid ReplyToMessageId { get; set; } = Guid.Empty;
     }
 }
