@@ -65,7 +65,6 @@ else
                         {
                             <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="ProposeCompletion">Предложи завършване</span></div>
                         }
-                        <div class="chat-info-action" @onclick="() => ReportPartner(otherStudent)"><i class="bi bi-x-circle"></i><span>Репортни</span></div>
                     </div>
                     <div class="chat-info-section">
                         @(currentStudent.Id == swap.Student2Id ? "Помагаш по" : $"{otherStudent.FirstName} ти помага по"): @swap.SubjectForHelp.GetDisplayName().ToLower()
@@ -710,6 +709,4 @@ else
     {
         NavigationManager.NavigateTo($"/other-profile/{student.Id}");
     }
-
-    private async Task ReportPartner(Student studentToReport) { /* TODO */ }
 }
