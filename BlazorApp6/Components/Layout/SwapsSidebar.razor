@@ -16,21 +16,18 @@
         </div>
     </div>
 
-    @foreach (var student in OtherStudents)
+    @foreach (var i in info)
     {
-        Swap swap = SwapManager.FindSwapByStudentsId(student.Id, CurrentStudentId);
-        var unread = ChatManager.GetUnreadCount(swap.Id, CurrentStudentId);
-
-        <div class="swap-chat-item" @onclick="() => OpenChat(student)">
-            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="sidebar-avatar" />
+        <div class="swap-chat-item" @onclick="() => OpenChat(i.Student)">
+            <img src="@AvatarManager.GetAvatarUrl(i.Student.AvatarName)" alt="Avatar" class="sidebar-avatar" />
             <div class="swap-chat-info">
-                <strong>@student.FirstName @((!string.IsNullOrEmpty(student.SecName)) ? student.SecName[0].ToString() : "")</strong>
+                <strong>@i.Student.FirstName @((!string.IsNullOrEmpty(i.Student.SecName)) ? i.Student.SecName[0].ToString() : "")</strong>
 
                 <div class="last-message-row">
-                    <span class="last-message">@LastMessagePreview(swap.Id)</span>
-                    @if (unread > 0)
+                    <span class="last-message">@LastMessagePreview(i.Swap.Id)</span>
+                    @if (i.Unread > 0)
                     {
-                        <span class="unread-count">@unread</span>
+                        <span class="unread-count">@i.Unread</span>
                     }
                 </div>
             </div>
@@ -43,6 +40,7 @@
 
     private List<Swap> Swaps = new();
     private List<Student> OtherStudents = new();
+    private List<(Student Student, Swap Swap, int Unread)> info = new();
     private string LastMessagePreview(Guid swapId)
     {
         List<Message> messages = ChatManager.GetMessagesFromDb(swapId);
@@ -55,14 +53,21 @@
         return "";
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        Swaps = SwapManager.FindSwapsByStudentId(CurrentStudentId);
+        Swaps = await SwapManager.FindSwapsByStudentId(CurrentStudentId);
 
         foreach (var swap in Swaps)
         {
             var other = StudentManager.FindStudent(s => s.Id == (swap.Student1Id == CurrentStudentId ? swap.Student2Id : swap.Student1Id));
             if (other != null && (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted || swap.Status == SwapStatus.CompletedNotRated)) OtherStudents.Add(other);
+        }
+
+        @foreach (var student in OtherStudents)
+        {
+            Swap swap = await SwapManager.FindSwapByStudentsId(student.Id, CurrentStudentId);
+            var unread = ChatManager.GetUnreadCount(swap.Id, CurrentStudentId);
+            info.Add((student, swap, unread));
         }
     }
 

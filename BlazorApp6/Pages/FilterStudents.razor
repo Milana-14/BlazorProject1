@@ -38,7 +38,7 @@ else
                     <label class="checkbox-item">
                         <input type="checkbox"
                                checked="@selectedGrades.Contains(grade)"
-                               @onchange="(ChangeEventArgs e) => ToggleGrade(grade, ValueToBool(e.Value))"
+                               @onchange="async (ChangeEventArgs e) => await ToggleGrade(grade, ValueToBool(e.Value))"
                                class="hidden-checkbox" />
                         <span class="circle @(selectedGrades.Contains(grade) ? "circle-active" : "circle-nonactive")">
                             @grade
@@ -58,7 +58,7 @@ else
                         <label class="checkbox-item">
                             <input type="checkbox"
                                    checked="@selectedCanHelpWith.Contains(subject)"
-                                   @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedCanHelpWith)"
+                                   @onchange="async (ChangeEventArgs e) => await ToggleSubject(subject, ValueToBool(e.Value), selectedCanHelpWith)"
                                    class="hidden-checkbox" />
                             <span class="badge @(selectedCanHelpWith.Contains(subject) ? "badge-filter-active" : "badge-filter-nonactive")">
                                 @subject.GetDisplayName()
@@ -76,7 +76,7 @@ else
                         <label class="checkbox-item">
                             <input type="checkbox"
                                    checked="@selectedNeedsHelpWith.Contains(subject)"
-                                   @onchange="(ChangeEventArgs e) => ToggleSubject(subject, ValueToBool(e.Value), selectedNeedsHelpWith)"
+                                   @onchange="async (ChangeEventArgs e) => await ToggleSubject(subject, ValueToBool(e.Value), selectedNeedsHelpWith)"
                                    class="hidden-checkbox" />
                             <span class="badge @(selectedNeedsHelpWith.Contains(subject) ? "badge-filter-active" : "badge-filter-nonactive")">
                                 @subject.GetDisplayName()
@@ -92,8 +92,8 @@ else
     </div>
 
     <div class="mt-auto sf-btn-row-noflex">
-        <button class="btn-filter-primary" @onclick="AutoFilter">Автоматичен избор</button>
-        <button class="btn-filter-secondary" @onclick="ResetFilters">Махни филтрите</button>
+        <button class="btn-filter-primary" @onclick="async () => AutoFilter()">Автоматичен избор</button>
+        <button class="btn-filter-secondary" @onclick="async () => ResetFilters()">Махни филтрите</button>
     </div>
 
     <hr />
@@ -113,20 +113,12 @@ else
         <div class="students-container">
             @foreach (var student in filteredStudentsCompatib)
             {
-                SwapModel? swap = SwapManager.FindSwapByStudentsId(student.student.Id, currentStudent.Id);
-
-                bool isAlreadyRequestedByMe = swap?.Status == SwapStatus.Pending && swap.RequesterId == currentStudent.Id;
-                bool isAlreadyRequestedByOther = swap?.Status == SwapStatus.Pending && swap.RequesterId == student.student.Id;
-                bool isAlreadySwapped = swap?.Status == SwapStatus.Confirmed || swap?.Status == SwapStatus.PendingCompleted || swap?.Status == SwapStatus.CompletedNotRated;
+                bool isAlreadyRequestedByMe = student.swap?.Status == SwapStatus.Pending && student.swap.RequesterId == currentStudent.Id;
+                bool isAlreadyRequestedByOther = student.swap?.Status == SwapStatus.Pending && student.swap.RequesterId == student.student.Id;
+                bool isAlreadySwapped = student.swap?.Status == SwapStatus.Confirmed || student.swap?.Status == SwapStatus.PendingCompleted || student.swap?.Status == SwapStatus.CompletedNotRated;
 
                 bool canRequestHelp = student.student.CanHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.NeedsHelpWith).ToHashSet().Count > 0;
                 bool canOfferHelp = student.student.NeedsHelpWith?.Where(s => s != SubjectEnum.NotSpecified).Intersect(currentStudent.CanHelpWith).ToHashSet().Count > 0;
-
-                int swapRequestCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Pending).Count();
-                int swapActiveCount = SwapManager.FindSwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
-
-                int otherSwapRequestCount = SwapManager.FindSwapsByStudentId(student.student.Id).Where(s => s.Status == SwapStatus.Pending).Count();
-                int otherSwapActiveCount = SwapManager.FindSwapsByStudentId(student.student.Id).Where(s => s.Status == SwapStatus.Confirmed).Count();
 
                 <div class="student-card1">
                     @* Профилна, име и клас *@
@@ -169,32 +161,32 @@ else
                         {
                             @if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && !isAlreadySwapped)
                             {
-                                <button class="btn-primary" disabled="@(!canRequestHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(student.student, true)"> Помоли за помощ</button>
-                                <button class="btn-primary" disabled="@(!canOfferHelp || (swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
+                                <button class="btn-primary" @onclick="() => OpenModal(student.student, true)"> Помоли за помощ</button>
+                                <button class="btn-primary" @onclick="() => OpenModal(student.student, false)">Предложи помощ</button>
                             }
                             else if (isAlreadyRequestedByMe && !isAlreadyRequestedByOther && !isAlreadySwapped)
                             {
                                 <p>Очаквай приемането на заявката ти</p>
-                                <button class="btn-warn" @onclick="() => CancelSwapRequest(swap)">Отмяна</button>
+                                <button class="btn-warn" @onclick="() => CancelSwapRequest(student.swap)">Отмяна</button>
                             }
                             else if (!isAlreadyRequestedByMe && isAlreadyRequestedByOther && !isAlreadySwapped)
                             {
                                     <div class="d-flex align-items-center flex-nowrap">
-                                        @if (swap.Student1Id == student.student.Id)
+                                        @if (student.swap.Student1Id == student.student.Id)
                                         {
-                                            <span class="text small fw-semibold me-2">Иска да помогнеш по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                            <span class="text small fw-semibold me-2">Иска да помогнеш по <strong>@student.swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
                                         }
                                         else
                                         {
-                                            <span class="text small fw-semibold me-2">Предлага ти помощ по <strong>@swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
+                                            <span class="text small fw-semibold me-2">Предлага ти помощ по <strong>@student.swap.SubjectForHelp.GetDisplayName().ToLower()</strong></span>
                                         }
                                     </div>
-                                    <button class="btn-success" disabled="@((swapRequestCount > 10 || swapActiveCount > 3) || (otherSwapRequestCount > 10 || otherSwapActiveCount > 3))" @onclick="() => ConfirmSwaps(swap)"><i class="bi bi-check fs-6"></i> Приеми</button>
-                                    <button class="btn-danger" @onclick="() => RejectSwaps(swap)"><i class="bi bi-x fs-6"></i> Отхвърли</button>
+                                    <button class="btn-success" @onclick="() => ConfirmSwaps(student.swap)"><i class="bi bi-check fs-6"></i> Приеми</button>
+                                    <button class="btn-danger" @onclick="() => RejectSwaps(student.swap)"><i class="bi bi-x fs-6"></i> Отхвърли</button>
                             }
                             else if (!isAlreadyRequestedByMe && !isAlreadyRequestedByOther && isAlreadySwapped)
                             {
-                                <button class="btn-primary" @onclick="() => GoToSwapDetails(swap)">Виж свапа</button>
+                                <button class="btn-primary" @onclick="() => GoToSwapDetails(student.swap)">Виж свапа</button>
                             }
                             <button class="btn-secondary" @onclick="() => ViewProfile(student.student)">Виж профила</button>
                         }
@@ -229,7 +221,7 @@ else
     private HashSet<SubjectEnum> selectedNeedsHelpWith = new();
 
     private List<Student> filteredStudents = new();
-    private List<(Student student, double compatibility, HashSet<SubjectEnum> commonCan, HashSet<SubjectEnum> commonNeeds)> filteredStudentsCompatib = new();
+    private List<(Student student, double compatibility, HashSet<SubjectEnum> commonCan, HashSet<SubjectEnum> commonNeeds, Swap swap)> filteredStudentsCompatib = new();
 
     private bool modalOpen = false;
     private Student modalTargetStudent;
@@ -263,12 +255,12 @@ else
             allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToHashSet();
             allGrades = Enumerable.Range(4, 9).ToHashSet();
 
-            AutoFilter();
-            ApplyFilter();
+            await AutoFilter();
+            await ApplyFilter();
         }
     }
 
-    private void ApplyFilter()
+    private async Task ApplyFilter()
     {
         filteredStudents = allStudents.Where(s =>
             ((selectedCanHelpWith.Count == 0 || s.CanHelpWith.Overlaps(selectedCanHelpWith)) ||
@@ -279,41 +271,42 @@ else
         foreach (var student in filteredStudents)
         {
             var compatibility = CalculateCompatibility(student, out HashSet<SubjectEnum> commonCan, out HashSet<SubjectEnum> commonNeeds);
-            filteredStudentsCompatib.Add((student, compatibility, commonCan, commonNeeds));
+            SwapModel? swap = await SwapManager.FindSwapByStudentsId(student.Id, currentStudent.Id);
+            filteredStudentsCompatib.Add((student, compatibility, commonCan, commonNeeds, swap));
         }
         filteredStudentsCompatib = filteredStudentsCompatib.OrderByDescending(s => s.compatibility).ToList();
     }
 
-    private void AutoFilter()
+    private async Task AutoFilter()
     {
         selectedCanHelpWith = currentStudent.NeedsHelpWith.ToHashSet();
         selectedNeedsHelpWith = currentStudent.CanHelpWith.ToHashSet();
         selectedGrades.Clear();
         selectedGrades.Add(currentStudent.Grade);
-        ApplyFilter();
+        await ApplyFilter();
     }
 
-    private void ResetFilters()
+    private async Task ResetFilters()
     {
         selectedGrades.Clear();
         selectedCanHelpWith.Clear();
         selectedNeedsHelpWith.Clear();
 
-        ApplyFilter();
+        await ApplyFilter();
     }
 
-    private void ToggleGrade(int grade, bool isChecked)
+    private async Task ToggleGrade(int grade, bool isChecked)
     {
         if (isChecked) selectedGrades.Add(grade);
         else selectedGrades.Remove(grade);
-        ApplyFilter();
+        await ApplyFilter();
     }
 
-    private void ToggleSubject(SubjectEnum subject, bool isChecked, HashSet<SubjectEnum> targetList)
+    private async Task ToggleSubject(SubjectEnum subject, bool isChecked, HashSet<SubjectEnum> targetList)
     {
         if (isChecked) targetList.Add(subject);
         else targetList.Remove(subject);
-        ApplyFilter();
+        await ApplyFilter();
     }
 
     private double CalculateCompatibility(Student student, out HashSet<SubjectEnum> commonCan, out HashSet<SubjectEnum> commonNeeds)
@@ -347,7 +340,7 @@ else
     }
     private void CancelSwapRequest(SwapModel swap)
     {
-        SwapManager.CancelMyRequest(swap);
+        SwapManager.DeleteSwapFromDb(swap);
     }
 
     private void ViewProfile(Student student)
@@ -374,11 +367,11 @@ else
 
         if (modalIsHelping)
         {
-            swap = SwapManager.RequestHelp(currentStudent, modalTargetStudent, data.subject.Value, currentStudent, data.comment);
+            swap = await SwapManager.RequestHelp(currentStudent, modalTargetStudent, data.subject.Value, currentStudent, data.comment);
         }
         else
         {
-            swap = SwapManager.OfferHelp(modalTargetStudent, currentStudent, data.subject.Value, currentStudent, data.comment);
+            swap = await SwapManager.OfferHelp(modalTargetStudent, currentStudent, data.subject.Value, currentStudent, data.comment);
         }
 
         if (swap != null)

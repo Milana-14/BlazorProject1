@@ -44,25 +44,25 @@
 
     protected override async Task OnInitializedAsync()
     {
-        UnreadChatsCount = ChatManager.GetUnreadChatsCount(CurrentStudentId);
-        SwapIncomesCount = SwapManager.GetNewSwapIncomesCount(CurrentStudentId);
+        UnreadChatsCount = await ChatManager.GetUnreadChatsCount(CurrentStudentId);
+        SwapIncomesCount = await SwapManager.GetNewSwapIncomesCount(CurrentStudentId);
 
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/chatHub"))
             .WithAutomaticReconnect()
             .Build();
 
-        hubConnection.On<Guid>("NewUnread", _ =>
+        hubConnection.On<Guid>("NewUnread", async _ =>
         {
-            UnreadChatsCount = ChatManager.GetUnreadChatsCount(CurrentStudentId);
+            UnreadChatsCount = await ChatManager.GetUnreadChatsCount(CurrentStudentId);
             InvokeAsync(StateHasChanged);
         });
 
-        hubConnection.On<Guid>("NewSwaps", _ =>
-{
-    SwapIncomesCount = SwapManager.GetNewSwapIncomesCount(CurrentStudentId);
-    InvokeAsync(StateHasChanged);
-});
+        hubConnection.On<Guid>("NewSwaps", async _ =>
+        {
+            SwapIncomesCount = await SwapManager.GetNewSwapIncomesCount(CurrentStudentId);
+            await InvokeAsync(StateHasChanged);
+        });
 
         await hubConnection.StartAsync();
     }

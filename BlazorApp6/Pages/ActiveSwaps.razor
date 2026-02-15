@@ -118,40 +118,40 @@
 
         if (currentStudent == null) return;
 
-        LoadData();
+        await LoadData();
     }
 
-    private void LoadData()
+    private async Task LoadData()
     {
-        List<SwapModel> swaps = SwapManager.FindSwapsByStudentId(currentStudent.Id);
+        List<SwapModel> swaps = await SwapManager.FindSwapsByStudentId(currentStudent.Id);
 
         pairs = swaps.Where(m => m.Status == SwapStatus.Confirmed || m.Status == SwapStatus.CompletedNotRated || m.Status == SwapStatus.PendingCompleted).ToList();
         incomingSwaps = swaps.Where(m => m.RequesterId != currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
         outgoingSwaps = swaps.Where(m => m.RequesterId == currentStudent.Id && m.Status == SwapStatus.Pending).ToList();
     }
 
-    private void ConfirmSwap(SwapModel swap)
+    private async Task ConfirmSwap(SwapModel swap)
     {
         SwapManager.ConfirmSwap(swap);
-        LoadData();
+        await LoadData();
     }
 
-    private void RejectSwap(SwapModel swap)
+    private async Task RejectSwap(SwapModel swap)
     {
         SwapManager.RejectSwap(swap);
-        LoadData();
+        await LoadData();
     }
 
-    private void CancelSwapRequest(SwapModel swap)
+    private async Task CancelSwapRequest(SwapModel swap)
     {
-        SwapManager.CancelMyRequest(swap);
-        LoadData();
+        SwapManager.DeleteSwapFromDb(swap);
+        await LoadData();
     }
 
-    private void CompleteSwap(SwapModel swap)
+    private async Task CompleteSwap(SwapModel swap)
     {
         SwapManager.CompleteSwap(swap);
-        LoadData();
+        await LoadData();
     }
 
     private void GoToSwap(Guid Id)

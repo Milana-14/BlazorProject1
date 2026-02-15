@@ -125,7 +125,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        swap = SwapManager.FindHistorySwapById(SwapId);
+        swap = await SwapManager.FindHistorySwapById(SwapId);
         if (swap == null) return;
 
         var state = await AuthStateProvider.GetAuthenticationStateAsync();

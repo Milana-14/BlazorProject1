@@ -2,75 +2,154 @@
 using BlazorApp6.Services;
 using Microsoft.AspNetCore.SignalR;
 using Npgsql;
+using System.Threading.Tasks;
 
 namespace BlazorApp6.Services
 {
     public class SwapManager // За управление на матчовете межд учениците
     {
         private readonly string connectionString;
-        private List<Swap> swaps = new List<Swap>(); // Само за свапове със статус Pending, Confirmed, PendingCompleted или CompletedNotRated
-        private List<Swap> history = new List<Swap>(); // Само за свапове със статус Rejected, Completed или Canceled (отменените свапове изобщо не се записват - няма смис)
         public string? DbError { get; private set; }
         public SwapManager(IConfiguration config)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
-
-            if (!LoadSwapsFromDb(out List<Swap> loadedMatchesFromDb))
-            {
-                DbError = "Зареждането на данните за сваповете не беше успешно";
-                return;
-            }
-            swaps = loadedMatchesFromDb;
-
-            if (!LoadHistorySwapsFromDb(out List<Swap> historyFromDb))
-            {
-                DbError = "Зареждането на данните за историята на сваповете не беше успешно";
-                return;
-            }
-            history = historyFromDb;
         }
 
-        public Swap? RequestHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester, string? comment)
+        public async Task<Swap?> RequestHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester, string? comment, CancellationToken ct = default)
         {
-            if (swaps.FirstOrDefault(m =>
-                (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
-                (m.Student1Id == helpingSt.Id && m.Student2Id == requestingSt.Id)) != null) return null;
+            using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+            await using var tx = await connection.BeginTransactionAsync(ct);
 
-            Swap swap = new Swap
+            try
             {
-                Student1Id = requestingSt.Id,
-                Student2Id = helpingSt.Id,
-                RequesterId = requester.Id,
-                SubjectForHelp = subject,
-                DateRequested = DateTime.UtcNow,
-                Status = SwapStatus.Pending,
-                Comment = comment
-            };
+                const string checkSql = @"SELECT 1
+                                          FROM ""Swaps""
+                                          WHERE (""Student1Id"" = @s1 AND ""Student2Id"" = @s2)
+                                          OR (""Student1Id"" = @s2 AND ""Student2Id"" = @s1)
+                                          LIMIT 1;";
 
-            swaps.Add(swap);
-            SaveSwapToDb(swap);
-            return swap;
+                await using (var checkCmd = new NpgsqlCommand(checkSql, connection, tx))
+                {
+                    checkCmd.Parameters.AddWithValue("@s1", requestingSt.Id);
+                    checkCmd.Parameters.AddWithValue("@s2", helpingSt.Id);
+
+                    if (await checkCmd.ExecuteScalarAsync(ct) != null)
+                    {
+                        await tx.RollbackAsync(ct);
+                        return null;
+                    }
+                }
+
+                var newSwap = new Swap
+                {
+                    Id = Guid.NewGuid(),
+                    Student1Id = requestingSt.Id,
+                    Student2Id = helpingSt.Id,
+                    RequesterId = requester.Id,
+                    SubjectForHelp = subject,
+                    DateRequested = DateTime.UtcNow,
+                    Status = SwapStatus.Pending,
+                    Comment = comment
+                };
+
+                const string insertSql = @"INSERT INTO ""Swaps""
+                                        (""Id"", ""Student1Id"", ""Student2Id"", ""Status"",
+                                        ""DateRequested"", ""SubjectForHelp"", ""RequesterId"", ""Comment"")
+                                        VALUES (@Id, @Student1Id, @Student2Id, @Status,
+                                        @DateRequested, @SubjectForHelp, @RequesterId, @Comment);";
+
+                await using (var insertCmd = new NpgsqlCommand(insertSql, connection, tx))
+                {
+                    insertCmd.Parameters.AddWithValue("@Id", newSwap.Id);
+                    insertCmd.Parameters.AddWithValue("@Student1Id", newSwap.Student1Id);
+                    insertCmd.Parameters.AddWithValue("@Student2Id", newSwap.Student2Id);
+                    insertCmd.Parameters.AddWithValue("@Status", (int)newSwap.Status);
+                    insertCmd.Parameters.AddWithValue("@DateRequested", newSwap.DateRequested);
+                    insertCmd.Parameters.AddWithValue("@SubjectForHelp", (int)newSwap.SubjectForHelp);
+                    insertCmd.Parameters.AddWithValue("@RequesterId", newSwap.RequesterId);
+                    insertCmd.Parameters.AddWithValue("@Comment", (object?)newSwap.Comment ?? DBNull.Value);
+
+                    await insertCmd.ExecuteNonQueryAsync(ct);
+                }
+
+                await tx.CommitAsync(ct);
+                return newSwap;
+            }
+            catch
+            {
+                await tx.RollbackAsync(ct);
+                throw;
+            }
         }
-        public Swap? OfferHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester, string? comment)
+
+        public async Task<Swap?> OfferHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester, string? comment, CancellationToken ct = default)
         {
-            if (swaps.FirstOrDefault(m =>
-                (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
-                (m.Student1Id == helpingSt.Id && m.Student2Id == requestingSt.Id)) != null) return null;
+            using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+            await using var tx = await connection.BeginTransactionAsync(ct);
 
-            Swap swap = new Swap
+            try
             {
-                Student1Id = requestingSt.Id,
-                Student2Id = helpingSt.Id,
-                RequesterId = requester.Id,
-                SubjectForHelp = subject,
-                DateRequested = DateTime.UtcNow,
-                Status = SwapStatus.Pending,
-                Comment = comment
-            };
-            swaps.Add(swap);
-            SaveSwapToDb(swap);
-            return swap;
+                const string checkSql = @"SELECT 1
+                                          FROM ""Swaps""
+                                          WHERE (""Student1Id"" = @s1 AND ""Student2Id"" = @s2)
+                                          OR (""Student1Id"" = @s2 AND ""Student2Id"" = @s1)
+                                          LIMIT 1;";
+                await using (var checkCmd = new NpgsqlCommand(checkSql, connection, tx))
+                {
+                    checkCmd.Parameters.AddWithValue("@s1", requestingSt.Id);
+                    checkCmd.Parameters.AddWithValue("@s2", helpingSt.Id);
+
+                    if (await checkCmd.ExecuteScalarAsync(ct) != null)
+                    {
+                        await tx.RollbackAsync(ct);
+                        return null;
+                    }
+
+                    var newSwap = new Swap
+                    {
+                        Id = Guid.NewGuid(),
+                        Student1Id = requestingSt.Id,
+                        Student2Id = helpingSt.Id,
+                        RequesterId = requester.Id,
+                        SubjectForHelp = subject,
+                        DateRequested = DateTime.UtcNow,
+                        Status = SwapStatus.Pending,
+                        Comment = comment
+                    };
+
+                    var insertSql = @"INSERT INTO ""Swaps""
+                                        (""Id"", ""Student1Id"", ""Student2Id"", ""Status"",
+                                        ""DateRequested"", ""SubjectForHelp"", ""RequesterId"", ""Comment"")
+                                        VALUES (@Id, @Student1Id, @Student2Id, @Status,
+                                        @DateRequested, @SubjectForHelp, @RequesterId, @Comment);";
+
+                    await using (var insertCmd = new NpgsqlCommand(insertSql, connection, tx))
+                    {
+                        insertCmd.Parameters.AddWithValue("@Id", newSwap.Id);
+                        insertCmd.Parameters.AddWithValue("@Student1Id", newSwap.Student1Id);
+                        insertCmd.Parameters.AddWithValue("@Student2Id", newSwap.Student2Id);
+                        insertCmd.Parameters.AddWithValue("@Status", (int)newSwap.Status);
+                        insertCmd.Parameters.AddWithValue("@DateRequested", newSwap.DateRequested);
+                        insertCmd.Parameters.AddWithValue("@SubjectForHelp", (int)newSwap.SubjectForHelp);
+                        insertCmd.Parameters.AddWithValue("@RequesterId", newSwap.RequesterId);
+                        insertCmd.Parameters.AddWithValue("@Comment", (object?)newSwap.Comment ?? DBNull.Value);
+
+                        await insertCmd.ExecuteNonQueryAsync(ct);
+                    }
+
+                    await tx.CommitAsync(ct);
+                    return newSwap;
+                }
+            }
+            catch
+            {
+                await tx.RollbackAsync(ct);
+                throw;
+            }
         }
+
         public void ConfirmSwap(Swap swap)
         {
             swap.Confirm();
@@ -79,17 +158,7 @@ namespace BlazorApp6.Services
         public void RejectSwap(Swap swap)
         {
             swap.Reject();
-            swaps.Remove(swap);
-
-            if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
-
             UpdateSwapInDb(swap);
-        }
-
-        public void CancelMyRequest(Swap swap)
-        {
-            swaps.Remove(swap);
-            DeleteSwapFromDb(swap);
         }
 
         public void ProposeCompletingSwap(Swap swap, Guid proposerId)
@@ -105,189 +174,448 @@ namespace BlazorApp6.Services
         public void RejectCompletion(Swap swap)
         {
             swap.RejectCompletion();
-            swaps.Remove(swap);
-            if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
             UpdateSwapInDb(swap);
         }
         public void CompleteSwap(Swap swap) // Този метод се повиква в RateHelpManager след оценяване на помощта
         {
-            swaps.Remove(swap);
             swap.CompleteSwap();
-
-            if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
-
             UpdateSwapInDb(swap);
         }
 
 
-        public List<Swap> FindSwapsByStudentId(Guid studentId)
+        public async Task<List<Swap>> FindSwapsByStudentId(Guid studentId, CancellationToken ct = default)
         {
-            return swaps.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();
-        }
-        public Swap? FindSwapByStudentsId(Guid student1Id, Guid student2Id)
-        {
-            return swaps.Where(m => (m.Student1Id == student1Id && m.Student2Id == student2Id) || (m.Student1Id == student2Id && m.Student2Id == student1Id)).FirstOrDefault();
-        }
-        public List<Swap> FindHistorySwapsByStudentId(Guid studentId)
-        {
-            return history.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();
-        }
-        public Swap? FindHistorySwapByStudentsId(Guid student1Id, Guid student2Id)
-        {
-            return history.Where(m => (m.Student1Id == student1Id && m.Student2Id == student2Id) || (m.Student1Id == student2Id && m.Student2Id == student1Id)).FirstOrDefault();
-        }
-        public Swap? FindSwapById(Guid id)
-        {
-            return swaps.FirstOrDefault(m => m.Id == id);
-        }
-        public Swap? FindHistorySwapById(Guid id)
-        {
-            return history.FirstOrDefault(m => m.Id == id);
-        }
-        public List<Swap> GetAllSwaps()
-        {
-            return swaps;
-        }
-        public List<Swap> GetAllHistory()
-        {
-            return history;
+            var foundSwaps = new List<Swap>();
+
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+
+            const string sql = @"SELECT ""Id"", ""Student1Id"", ""Student2Id"", ""Status"",
+               ""DateRequested"", ""DateConfirmed"",
+               ""SubjectForHelp"", ""RequesterId"",
+               ""CompletionProposedByStudentId"",
+               ""DateCompleted"", ""Comment""
+        FROM ""Swaps""
+        WHERE (""Student1Id"" = @studentId OR ""Student2Id"" = @studentId) AND ""Status"" NOT IN (2,5)
+        ORDER BY ""DateRequested"" DESC;";
+
+            await using (var cmd = new NpgsqlCommand(sql, connection))
+            {
+                cmd.Parameters.Add("@studentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = studentId;
+                await cmd.PrepareAsync(ct);
+                await using var reader = await cmd.ExecuteReaderAsync(ct);
+
+                while (await reader.ReadAsync(ct))
+                {
+                    var swap = new Swap
+                    {
+                        Id = reader.GetGuid(0),
+                        Student1Id = reader.GetGuid(1),
+                        Student2Id = reader.GetGuid(2),
+                        Status = (SwapStatus)reader.GetInt32(3),
+                        DateRequested = reader.GetDateTime(4),
+                        DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                        SubjectForHelp = (SubjectEnum)reader.GetInt32(6),
+                        RequesterId = reader.GetGuid(7),
+                        CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                        DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                        Comment = reader.IsDBNull(10) ? null : reader.GetString(10)
+                    };
+                    foundSwaps.Add(swap);
+                }
+            }
+            return foundSwaps;
         }
 
-        public int GetNewSwapIncomesCount(Guid studentId)
+        public async Task<Swap?> FindSwapByStudentsId(Guid student1Id, Guid student2Id, CancellationToken ct = default)
         {
-            return swaps.Count(s => s.Status == SwapStatus.Pending && 
-                                    s.RequesterId != studentId &&
-                                    (s.Student1Id == studentId || s.Student2Id == studentId));
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+
+            const string sql = @"SELECT ""Id"", ""Student1Id"", ""Student2Id"", ""Status"",
+               ""DateRequested"", ""DateConfirmed"",
+               ""SubjectForHelp"", ""RequesterId"",
+               ""CompletionProposedByStudentId"",
+               ""DateCompleted"", ""Comment""
+        FROM ""Swaps""
+        WHERE ((""Student1Id"" = @studentId AND ""Student2Id"" = @student2Id)
+            OR (""Student1Id"" = @student2Id AND ""Student2Id"" = @studentId))
+            AND ""Status"" NOT IN (2,5)";
+
+            await using (var cmd = new NpgsqlCommand(sql, connection))
+            {
+                cmd.Parameters.Add("@studentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = student1Id;
+                cmd.Parameters.Add("@student2Id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = student2Id;
+                await cmd.PrepareAsync(ct);
+                await using var reader = await cmd.ExecuteReaderAsync(ct);
+
+                if (!await reader.ReadAsync(ct))
+                    return null;
+
+                var swap = new Swap
+                {
+                    Id = reader.GetGuid(0),
+                    Student1Id = reader.GetGuid(1),
+                    Student2Id = reader.GetGuid(2),
+                    Status = (SwapStatus)reader.GetInt32(3),
+                    DateRequested = reader.GetDateTime(4),
+                    DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                    SubjectForHelp = (SubjectEnum)reader.GetInt32(6),
+                    RequesterId = reader.GetGuid(7),
+                    CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                    DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                    Comment = reader.IsDBNull(10) ? null : reader.GetString(10)
+                };
+                return swap;
+            }
         }
 
-
-
-        // Работа с база данни
-        public bool LoadSwapsFromDb(out List<Swap> loadedSwapsFromDb)
+        public async Task<List<Swap>> FindHistorySwapsByStudentId(Guid studentId, CancellationToken ct = default)
         {
-            loadedSwapsFromDb = new List<Swap>();
+            var foundSwaps = new List<Swap>();
+
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+
+            const string sql = @"SELECT ""Id"", ""Student1Id"", ""Student2Id"", ""Status"",
+               ""DateRequested"", ""DateConfirmed"",
+               ""SubjectForHelp"", ""RequesterId"",
+               ""CompletionProposedByStudentId"",
+               ""DateCompleted"", ""Comment""
+        FROM ""Swaps""
+        WHERE  (""Student1Id"" = @studentId OR ""Student2Id"" = @studentId) AND ""Status"" IN (2,5)
+        ORDER BY ""DateRequested"" DESC;";
+
+            await using (var cmd = new NpgsqlCommand(sql, connection))
+            {
+                cmd.Parameters.Add("@studentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = studentId;
+                await cmd.PrepareAsync(ct);
+                await using var reader = await cmd.ExecuteReaderAsync(ct);
+
+                while (await reader.ReadAsync(ct))
+                {
+                    var swap = new Swap
+                    {
+                        Id = reader.GetGuid(0),
+                        Student1Id = reader.GetGuid(1),
+                        Student2Id = reader.GetGuid(2),
+                        Status = (SwapStatus)reader.GetInt32(3),
+                        DateRequested = reader.GetDateTime(4),
+                        DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                        SubjectForHelp = (SubjectEnum)reader.GetInt32(6),
+                        RequesterId = reader.GetGuid(7),
+                        CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                        DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                        Comment = reader.IsDBNull(10) ? null : reader.GetString(10)
+                    };
+                    foundSwaps.Add(swap);
+                }
+            }
+            return foundSwaps;
+        }
+
+        public async Task<Swap?> FindHistorySwapByStudentsId(Guid student1Id, Guid student2Id, CancellationToken ct = default)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+
+            const string sql = @"SELECT ""Id"", ""Student1Id"", ""Student2Id"", ""Status"",
+               ""DateRequested"", ""DateConfirmed"",
+               ""SubjectForHelp"", ""RequesterId"",
+               ""CompletionProposedByStudentId"",
+               ""DateCompleted"", ""Comment""
+        FROM ""Swaps""
+        WHERE ((""Student1Id"" = @studentId AND ""Student2Id"" = @student2Id)
+            OR (""Student1Id"" = @student2Id AND ""Student2Id"" = @studentId))
+            AND ""Status"" IN (2,5)";
+
+            await using (var cmd = new NpgsqlCommand(sql, connection))
+            {
+                cmd.Parameters.Add("@studentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = student1Id;
+                cmd.Parameters.Add("@student2Id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = student2Id;
+                await cmd.PrepareAsync(ct);
+                await using var reader = await cmd.ExecuteReaderAsync(ct);
+
+                if (!await reader.ReadAsync(ct))
+                    return null;
+
+                var swap = new Swap
+                {
+                    Id = reader.GetGuid(0),
+                    Student1Id = reader.GetGuid(1),
+                    Student2Id = reader.GetGuid(2),
+                    Status = (SwapStatus)reader.GetInt32(3),
+                    DateRequested = reader.GetDateTime(4),
+                    DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                    SubjectForHelp = (SubjectEnum)reader.GetInt32(6),
+                    RequesterId = reader.GetGuid(7),
+                    CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                    DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                    Comment = reader.IsDBNull(10) ? null : reader.GetString(10)
+                };
+                return swap;
+            }
+        }
+
+        public async Task<Swap?> FindSwapById(Guid id, CancellationToken ct = default)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+
+            const string sql = @"SELECT ""Id"", ""Student1Id"", ""Student2Id"", ""Status"",
+               ""DateRequested"", ""DateConfirmed"",
+               ""SubjectForHelp"", ""RequesterId"",
+               ""CompletionProposedByStudentId"",
+               ""DateCompleted"", ""Comment""
+        FROM ""Swaps""
+        WHERE ""Id"" = @id AND ""Status"" NOT IN (2,5)";
+
+            await using (var cmd = new NpgsqlCommand(sql, connection))
+            {
+                cmd.Parameters.Add("@id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = id;
+                await cmd.PrepareAsync(ct);
+                await using var reader = await cmd.ExecuteReaderAsync(ct);
+
+                if (!await reader.ReadAsync(ct))
+                    return null;
+
+                var swap = new Swap
+                {
+                    Id = reader.GetGuid(0),
+                    Student1Id = reader.GetGuid(1),
+                    Student2Id = reader.GetGuid(2),
+                    Status = (SwapStatus)reader.GetInt32(3),
+                    DateRequested = reader.GetDateTime(4),
+                    DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                    SubjectForHelp = (SubjectEnum)reader.GetInt32(6),
+                    RequesterId = reader.GetGuid(7),
+                    CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                    DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                    Comment = reader.IsDBNull(10) ? null : reader.GetString(10)
+                };
+                return swap;
+            }
+        }
+
+        public async Task<Swap?> FindHistorySwapById(Guid id, CancellationToken ct = default)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+
+            const string sql = @"SELECT ""Id"", ""Student1Id"", ""Student2Id"", ""Status"",
+               ""DateRequested"", ""DateConfirmed"",
+               ""SubjectForHelp"", ""RequesterId"",
+               ""CompletionProposedByStudentId"",
+               ""DateCompleted"", ""Comment""
+        FROM ""Swaps""
+        WHERE ""Id"" = @id AND ""Status"" IN (2,5)";
+
+            await using (var cmd = new NpgsqlCommand(sql, connection))
+            {
+                cmd.Parameters.Add("@id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = id;
+                await cmd.PrepareAsync(ct);
+                await using var reader = await cmd.ExecuteReaderAsync(ct);
+
+                var swap = new Swap
+                {
+                    Id = reader.GetGuid(0),
+                    Student1Id = reader.GetGuid(1),
+                    Student2Id = reader.GetGuid(2),
+                    Status = (SwapStatus)reader.GetInt32(3),
+                    DateRequested = reader.GetDateTime(4),
+                    DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                    SubjectForHelp = (SubjectEnum)reader.GetInt32(6),
+                    RequesterId = reader.GetGuid(7),
+                    CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                    DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                    Comment = reader.IsDBNull(10) ? null : reader.GetString(10)
+                };
+                return swap;
+            }
+        }
+
+        public async Task<int> GetNewSwapIncomesCount(Guid studentId, CancellationToken ct = default)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+
+            const string sql = @"SELECT COUNT(*)
+                                        FROM ""Swaps""
+                                        WHERE ""Status"" = 0
+                                        AND ""RequesterId"" != @studentId
+                                        AND (""Student1Id"" = @studentId OR ""Student2Id"" = @studentId);";
+
+            await using var cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@studentId", studentId);
+            var result = await cmd.ExecuteScalarAsync(ct);
+
+            return Convert.ToInt32(result);
+        }
+
+        public async Task<List<Swap>> LoadSwapsFromDb(CancellationToken ct = default)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
 
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
-                connection.Open();
+                List<Swap> loadedSwapsFromDb = new();
 
-                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Swaps"" WHERE ""Status"" = 0 OR ""Status"" = 1 OR ""Status"" = 3 OR ""Status"" = 4", connection);
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                await using (var cmd = new NpgsqlCommand(@"SELECT * FROM ""Swaps"" WHERE ""Status"" IN (0, 1, 3, 4)", connection))
                 {
+                    await using var reader = await cmd.ExecuteReaderAsync(ct);
+                    while (await reader.ReadAsync())
+                    {
+                        var swap = new Swap
+                        {
+                            Id = reader.GetGuid(0),
+                            Student1Id = reader.GetGuid(1),
+                            Student2Id = reader.GetGuid(2),
+                            Status = (SwapStatus)reader.GetInt32(3),
+                            DateRequested = reader.GetDateTime(4),
+                            DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                            SubjectForHelp = (SubjectEnum)reader.GetInt32(6),
+                            RequesterId = reader.GetGuid(7),
+                            CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                            DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                            Comment = reader.IsDBNull(10) ? null : reader.GetString(10)
+                        };
 
-
-                    Swap swap = new Swap();
-                    swap.Id = reader.GetGuid(0);
-                    swap.Student1Id = reader.GetGuid(1);
-                    swap.Student2Id = reader.GetGuid(2);
-                    swap.Status = (SwapStatus)reader.GetInt32(3);
-                    swap.DateRequested = reader.GetDateTime(4);
-                    swap.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
-                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(6);
-                    swap.RequesterId = reader.GetGuid(7);
-                    swap.CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8);
-                    swap.DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9);
-                    swap.Comment = reader.IsDBNull(10) ? null : reader.GetString(10);
-
-                    loadedSwapsFromDb.Add(swap);
+                        loadedSwapsFromDb.Add(swap);
+                    }
                 }
-                return true;
+                return loadedSwapsFromDb;
             }
             catch
             {
-                return false;
+                throw;
             }
         }
-        public bool LoadHistorySwapsFromDb(out List<Swap> historyFromDb)
+
+        public async Task<List<Swap>> LoadHistorySwapsFromDb(CancellationToken ct = default)
         {
-            historyFromDb = new List<Swap>();
+            using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+
+            List<Swap> historyFromDb = new();
 
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
-                connection.Open();
-
-                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Swaps"" WHERE ""Status"" = 2 OR ""Status"" = 5", connection);
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                await using (var cmd = new NpgsqlCommand(@"SELECT * FROM ""Swaps"" WHERE ""Status"" IN (2, 5)", connection))
                 {
-                    Swap swap = new Swap();
-                    swap.Id = reader.GetGuid(0);
-                    swap.Student1Id = reader.GetGuid(1);
-                    swap.Student2Id = reader.GetGuid(2);
-                    swap.Status = (SwapStatus)reader.GetInt32(3);
-                    swap.DateRequested = reader.GetDateTime(4);
-                    swap.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
-                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(6);
-                    swap.RequesterId = reader.GetGuid(7);
-                    swap.CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8);
-                    swap.DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9);
-                    swap.Comment = reader.IsDBNull(10) ? null : reader.GetString(10);
+                    await using var reader = await cmd.ExecuteReaderAsync(ct);
+                    while (await reader.ReadAsync())
+                    {
+                        var swap = new Swap
+                        {
+                            Id = reader.GetGuid(0),
+                            Student1Id = reader.GetGuid(1),
+                            Student2Id = reader.GetGuid(2),
+                            Status = (SwapStatus)reader.GetInt32(3),
+                            DateRequested = reader.GetDateTime(4),
+                            DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                            SubjectForHelp = (SubjectEnum)reader.GetInt32(6),
+                            RequesterId = reader.GetGuid(7),
+                            CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8),
+                            DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                            Comment = reader.IsDBNull(10) ? null : reader.GetString(10)
+                        };
 
-                    historyFromDb.Add(swap);
+                        historyFromDb.Add(swap);
+                    }
                 }
-                return true;
+                return historyFromDb;
             }
             catch
             {
-                return false;
+                throw;
             }
         }
-        public void SaveSwapToDb(Swap swap)
-        {
-            using (var connection = new NpgsqlConnection(connectionString))
-            {
-                connection.Open();
 
-                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"", ""SubjectForHelp"", ""RequesterId"", ""CompletionProposedByStudentId"", ""DateCompleted"", ""Comment"") 
+        public async Task SaveSwapToDb(Swap swap, CancellationToken ct = default)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+            await using var tx = await connection.BeginTransactionAsync(ct);
+
+            try
+            {
+                string insertSql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"", ""SubjectForHelp"", ""RequesterId"", ""CompletionProposedByStudentId"", ""DateCompleted"", ""Comment"") 
                                 VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed, @SubjectForHelp, @RequesterId, @CompletionProposedByStudentId, @DateCompleted, @Comment)";
 
+                await using (var cmd = new NpgsqlCommand(insertSql, connection, tx))
+                {
+                    cmd.Parameters.AddWithValue("@Id", swap.Id);
+                    cmd.Parameters.AddWithValue("@Student1Id", swap.Student1Id);
+                    cmd.Parameters.AddWithValue("@Student2Id", swap.Student2Id);
+                    cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
+                    cmd.Parameters.AddWithValue("@DateRequested", swap.DateRequested);
+                    cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@SubjectForHelp", (int)swap.SubjectForHelp);
+                    cmd.Parameters.AddWithValue("@RequesterId", swap.RequesterId);
+                    cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DateCompleted", (object?)swap.DateCompleted ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Comment", (object?)swap.Comment ?? DBNull.Value);
 
-                using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
-
-                cmd.Parameters.AddWithValue("@Id", swap.Id);
-                cmd.Parameters.AddWithValue("@Student1Id", swap.Student1Id);
-                cmd.Parameters.AddWithValue("@Student2Id", swap.Student2Id);
-                cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
-                cmd.Parameters.AddWithValue("@DateRequested", swap.DateRequested);
-                cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@SubjectForHelp", (int)swap.SubjectForHelp);
-                cmd.Parameters.AddWithValue("@RequesterId", swap.RequesterId);
-                cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@DateCompleted", (object?)swap.DateCompleted ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Comment", (object?)swap.Comment ?? DBNull.Value);
-
-                cmd.ExecuteNonQuery();
+                    await cmd.ExecuteNonQueryAsync(ct);
+                }
+                await tx.CommitAsync(ct);
+            }
+            catch
+            {
+                await tx.RollbackAsync(ct);
+                throw;
             }
         }
-        public void UpdateSwapInDb(Swap swap)
+        public async Task UpdateSwapInDb(Swap swap, CancellationToken ct = default)
         {
             using var connection = new NpgsqlConnection(connectionString);
-            connection.Open();
+            await connection.OpenAsync(ct);
+            await using var tx = await connection.BeginTransactionAsync(ct);
 
-            string sql = @"UPDATE ""Swaps""
+            try
+            {
+                string sql = @"UPDATE ""Swaps""
                             SET ""Status"" = @Status, ""DateConfirmed"" = @DateConfirmed, ""CompletionProposedByStudentId"" = @CompletionProposedByStudentId, ""DateCompleted"" = @DateCompleted WHERE ""Id""=@Id";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+                await using (var cmd = new NpgsqlCommand(sql, connection, tx))
+                {
+                    cmd.Parameters.AddWithValue("@Id", swap.Id);
+                    cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
+                    cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DateCompleted", (object?)swap.DateCompleted ?? DBNull.Value);
 
-            cmd.Parameters.AddWithValue("@Id", swap.Id);
-            cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
-            cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@DateCompleted", (object?)swap.DateCompleted ?? DBNull.Value);
-
-            cmd.ExecuteNonQuery();
+                    await cmd.ExecuteNonQueryAsync(ct);
+                }
+                await tx.CommitAsync(ct);
+            }
+            catch
+            {
+                await tx.RollbackAsync(ct);
+                throw;
+            }
         }
-        public void DeleteSwapFromDb(Swap swap)
+        public async Task DeleteSwapFromDb(Swap swap, CancellationToken ct = default)
         {
             using var connection = new NpgsqlConnection(connectionString);
-            connection.Open();
+            await connection.OpenAsync(ct);
+            await using var tx = await connection.BeginTransactionAsync(ct);
 
-            using var cmd = new NpgsqlCommand(@"DELETE FROM ""Swaps"" WHERE ""Id""=@Id", connection);
-            cmd.Parameters.AddWithValue("@Id", swap.Id);
-            cmd.ExecuteNonQuery();
+            try
+            {
+                await using (var cmd = new NpgsqlCommand(@"DELETE FROM ""Swaps"" WHERE ""Id""=@Id", connection, tx))
+                {
+                    cmd.Parameters.AddWithValue("@Id", swap.Id);
+                    await cmd.ExecuteNonQueryAsync(ct);
+                }
+                await tx.CommitAsync(ct);
+            }
+            catch
+            {
+                await tx.RollbackAsync(ct);
+                throw;
+            }
         }
     }
 

@@ -63,7 +63,7 @@ else
                         <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="() => ViewProfile(otherStudent)">Виж профила</span></div>
                         @if (swap.Status == SwapStatus.Confirmed)
                         {
-                            <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="ProposeCompletion">Предложи завършване</span></div>
+                            <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="async () => await ProposeCompletion()">Предложи завършване</span></div>
                         }
                         <div class="chat-info-action" @onclick="() => ReportPartner(otherStudent)"><i class="bi bi-x-circle"></i><span>Репортни</span></div>
                     </div>
@@ -209,8 +209,8 @@ else
 
                         <div class="swap-card-actions">
                             <div class="buttons-rate-container">
-                                <button class="btn-danger" @onclick="AcceptCompletion">Завърши</button>
-                                <button class="btn-secondary" @onclick="RejectCompletion">Продължи</button>
+                                <button class="btn-danger" @onclick="async () => await AcceptCompletion()">Завърши</button>
+                                <button class="btn-secondary" @onclick="async () => RejectCompletion()">Продължи</button>
                             </div>
                         </div>
                     }
@@ -220,7 +220,7 @@ else
                         <div class="swap-card-sub" style="text-align: center; font-size: 16px;">Очаквайте потвърждение от @otherStudent.FirstName.</div>
 
                         <div class="swap-card-actions">
-                            <button class="btn-secondary" @onclick="CancelProposeCompletion">Отмяна</button>
+                            <button class="btn-secondary" @onclick="async () => await CancelProposeCompletion()">Отмяна</button>
                         </div>
                     }
                 </div>
@@ -243,7 +243,7 @@ else
 
                     <textarea class="rate-textarea" placeholder="Добави коментар" @bind="ratingComment"></textarea>
 
-                    <button class="rate-send-btn" @onclick="RateStudentsHelp" disabled="@(selectedRating == null || string.IsNullOrEmpty(ratingComment))">
+                    <button class="rate-send-btn" @onclick="async () => await RateStudentsHelp()" disabled="@(selectedRating == null || string.IsNullOrEmpty(ratingComment))">
                         Изпрати
                     </button>
                 </div>
@@ -280,7 +280,7 @@ else
                 <InputText @bind-Value="CurrentInputText" placeholder="Напиши съобщение..." @onkeydown="HandleSendKeydown" />
                 <button class="btn-@(IsEditing ? "check" : "send")"
                         disabled="@(IsEditing ? string.IsNullOrWhiteSpace(editingText) : string.IsNullOrWhiteSpace(newMessage))"
-                        @onclick="@(IsEditing? SaveEditedMessage : SendMessage)">
+                        @onclick="@(IsEditing? async () => await SaveEditedMessage() : async () => await SendMessage())">
                     <i class="bi bi-@(IsEditing ? "check-lg" : "send")"></i>
                 </button>
             </div>
@@ -295,7 +295,7 @@ else
                 @if (selectedMessage != null && selectedMessage.SenderId == currentStudent.Id)
                 {
                     <button @onclick="EditMessage" class="ctx-btn"><i class="bi bi-pencil-fill"></i> Редактирай</button>
-                    <button @onclick="DeleteMessage" class="ctx-btn"><i class="bi bi-trash-fill"></i> Изтрий съобщение</button>
+                    <button @onclick="async () => await DeleteMessage()" class="ctx-btn"><i class="bi bi-trash-fill"></i> Изтрий съобщение</button>
                 }
             </div>
         }
@@ -367,7 +367,7 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        swap = SwapManager.FindSwapById(swapId);
+        swap = await SwapManager.FindSwapById(swapId);
         if (swap == null) { errorMessage = "Свапът не е намерен."; return; }
 
         var state = await AuthStateProvider.GetAuthenticationStateAsync();

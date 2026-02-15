@@ -159,10 +159,10 @@ namespace BlazorApp6.Services
 
             return Convert.ToInt32(cmd.ExecuteScalar());
         }
-        public int GetUnreadChatsCount(Guid currentStudentId)
+        public async Task<int> GetUnreadChatsCount(Guid currentStudentId)
         {
-            return swapManager.FindSwapsByStudentId(currentStudentId)
-                .Count(swap => GetUnreadCount(swap.Id, currentStudentId) > 0);
+            List<Swap> swaps = await swapManager.FindSwapsByStudentId(currentStudentId);
+            return swaps.Count(swap => GetUnreadCount(swap.Id, currentStudentId) > 0);
         }
     }
 
@@ -194,7 +194,7 @@ namespace BlazorApp6.Services
 
         public async Task JoinChat(UserConnection connection)
         {
-            var swap = swapManager.FindSwapById(connection.SwapId);
+            var swap = await swapManager.FindSwapById(connection.SwapId);
             if (swap.Student1Id != connection.Student.Id && swap.Student2Id != connection.Student.Id)
             {
                 throw new HubException("Нямаш достъп до този чат. Наявно ти не състоиш в дадения свап.");
@@ -241,7 +241,7 @@ namespace BlazorApp6.Services
             var messages = chatManager.GetMessagesFromDb(connection.SwapId);
             var msg = messages.FirstOrDefault(m => m.Id == messageId);
 
-            var swap = swapManager.FindSwapById(connection.SwapId);
+            var swap = await swapManager.FindSwapById(connection.SwapId);
             if (swap.Student1Id != connection.Student.Id && swap.Student2Id != connection.Student.Id)
             {
                 throw new HubException("Нямаш достъп до този чат.");
@@ -281,7 +281,7 @@ namespace BlazorApp6.Services
 
         public async Task ProposeCompletion(Guid swapId, Guid studentId)
         {
-            var swap = swapManager.FindSwapById(swapId);
+            var swap = await swapManager.FindSwapById(swapId);
             if (swap == null) return;
             if (swap.Student1Id != studentId && swap.Student2Id != studentId)
                 throw new HubException("Нямаш право");
@@ -293,7 +293,7 @@ namespace BlazorApp6.Services
 
         public async Task AcceptCompletion(Guid swapId, Guid studentId)
         {
-            var swap = swapManager.FindSwapById(swapId);
+            var swap = await swapManager.FindSwapById(swapId);
             if (swap == null) return;
             if (swap.Student1Id != studentId && swap.Student2Id != studentId)
                 throw new HubException("Нямаш право");
@@ -305,7 +305,7 @@ namespace BlazorApp6.Services
 
         public async Task RejectCompletion(Guid swapId, Guid studentId)
         {
-            var swap = swapManager.FindSwapById(swapId);
+            var swap = await swapManager.FindSwapById(swapId);
             if (swap == null) return;
             if (swap.Student1Id != studentId && swap.Student2Id != studentId)
                 throw new HubException("Нямаш право");

@@ -111,12 +111,13 @@
         currentStudent = StudentManager.FindStudent(s => s.Username == user.Identity.Name);
         if (currentStudent == null) return;
 
-        LoadArchivedSwaps();
+        await LoadArchivedSwaps();
     }
 
-    private void LoadArchivedSwaps()
+    private async Task LoadArchivedSwaps()
     {
-        archivedSwaps = SwapManager.FindHistorySwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Completed).OrderByDescending(s => s.DateCompleted).ToList();
+        List<Swap> allArchivedSwaps = await SwapManager.FindHistorySwapsByStudentId(currentStudent.Id);
+        archivedSwaps = allArchivedSwaps.Where(s => s.Status == SwapStatus.Completed).OrderByDescending(s => s.DateCompleted).ToList();
     }
 
     private void OpenArchiveChat(Guid swapId)

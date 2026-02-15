@@ -19,7 +19,6 @@
     {
         @if (!isEditing)
         {
-            allSwaps = SwapManager.FindSwapsByStudentId(student.Id);
             averageRating = (student.HelpGivenCount == 0) ? 0 : starRatings.Sum() / student.HelpGivenCount;
             <div class="profile-all-containers">
                 <div class="profile-main-info-container">
@@ -99,18 +98,15 @@
                     }
                     else
                     {
-                        @foreach (var r in reviews)
+                        @foreach (var r in reviewsInfo)
                         {
-                            var sender = StudentManager.FindStudent(s => s.Id == r.SenderStudentId);
-                            var swap = SwapManager.FindHistorySwapByStudentsId(student.Id, sender.Id);
-
                             <div class="review-card">
-                                <img src="@AvatarManager.GetAvatarUrl(sender.AvatarName)" class="review-avatar" />
+                                <img src="@AvatarManager.GetAvatarUrl(r.AvatarName)" class="review-avatar" />
 
                                 <div class="review-content">
                                     <div class="review-header">
-                                        <span class="review-name" @onclick="() => GoToProfilePage(sender.Id)">@sender.FirstName</span>
-                                        <span class="review-subject">@swap.SubjectForHelp.GetDisplayName()</span>
+                                        <span class="review-name" @onclick="() => GoToProfilePage(r.Id)">@r.FirstName</span>
+                                        <span class="review-subject">@r.SubjectForHelp.GetDisplayName()</span>
                                     </div>
 
                                     <div class="review-stars">
@@ -151,7 +147,7 @@
                                 <div class="edit-avatar-upload">
                                     <label class="avatar-upload-btn">
                                         Избери нов аватар
-                                        <InputFile class="hidden-file-input" OnChange="(e) => SelectFile(e.File)" accept=".jpg,.jpeg,.png" />
+                                        <InputFile class="hidden-file-input" OnChange="async (e) => await SelectFile(e.File)" accept=".jpg,.jpeg,.png" />
                                     </label>
                                 </div>
 
@@ -247,6 +243,7 @@
     private double averageRating = 0.0;
 
     private List<Review> reviews = new();
+    List<(string AvatarName, Guid Id, string FirstName, SubjectEnum SubjectForHelp, int Rating, string Comment)> reviewsInfo = new();
 
     private string errorMessage = string.Empty;
     private bool isEditing = false;
@@ -276,9 +273,18 @@
 
         allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
 
+        allSwaps = await SwapManager.FindSwapsByStudentId(student.Id);
+
         starRatings = RateHelpManager.LoadReviewsForStudentFromDb(student.Id).Select(r => r.Rating).ToList();
 
         reviews = RateHelpManager.LoadReviewsForStudentFromDb(student.Id);
+
+        @foreach (var r in reviews)
+        {
+            var sender = StudentManager.FindStudent(s => s.Id == r.SenderStudentId);
+            var swap = await SwapManager.FindHistorySwapByStudentsId(student.Id, sender.Id);
+            reviewsInfo.Add((sender.AvatarName, sender.Id, sender.FirstName, swap.SubjectForHelp, r.Rating, r.Comment));
+        }
     }
 
     private async Task SelectFile(IBrowserFile file)
