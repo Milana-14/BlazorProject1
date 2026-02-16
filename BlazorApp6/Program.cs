@@ -70,7 +70,7 @@ app.MapRazorComponents<App>()
 
 app.MapHub<ChatMessages>("/chathub");
 app.MapHub<AiChatHub>("/aichat");
-app.MapHub<OnlineHub>("/onlineHub");
+app.MapHub<OnlineHub>("/onlinehub");
 app.MapHub<SwapHub>("/swapHub");
 
 

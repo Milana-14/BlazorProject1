@@ -317,7 +317,9 @@ else
     private SwapModel? swap;
     private Student? currentStudent;
     private Student? otherStudent;
+
     private HubConnection? hubConnection;
+    private HubConnection? hubConnection1;
 
     private List<Message> messages = new();
     private List<MessageForChat> messagesForChat = new();
@@ -493,13 +495,19 @@ else
             InvokeAsync(StateHasChanged);
         });
 
+        hubConnection1 = new HubConnectionBuilder()
+    .WithUrl(NavigationManager.ToAbsoluteUri("/onlinehub"))
+    .WithAutomaticReconnect()
+    .Build();
+
+
         _ = Task.Run(async () =>
         {
             while (true)
             {
-               if (hubConnection.State == HubConnectionState.Connected)
+               if (hubConnection1.State == HubConnectionState.Connected)
                {
-                   await hubConnection.SendAsync("Ping");
+                   await hubConnection1.SendAsync("Ping");
                }
                await Task.Delay(TimeSpan.FromMinutes(5));
             }
