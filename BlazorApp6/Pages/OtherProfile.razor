@@ -55,7 +55,6 @@
 
         <div class="profile-all-containers">
 
-            <!-- ===== ГОРНА ЧАСТ ===== -->
             <div class="profile-main-info-container">
                 <div class="avatar-wrapper">
                     <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)"
@@ -75,10 +74,7 @@
                 </div>
             </div>
 
-            <!-- ===== ЛЯВА ЧАСТ ===== -->
             <div class="profile-sections">
-
-                <!-- СТАТИСТИКА -->
                 <div class="profile-container-stats">
                     <div class="stat-all">
                         <p class="stat-value">
@@ -106,7 +102,6 @@
                 </div>
             </div>
 
-            <!-- ЛИЧНА ИНФОРМАЦИЯ -->
             <div class="profile-container-persinfo">
                 <div>
                     <p class="profile-text-help-with">Мога да помогна по:</p>
@@ -167,7 +162,6 @@
                 </div>
             </div>
 
-            <!-- ===== ОТЗИВИ ===== -->
             <div class="profile-reviews-container">
                 <p class="profile-maintext">Отзиви</p>
                 <p class="profile-sectext">от ученици, на когото е помогнал(а)</p>
@@ -265,7 +259,7 @@
         if (otherStudent == null)
             errorMessage = "Ученикът не беше намерен.";
 
-        isOnline = OnlineUsers.IsOnline(otherStudent.Id);
+        isOnline = OnlineUsers.IsStudentOnline(otherStudent);
 
         starRatings = RateHelpManager.LoadReviewsForStudentFromDb(otherStudent.Id).Select(r => r.Rating).ToList();
 

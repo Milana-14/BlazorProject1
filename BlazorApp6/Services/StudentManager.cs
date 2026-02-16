@@ -237,7 +237,7 @@ namespace BlazorApp6.Services
                                WHERE ""Id""=@Id";
                 using var cmd = new NpgsqlCommand(sql, connection);
                 cmd.Parameters.AddWithValue("@Id", studentId);
-                cmd.Parameters.AddWithValue("@LastOnline", DateTime.UtcNow);
+                cmd.Parameters.AddWithValue("@LastOnline", DateTime.Now);
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex)

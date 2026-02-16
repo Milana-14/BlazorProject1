@@ -1,4 +1,5 @@
-﻿using BlazorApp6.Services;
+﻿using BlazorApp6.Models;
+using BlazorApp6.Services;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 
@@ -9,7 +10,6 @@ public class OnlineUsersService
     public void Add(Guid studentId, string connectionId)
     {
         var connections = _onlineUsers.GetOrAdd(studentId, _ => new HashSet<string>());
-
         lock (connections)
         {
             connections.Add(connectionId);
@@ -29,31 +29,24 @@ public class OnlineUsersService
                     return true;
                 }
             }
-            return false;
         }
         return false;
     }
 
-    public bool IsOnline(Guid studentId)
+    public bool IsStudentOnline(Student s)
     {
-        return _onlineUsers.ContainsKey(studentId);
-    }
-
-    public IEnumerable<Guid> GetOnlineUsers()
-    {
-        return _onlineUsers.Keys;
+        if (_onlineUsers.ContainsKey(s.Id)) return true;
+        if (s.LastOnline.HasValue && s.LastOnline.Value > DateTime.Now.AddMinutes(-5)) return true;
+        return false;
     }
 }
-
 
 public class OnlineHub : Hub
 {
     private readonly OnlineUsersService _onlineUsers;
     private readonly StudentManager _studentManager;
 
-    public OnlineHub(
-        OnlineUsersService onlineUsers,
-        StudentManager studentManager)
+    public OnlineHub(OnlineUsersService onlineUsers, StudentManager studentManager)
     {
         _onlineUsers = onlineUsers;
         _studentManager = studentManager;
@@ -61,17 +54,11 @@ public class OnlineHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        var user = Context.User;
-
-        if (user?.Identity?.IsAuthenticated == true)
+        var student = GetAuthenticatedStudent();
+        if (student != null)
         {
-            var username = user.Identity.Name;
-            var student = _studentManager.FindStudent(s => s.Username == username);
-
-            if (student != null)
-            {
-                _onlineUsers.Add(student.Id, Context.ConnectionId);
-            }
+            _onlineUsers.Add(student.Id, Context.ConnectionId);
+            await _studentManager.UpdateLastSeenAsync(student.Id);
         }
 
         await base.OnConnectedAsync();
@@ -79,22 +66,35 @@ public class OnlineHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var user = Context.User;
-
-        if (user?.Identity?.IsAuthenticated == true)
+        var student = GetAuthenticatedStudent();
+        if (student != null)
         {
-            var username = user.Identity.Name;
-            var student = _studentManager.FindStudent(s => s.Username == username);
-
-            if (student != null)
+            if (_onlineUsers.Remove(student.Id, Context.ConnectionId))
             {
-                if (_onlineUsers.Remove(student.Id, Context.ConnectionId))
-                {
-                    await _studentManager.UpdateLastSeenAsync(student.Id);
-                }
+                await _studentManager.UpdateLastSeenAsync(student.Id);
             }
         }
 
         await base.OnDisconnectedAsync(exception);
+    }
+
+    public async Task Ping()
+    {
+        var student = GetAuthenticatedStudent();
+        if (student != null)
+        {
+            await _studentManager.UpdateLastSeenAsync(student.Id);
+        }
+    }
+
+    private Student? GetAuthenticatedStudent()
+    {
+        var user = Context.User;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            var username = user.Identity.Name;
+            return _studentManager.FindStudent(s => s.Username == username);
+        }
+        return null;
     }
 }

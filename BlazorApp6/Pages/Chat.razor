@@ -31,8 +31,8 @@ else
                 <div class="chat-topbar-user">
                     <div class="chat-topbar-name">@otherStudent.FirstName @otherStudent.SecName</div>
                     <div class="chat-topbar-sub">
-                        <span class="chat-status @(OnlineUsers.IsOnline(otherStudent.Id) ? "online" : "offline")">
-                            @(OnlineUsers.IsOnline(otherStudent.Id) ? "Онлайн" : "Оффлайн")
+                        <span class="chat-status @(OnlineUsers.IsStudentOnline(otherStudent) ? "online" : "offline")">
+                            @(OnlineUsers.IsStudentOnline(otherStudent) ? "Онлайн" : "Оффлайн")
                         </span>
                         <span class="dot">•</span>
                         <span class="chat-subject">@swap.SubjectForHelp.GetDisplayName()</span>
@@ -57,7 +57,7 @@ else
                     <div class="chat-info-profile">
                         <img src="@AvatarManager.GetAvatarUrl(otherStudent.AvatarName)" alt="Avatar" class="chat-info-profile-avatar" />
                         <h4>@otherStudent.FirstName @otherStudent.SecName</h4>
-                        <span class="user-status">@((OnlineUsers.IsOnline(otherStudent.Id)) ? "Онлайн" : "Оффлайн")</span>
+                        <span class="user-status">@((OnlineUsers.IsStudentOnline(otherStudent)) ? "Онлайн" : "Оффлайн")</span>
                     </div>
                     <div class="chat-info-actions">
                         <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="() => ViewProfile(otherStudent)">Виж профила</span></div>
@@ -491,6 +491,18 @@ else
             swap = updatedSwap;
             isStudentToRate = currentStudent.Id == swap.Student2Id;
             InvokeAsync(StateHasChanged);
+        });
+
+        _ = Task.Run(async () =>
+        {
+            while (true)
+            {
+               if (hubConnection.State == HubConnectionState.Connected)
+               {
+                   await hubConnection.SendAsync("Ping");
+               }
+               await Task.Delay(TimeSpan.FromMinutes(5));
+            }
         });
 
 
