@@ -1,94 +1,95 @@
 ﻿using BlazorApp6.Models;
-using BlazorApp6.Services;
 using Microsoft.AspNetCore.SignalR;
 using Npgsql;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BlazorApp6.Services
 {
-    public class SwapManager // За управление на матчовете межд учениците
+    public class SwapManager
     {
         private readonly string connectionString;
-        private List<Swap> swaps = new List<Swap>(); // Само за свапове със статус Pending, Confirmed, PendingCompleted или CompletedNotRated
-        private List<Swap> history = new List<Swap>(); // Само за свапове със статус Rejected, Completed или Canceled (отменените свапове изобщо не се записват - няма смис)
+
+        private readonly List<Swap> swaps = new();
+        private readonly List<Swap> history = new();
+
+        private readonly Dictionary<Guid, Swap> swapsById = new();
+        private readonly Dictionary<Guid, Swap> historyById = new();
+
+        private readonly Dictionary<(Guid, Guid), Swap> swapsByPair = new();
+        private readonly Dictionary<Guid, List<Swap>> swapsByStudent = new();
+        private readonly Dictionary<Guid, List<Swap>> historyByStudent = new();
+
         public string? DbError { get; private set; }
+
         public SwapManager(IConfiguration config)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
 
-            if (!LoadSwapsFromDb(out List<Swap> loadedMatchesFromDb))
+            if (!LoadSwapsFromDb(out var loaded))
             {
                 DbError = "Зареждането на данните за сваповете не беше успешно";
                 return;
             }
-            swaps = loadedMatchesFromDb;
 
-            if (!LoadHistorySwapsFromDb(out List<Swap> historyFromDb))
+            foreach (var s in loaded)
+                AddSwapToCache(s);
+
+            if (!LoadHistorySwapsFromDb(out var historyLoaded))
             {
-                DbError = "Зареждането на данните за историята на сваповете не беше успешно";
+                DbError = "Зареждането на историята не беше успешно";
                 return;
             }
-            history = historyFromDb;
+
+            foreach (var s in historyLoaded)
+                AddHistoryToCache(s);
         }
 
         public Swap? RequestHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester, string? comment)
-        {
-            if (swaps.FirstOrDefault(m =>
-                (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
-                (m.Student1Id == helpingSt.Id && m.Student2Id == requestingSt.Id)) != null) return null;
+            => CreateSwapIfNotExists(requestingSt, helpingSt, subject, requester, comment);
 
-            Swap swap = new Swap
-            {
-                Student1Id = requestingSt.Id,
-                Student2Id = helpingSt.Id,
-                RequesterId = requester.Id,
-                SubjectForHelp = subject,
-                DateRequested = DateTime.UtcNow,
-                Status = SwapStatus.Pending,
-                Comment = comment
-            };
-
-            swaps.Add(swap);
-            SaveSwapToDb(swap);
-            return swap;
-        }
         public Swap? OfferHelp(Student requestingSt, Student helpingSt, SubjectEnum subject, Student requester, string? comment)
-        {
-            if (swaps.FirstOrDefault(m =>
-                (m.Student1Id == requestingSt.Id && m.Student2Id == helpingSt.Id) ||
-                (m.Student1Id == helpingSt.Id && m.Student2Id == requestingSt.Id)) != null) return null;
+            => CreateSwapIfNotExists(requestingSt, helpingSt, subject, requester, comment);
 
-            Swap swap = new Swap
+        private Swap? CreateSwapIfNotExists(Student s1, Student s2, SubjectEnum subject, Student requester, string? comment)
+        {
+            var key = NormalizePair(s1.Id, s2.Id);
+
+            if (swapsByPair.ContainsKey(key))
+                return null;
+
+            var swap = new Swap
             {
-                Student1Id = requestingSt.Id,
-                Student2Id = helpingSt.Id,
+                Student1Id = s1.Id,
+                Student2Id = s2.Id,
                 RequesterId = requester.Id,
                 SubjectForHelp = subject,
                 DateRequested = DateTime.UtcNow,
                 Status = SwapStatus.Pending,
                 Comment = comment
             };
-            swaps.Add(swap);
+
             SaveSwapToDb(swap);
+            AddSwapToCache(swap);
+
             return swap;
         }
+
         public void ConfirmSwap(Swap swap)
         {
             swap.Confirm();
             UpdateSwapInDb(swap);
         }
+
         public void RejectSwap(Swap swap)
         {
             swap.Reject();
-            swaps.Remove(swap);
-
-            if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
-
+            MoveToHistory(swap);
             UpdateSwapInDb(swap);
         }
 
         public void CancelMyRequest(Swap swap)
         {
-            swaps.Remove(swap);
+            RemoveSwapFromCache(swap);
             DeleteSwapFromDb(swap);
         }
 
@@ -97,102 +98,149 @@ namespace BlazorApp6.Services
             swap.ProposeCompletion(proposerId);
             UpdateSwapInDb(swap);
         }
+
         public void AcceptCompletion(Swap swap)
         {
-            swap.AcceptCompletion(); // Тук свапът не се завършва докрай -> CompletedNotRated
+            swap.AcceptCompletion();
             UpdateSwapInDb(swap);
         }
+
         public void RejectCompletion(Swap swap)
         {
             swap.RejectCompletion();
-            swaps.Remove(swap);
-            if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
+            MoveToHistory(swap);
             UpdateSwapInDb(swap);
         }
-        public void CompleteSwap(Swap swap) // Този метод се повиква в RateHelpManager след оценяване на помощта
+
+        public void CompleteSwap(Swap swap)
         {
-            swaps.Remove(swap);
+            RemoveSwapFromCache(swap);
             swap.CompleteSwap();
-
-            if (!history.Any(m => m.Id == swap.Id)) history.Add(swap);
-
+            AddHistoryToCache(swap);
             UpdateSwapInDb(swap);
         }
 
 
         public List<Swap> FindSwapsByStudentId(Guid studentId)
+            => swapsByStudent.TryGetValue(studentId, out var list) ? list : new List<Swap>();
+
+        public Swap? FindSwapByStudentsId(Guid s1, Guid s2)
         {
-            return swaps.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();
+            swapsByPair.TryGetValue(NormalizePair(s1, s2), out var swap);
+            return swap;
         }
-        public Swap? FindSwapByStudentsId(Guid student1Id, Guid student2Id)
-        {
-            return swaps.Where(m => (m.Student1Id == student1Id && m.Student2Id == student2Id) || (m.Student1Id == student2Id && m.Student2Id == student1Id)).FirstOrDefault();
-        }
+
         public List<Swap> FindHistorySwapsByStudentId(Guid studentId)
+            => historyByStudent.TryGetValue(studentId, out var list) ? list : new List<Swap>();
+
+        public Swap? FindHistorySwapByStudentsId(Guid s1, Guid s2)
         {
-            return history.Where(m => m.Student1Id == studentId || m.Student2Id == studentId).ToList();
+            foreach (var swap in FindHistorySwapsByStudentId(s1))
+                if (IsSamePair(swap, s1, s2))
+                    return swap;
+
+            return null;
         }
-        public Swap? FindHistorySwapByStudentsId(Guid student1Id, Guid student2Id)
-        {
-            return history.Where(m => (m.Student1Id == student1Id && m.Student2Id == student2Id) || (m.Student1Id == student2Id && m.Student2Id == student1Id)).FirstOrDefault();
-        }
+
         public Swap? FindSwapById(Guid id)
-        {
-            return swaps.FirstOrDefault(m => m.Id == id);
-        }
+            => swapsById.TryGetValue(id, out var swap) ? swap : null;
+
         public Swap? FindHistorySwapById(Guid id)
-        {
-            return history.FirstOrDefault(m => m.Id == id);
-        }
-        public List<Swap> GetAllSwaps()
-        {
-            return swaps;
-        }
-        public List<Swap> GetAllHistory()
-        {
-            return history;
-        }
+            => historyById.TryGetValue(id, out var swap) ? swap : null;
+
+        public List<Swap> GetAllSwaps() => swaps;
+        public List<Swap> GetAllHistory() => history;
 
         public int GetNewSwapIncomesCount(Guid studentId)
         {
-            return swaps.Count(s => s.Status == SwapStatus.Pending && 
-                                    s.RequesterId != studentId &&
-                                    (s.Student1Id == studentId || s.Student2Id == studentId));
+            if (!swapsByStudent.TryGetValue(studentId, out var list))
+                return 0;
+
+            int count = 0;
+
+            foreach (var s in list)
+                if (s.Status == SwapStatus.Pending && s.RequesterId != studentId)
+                    count++;
+
+            return count;
         }
 
 
 
-        // Работа с база данни
-        public bool LoadSwapsFromDb(out List<Swap> loadedSwapsFromDb)
+        private void AddSwapToCache(Swap s)
         {
-            loadedSwapsFromDb = new List<Swap>();
+            swaps.Add(s);
+            swapsById[s.Id] = s;
+
+            swapsByPair[NormalizePair(s.Student1Id, s.Student2Id)] = s;
+
+            AddToStudentIndex(swapsByStudent, s.Student1Id, s);
+            AddToStudentIndex(swapsByStudent, s.Student2Id, s);
+        }
+
+        private void RemoveSwapFromCache(Swap s)
+        {
+            swaps.Remove(s);
+            swapsById.Remove(s.Id);
+            swapsByPair.Remove(NormalizePair(s.Student1Id, s.Student2Id));
+
+            RemoveFromStudentIndex(swapsByStudent, s.Student1Id, s);
+            RemoveFromStudentIndex(swapsByStudent, s.Student2Id, s);
+        }
+
+        private void MoveToHistory(Swap s)
+        {
+            RemoveSwapFromCache(s);
+            AddHistoryToCache(s);
+        }
+
+        private void AddHistoryToCache(Swap s)
+        {
+            history.Add(s);
+            historyById[s.Id] = s;
+
+            AddToStudentIndex(historyByStudent, s.Student1Id, s);
+            AddToStudentIndex(historyByStudent, s.Student2Id, s);
+        }
+
+        private static void AddToStudentIndex(Dictionary<Guid, List<Swap>> dict, Guid id, Swap swap)
+        {
+            if (!dict.TryGetValue(id, out var list))
+                dict[id] = list = new List<Swap>();
+
+            list.Add(swap);
+        }
+
+        private static void RemoveFromStudentIndex(Dictionary<Guid, List<Swap>> dict, Guid id, Swap swap)
+        {
+            if (dict.TryGetValue(id, out var list))
+                list.Remove(swap);
+        }
+
+
+
+        public bool LoadSwapsFromDb(out List<Swap> result)
+            => LoadByStatuses(out result, 0, 1, 3, 4);
+
+        public bool LoadHistorySwapsFromDb(out List<Swap> result)
+            => LoadByStatuses(out result, 2, 5);
+
+        private bool LoadByStatuses(out List<Swap> result, params int[] statuses)
+        {
+            result = new List<Swap>();
 
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
-                connection.Open();
+                using var connection = CreateConnection();
 
-                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Swaps"" WHERE ""Status"" = 0 OR ""Status"" = 1 OR ""Status"" = 3 OR ""Status"" = 4", connection);
+                string sql = $@"SELECT * FROM ""Swaps"" WHERE ""Status"" = ANY(@statuses)";
+                using var cmd = new NpgsqlCommand(sql, connection);
+                cmd.Parameters.AddWithValue("@statuses", statuses);
+
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
-                {
+                    result.Add(ReadSwap(reader));
 
-
-                    Swap swap = new Swap();
-                    swap.Id = reader.GetGuid(0);
-                    swap.Student1Id = reader.GetGuid(1);
-                    swap.Student2Id = reader.GetGuid(2);
-                    swap.Status = (SwapStatus)reader.GetInt32(3);
-                    swap.DateRequested = reader.GetDateTime(4);
-                    swap.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
-                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(6);
-                    swap.RequesterId = reader.GetGuid(7);
-                    swap.CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8);
-                    swap.DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9);
-                    swap.Comment = reader.IsDBNull(10) ? null : reader.GetString(10);
-
-                    loadedSwapsFromDb.Add(swap);
-                }
                 return true;
             }
             catch
@@ -200,98 +248,95 @@ namespace BlazorApp6.Services
                 return false;
             }
         }
-        public bool LoadHistorySwapsFromDb(out List<Swap> historyFromDb)
-        {
-            historyFromDb = new List<Swap>();
 
-            try
-            {
-                using var connection = new NpgsqlConnection(connectionString);
-                connection.Open();
-
-                using var cmd = new NpgsqlCommand(@"SELECT * FROM ""Swaps"" WHERE ""Status"" = 2 OR ""Status"" = 5", connection);
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    Swap swap = new Swap();
-                    swap.Id = reader.GetGuid(0);
-                    swap.Student1Id = reader.GetGuid(1);
-                    swap.Student2Id = reader.GetGuid(2);
-                    swap.Status = (SwapStatus)reader.GetInt32(3);
-                    swap.DateRequested = reader.GetDateTime(4);
-                    swap.DateConfirmed = reader.IsDBNull(5) ? null : reader.GetDateTime(5);
-                    swap.SubjectForHelp = (SubjectEnum)reader.GetInt32(6);
-                    swap.RequesterId = reader.GetGuid(7);
-                    swap.CompletionProposedByStudentId = reader.IsDBNull(8) ? null : reader.GetGuid(8);
-                    swap.DateCompleted = reader.IsDBNull(9) ? null : reader.GetDateTime(9);
-                    swap.Comment = reader.IsDBNull(10) ? null : reader.GetString(10);
-
-                    historyFromDb.Add(swap);
-                }
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
         public void SaveSwapToDb(Swap swap)
         {
-            using (var connection = new NpgsqlConnection(connectionString))
-            {
-                connection.Open();
+            using var connection = CreateConnection();
 
-                string sql = @"INSERT INTO ""Swaps"" (""Id"", ""Student1Id"", ""Student2Id"", ""Status"", ""DateRequested"", ""DateConfirmed"", ""SubjectForHelp"", ""RequesterId"", ""CompletionProposedByStudentId"", ""DateCompleted"", ""Comment"") 
-                                VALUES (@Id, @Student1Id, @Student2Id, @Status, @DateRequested, @DateConfirmed, @SubjectForHelp, @RequesterId, @CompletionProposedByStudentId, @DateCompleted, @Comment)";
-
-
-                using NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
-
-                cmd.Parameters.AddWithValue("@Id", swap.Id);
-                cmd.Parameters.AddWithValue("@Student1Id", swap.Student1Id);
-                cmd.Parameters.AddWithValue("@Student2Id", swap.Student2Id);
-                cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
-                cmd.Parameters.AddWithValue("@DateRequested", swap.DateRequested);
-                cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@SubjectForHelp", (int)swap.SubjectForHelp);
-                cmd.Parameters.AddWithValue("@RequesterId", swap.RequesterId);
-                cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@DateCompleted", (object?)swap.DateCompleted ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Comment", (object?)swap.Comment ?? DBNull.Value);
-
-                cmd.ExecuteNonQuery();
-            }
-        }
-        public void UpdateSwapInDb(Swap swap)
-        {
-            using var connection = new NpgsqlConnection(connectionString);
-            connection.Open();
-
-            string sql = @"UPDATE ""Swaps""
-                            SET ""Status"" = @Status, ""DateConfirmed"" = @DateConfirmed, ""CompletionProposedByStudentId"" = @CompletionProposedByStudentId, ""DateCompleted"" = @DateCompleted WHERE ""Id""=@Id";
+            const string sql = @"INSERT INTO ""Swaps""
+            (""Id"",""Student1Id"",""Student2Id"",""Status"",""DateRequested"",
+             ""DateConfirmed"",""SubjectForHelp"",""RequesterId"",
+             ""CompletionProposedByStudentId"",""DateCompleted"",""Comment"")
+            VALUES (@Id,@Student1Id,@Student2Id,@Status,@DateRequested,
+                    @DateConfirmed,@SubjectForHelp,@RequesterId,
+                    @CompletionProposedByStudentId,@DateCompleted,@Comment)";
 
             using var cmd = new NpgsqlCommand(sql, connection);
-
-            cmd.Parameters.AddWithValue("@Id", swap.Id);
-            cmd.Parameters.AddWithValue("@Status", (int)swap.Status);
-            cmd.Parameters.AddWithValue("@DateConfirmed", (object?)swap.DateConfirmed ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@CompletionProposedByStudentId", (object?)swap.CompletionProposedByStudentId ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@DateCompleted", (object?)swap.DateCompleted ?? DBNull.Value);
-
+            FillParams(cmd, swap);
             cmd.ExecuteNonQuery();
         }
+
+        public void UpdateSwapInDb(Swap swap)
+        {
+            using var connection = CreateConnection();
+
+            const string sql = @"UPDATE ""Swaps""
+                SET ""Status""=@Status,
+                    ""DateConfirmed""=@DateConfirmed,
+                    ""CompletionProposedByStudentId""=@CompletionProposedByStudentId,
+                    ""DateCompleted""=@DateCompleted
+                WHERE ""Id""=@Id";
+
+            using var cmd = new NpgsqlCommand(sql, connection);
+            FillParams(cmd, swap);
+            cmd.ExecuteNonQuery();
+        }
+
         public void DeleteSwapFromDb(Swap swap)
         {
-            using var connection = new NpgsqlConnection(connectionString);
-            connection.Open();
-
+            using var connection = CreateConnection();
             using var cmd = new NpgsqlCommand(@"DELETE FROM ""Swaps"" WHERE ""Id""=@Id", connection);
             cmd.Parameters.AddWithValue("@Id", swap.Id);
             cmd.ExecuteNonQuery();
         }
+
+        private static Swap ReadSwap(NpgsqlDataReader r) => new Swap
+        {
+            Id = r.GetGuid(0),
+            Student1Id = r.GetGuid(1),
+            Student2Id = r.GetGuid(2),
+            Status = (SwapStatus)r.GetInt32(3),
+            DateRequested = r.GetDateTime(4),
+            DateConfirmed = r.IsDBNull(5) ? null : r.GetDateTime(5),
+            SubjectForHelp = (SubjectEnum)r.GetInt32(6),
+            RequesterId = r.GetGuid(7),
+            CompletionProposedByStudentId = r.IsDBNull(8) ? null : r.GetGuid(8),
+            DateCompleted = r.IsDBNull(9) ? null : r.GetDateTime(9),
+            Comment = r.IsDBNull(10) ? null : r.GetString(10)
+        };
+
+        private static void FillParams(NpgsqlCommand cmd, Swap s)
+        {
+            cmd.Parameters.Add("@Id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = s.Id;
+            cmd.Parameters.Add("@Student1Id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = s.Student1Id;
+            cmd.Parameters.Add("@Student2Id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = s.Student2Id;
+            cmd.Parameters.Add("@Status", NpgsqlTypes.NpgsqlDbType.Integer).Value = (int)s.Status;
+            cmd.Parameters.Add("@DateRequested", NpgsqlTypes.NpgsqlDbType.Timestamp).Value = s.DateRequested;
+            cmd.Parameters.Add("@DateConfirmed", NpgsqlTypes.NpgsqlDbType.Timestamp).Value = (object?)s.DateConfirmed ?? DBNull.Value;
+            cmd.Parameters.Add("@SubjectForHelp", NpgsqlTypes.NpgsqlDbType.Integer).Value = (int)s.SubjectForHelp;
+            cmd.Parameters.Add("@RequesterId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = s.RequesterId;
+            cmd.Parameters.Add("@CompletionProposedByStudentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = (object?)s.CompletionProposedByStudentId ?? DBNull.Value;
+            cmd.Parameters.Add("@DateCompleted", NpgsqlTypes.NpgsqlDbType.Timestamp).Value = (object?)s.DateCompleted ?? DBNull.Value;
+            cmd.Parameters.Add("@Comment", NpgsqlTypes.NpgsqlDbType.Text).Value = (object?)s.Comment ?? DBNull.Value;
+
+            cmd.Prepare();
+            cmd.ExecuteNonQuery();
+        }
+
+        private NpgsqlConnection CreateConnection()
+        {
+            var c = new NpgsqlConnection(connectionString);
+            c.Open();
+            return c;
+        }
+
+
+        private static (Guid, Guid) NormalizePair(Guid a, Guid b)
+            => a.CompareTo(b) < 0 ? (a, b) : (b, a);
+
+        private static bool IsSamePair(Swap s, Guid a, Guid b)
+            => (s.Student1Id == a && s.Student2Id == b) || (s.Student1Id == b && s.Student2Id == a);
     }
 
-    public class SwapHub : Hub
-    {
-    }
+    public class SwapHub : Hub { }
 }
