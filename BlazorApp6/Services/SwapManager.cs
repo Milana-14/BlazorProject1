@@ -5,7 +5,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BlazorApp6.Services
 {
-    public class SwapManager
+    public class SwapManager // Зареждане, запис и управление на данните за сваповете между учениците.
     {
         private readonly string connectionString;
 
@@ -63,7 +63,7 @@ namespace BlazorApp6.Services
                 Student2Id = s2.Id,
                 RequesterId = requester.Id,
                 SubjectForHelp = subject,
-                DateRequested = DateTime.UtcNow,
+                DateRequested = DateTime.Now,
                 Status = SwapStatus.Pending,
                 Comment = comment
             };

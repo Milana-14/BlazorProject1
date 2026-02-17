@@ -4,7 +4,7 @@ using Npgsql;
 
 namespace BlazorApp6.Services
 {
-    public class SubjectsManager
+    public class SubjectsManager // Зареждане, запис и управление на данните за предметите, които учениците могат да преподават или искат помощ с тях.
     {
         private readonly string connectionString;
 

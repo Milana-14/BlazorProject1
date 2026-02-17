@@ -6,6 +6,10 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace BlazorApp6.Services
 {
+    // Този клас отговаря за качването, изтриването и предоставянето на URL за аватарите на студентите.
+    // Той използва ImageSharp за обработка на изображенията, като ги преоразмерява до максимум 1024x1024 пиксела и ги запазва с качество 85.
+    // Когато се качва нов аватар, старият се изтрива (ако не е default.jpg) и се обновява информацията в базата данни чрез StudentManager.  
+
     public class AvatarManager
     {
         private readonly IWebHostEnvironment env;

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 
-public static class HashPasswordService
+public static class HashPasswordService // Хеширане на паролите и сравняването им за безопасност.
 {
     public static string HashPassword(string password)
     {

@@ -4,7 +4,7 @@ using System.Data;
 
 namespace BlazorApp6.Services
 {
-    public class RateHelpManager
+    public class RateHelpManager // Записване (в бд) и управление на ревютата и оценките, които студентите дават един на друг след завършване на суап.
     {
         private readonly string connectionString;
         private readonly SwapManager swapManager;

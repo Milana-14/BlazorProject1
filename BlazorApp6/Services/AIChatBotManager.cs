@@ -11,7 +11,7 @@ using System.Text;
 
 namespace BlazorApp6.Services
 {
-    public class AiChatManager
+    public class AiChatManager // Мениджър за работа с база дани за съхранение на съобщенията в AI чата
     {
         private readonly string connectionString;
 
@@ -105,7 +105,7 @@ ORDER BY ""Timestamp""";
         }
     }
 
-    public interface IAiChatClient
+    public interface IAiChatClient // Интерфейс за методите, които клиентите на SignalR ще имплементират, за да получават съобщения и статуси от AI чата
     {
         Task ReceiveMessage(Guid id, Guid senderId, string senderName, string message);
         Task DeleteMessage(Guid messageId);
@@ -115,7 +115,7 @@ ORDER BY ""Timestamp""";
         Task AiTypingFinished(Guid tempMessageId, Guid finalMessageId);
     }
 
-    public class AiChatHub : Hub<IAiChatClient>
+    public class AiChatHub : Hub<IAiChatClient> // SignalR хъб за AI чат, който управлява връзките и комуникацията между клиентите и AI
     {
         private readonly AiChatManager db;
         private readonly AiChatService ai;
@@ -196,37 +196,6 @@ ORDER BY ""Timestamp""";
             else await Clients.Group(studentId.ToString()).AiTypingFinished(tempId, Guid.Empty);
         }
 
-        //public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
-        //{
-        //    var studentId = connection.Student.Id;
-
-        //    var folder = Path.Combine("wwwroot", "ai-files");
-        //    Directory.CreateDirectory(folder);
-
-        //    var path = Path.Combine(folder, $"{Guid.NewGuid()}_{fileName}");
-        //    await File.WriteAllBytesAsync(path, fileBytes);
-
-        //    var content = $"<a href='/ai-files/{Path.GetFileName(path)}' target='_blank'>{fileName}</a>";
-        //    var msgId = Guid.NewGuid();
-
-        //    await Clients.Group(studentId.ToString())
-        //        .ReceiveMessage(msgId, studentId,
-        //            $"{connection.Student.FirstName} {connection.Student.SecName}",
-        //            content);
-
-        //    await db.AddMessageAsync(new AiMessage
-        //    {
-        //        Id = msgId,
-        //        StudentId = studentId,
-        //        SenderId = studentId,
-        //        SenderName = $"{connection.Student.FirstName} {connection.Student.SecName}",
-        //        Content = content,
-        //        IsFile = true,
-        //        FileName = fileName,
-        //        ReplyToMessageId = Guid.Empty
-        //    });
-        //}
-
         public async Task EditMessage(UserConnection connection, Guid messageId, string newContent)
         {
             var messages = await db.GetMessagesAsync(connection.Student.Id);
@@ -289,14 +258,14 @@ ORDER BY ""Timestamp""";
                     ReplyToMessageId = messageId
                 });
 
-                await Clients.Group(connection.Student.Id.ToString()).AiTypingFinished(tempId, newAiId); //ReceiveMessage(newAiId, AI_ID, "AI Учител", aiResponse);
+                await Clients.Group(connection.Student.Id.ToString()).AiTypingFinished(tempId, newAiId); 
             }
         }
 
     }
 }
 
-    public class AiChatService
+    public class AiChatService // Сервиз, който управлява логиката на AI чата и съхранението на историята в паметта и взаимодействие с Azure OpenAI API
 {
     private readonly ChatClient chatClient;
     private readonly ConcurrentDictionary<string, List<ChatMessage>> histories = new();

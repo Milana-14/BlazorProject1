@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace BlazorApp6.Services
 {
-    public class ChatManager
+    public class ChatManager // Този клас отговаря за всички операции, свързани със съобщенията.
     {
         private readonly string connectionString;
         private readonly SwapManager swapManager;

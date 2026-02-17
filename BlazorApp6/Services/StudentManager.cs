@@ -4,7 +4,7 @@ using System.Data;
 
 namespace BlazorApp6.Services
 {
-    public class StudentManager
+    public class StudentManager // Зареждане, запис и управление на данните за студентите.
     {
         private readonly string connectionString;
         private readonly SubjectsManager subjectsManager;
