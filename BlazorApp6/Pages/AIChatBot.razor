@@ -47,15 +47,14 @@
                 }
             }
 
-            <div class="chat-bottom-fixed">
+            @* <div class="chat-bottom-fixed"> *@
                  <div class="input-bar no-info d-flex align-items-center">
-                   @* <InputFile OnChange="OnInputFileSelected" /> *@
                     <InputText @bind-Value="newMessage" placeholder="Задай въпрос..." />
                     <button class="btn-send" disabled="@string.IsNullOrWhiteSpace(newMessage)"  @onclick="SendMessage">
                         <i class="bi bi-send"></i>
                     </button>
                 </div>
-            </div>
+            @* </div> *@
         </div>
     </div>
         @if (contextMenuVisible)
@@ -194,22 +193,6 @@
 
         newMessage = "";
     }
-
-    // private async Task OnInputFileSelected(InputFileChangeEventArgs e)
-    // {
-    //     var file = e.File;
-    //     if (file == null || hubConnection == null) return;
-
-    //     using var stream = file.OpenReadStream(20 * 1024 * 1024);
-    //     using var ms = new MemoryStream();
-    //     await stream.CopyToAsync(ms);
-
-    //     await hubConnection.SendAsync("SendFile",
-    //         new UserConnection(Guid.Empty,
-    //             new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
-    //         file.Name,
-    //         ms.ToArray());
-    // }
 
     private async Task EditMessage()
     {

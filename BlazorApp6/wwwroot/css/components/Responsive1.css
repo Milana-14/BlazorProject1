@@ -322,3 +322,54 @@ main {
         z-index: 950;
     }
 }
+
+.chat-page.no-info ~ * .input-bar,
+.input-bar.no-info {
+    left: calc(352px + 16px);
+    right: 16px;
+}
+.input-bar.with-info {
+    left: calc(352px + 16px);
+    right: 296px;
+}
+
+@media (max-width: 1200px) {
+
+    .input-bar.no-info {
+        left: calc(240px + 16px);
+        right: 16px;
+    }
+
+    .input-bar.with-info {
+        left: calc(240px + 16px);
+        right: 200px;
+    }
+}
+
+@media (max-width: 992px) {
+
+    .input-bar {
+        left: calc(200px + 16px);
+        right: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .input-bar {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        border-radius: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .input-bar {
+        left: 6px;
+        right: 6px;
+        bottom: 6px;
+        padding: 6px 8px;
+    }
+}
