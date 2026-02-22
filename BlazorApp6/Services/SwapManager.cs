@@ -319,8 +319,6 @@ namespace BlazorApp6.Services
             cmd.Parameters.Add("@CompletionProposedByStudentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = (object?)s.CompletionProposedByStudentId ?? DBNull.Value;
             cmd.Parameters.Add("@DateCompleted", NpgsqlTypes.NpgsqlDbType.TimestampTz).Value = (object?)s.DateCompleted ?? DBNull.Value;
             cmd.Parameters.Add("@Comment", NpgsqlTypes.NpgsqlDbType.Text).Value = (object?)s.Comment ?? DBNull.Value;
-
-            cmd.ExecuteNonQuery();
         }
 
         private NpgsqlConnection CreateConnection()

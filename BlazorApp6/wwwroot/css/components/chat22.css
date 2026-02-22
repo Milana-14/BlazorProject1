@@ -754,277 +754,70 @@
     right: 0;
     display: flex;
     flex-direction: column;
+    align-items: center; /* 3. Центрира съдържанието хоризонтално */
     gap: 8px;
     z-index: 110;
-/*    width: auto;*/
-/*    max-width: calc(100% - 352px - 280px);*/
+    pointer-events: none; /* 4. Позволява кликове през празните места */
+    /* Нулираме старите ограничения */
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent;
 }
 
-    .chat-bottom-fixed .input-bar {
-        width: 100%;
+    /* Ако използвате клас .with-info за отворен десен сайдбар */
+    .chat-bottom-fixed.with-info {
+        right: 280px; /* Отмества центъра, за да не се закрива от десния панел */
     }
 
+    /* Връщаме клика върху самите елементи (input-bar, reply-preview) */
+    .chat-bottom-fixed > * {
+        pointer-events: auto;
+    }
+
+    /* Настройки заInput Bar и другите плаващи елементи вътре */
+    .chat-bottom-fixed .input-bar,
+    .chat-bottom-fixed .input-bar.no-info,
+    .chat-bottom-fixed .input-bar.with-info,
     .chat-bottom-fixed .chat-system-card,
     .chat-bottom-fixed .rate-card,
     .chat-bottom-fixed .reply-preview {
-        width: 100%;
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        margin: 0 !important;
+        /* Ширина и центриране */
+        width: calc(100% - 40px);
+        max-width: 900px; /* Тук определяте колко широк да е бара (напр. 900px) */
+        flex-shrink: 0;
     }
 
 /* =========================================================
-   INPUT BAR FIXED POSITION — адаптивно с сайдбаром
+   RESPONSIVE (Мобилни устройства)
    ========================================================= */
-.input-bar {
-    position: fixed;
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background-color: #FFFFFF;
-    border-radius: 24px;
-    border: 1px solid rgba(0,0,0,0.1);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    z-index: 100;
-    transition: all 0.25s ease;
-}
-
-    .input-bar.no-info {
-        left: 16px;
-        right: 16px;
-    }
-
-    .input-bar.with-info {
-        left: 16px;
-        right: 296px;
-    }
-
-    .input-bar input {
-        flex-grow: 1;
-        border: none;
-        outline: none;
-        background: transparent;
-        font-size: 15px;
-        color: #453D44;
-        min-width: 0;
-        transition: all 0.25s ease;
-    }
-
-.chat-bottom-fixed .chat-system-card,
-.chat-bottom-fixed .rate-card,
-.chat-bottom-fixed .reply-preview {
-    position: absolute;
-    bottom: 76px;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    max-width: 100%;
-    z-index: 120;
-}
-
-.rate-star {
-    cursor: pointer;
-    color: #ccc;
-    transition: color 0.15s ease, transform 0.1s ease;
-    font-size: 28px;
-}
-
-    .rate-star:hover,
-    .rate-star.selected {
-        color: #f5b301;
-    }
-
-/* =========================================================
-   CONTEXT MENU
-   ========================================================= */
-.context-menu {
-    position: absolute;
-    background-color: #FFFFFF;
-    border: 1px solid rgba(0,0,0,0.1);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 8px;
-    z-index: 1000;
-    animation: fadeInUp 0.15s forwards;
-}
-
-    .context-menu button {
-        background-color: #F4F3F1;
-        color: #453D44;
-        border: none;
-        border-radius: 8px;
-        padding: 8px 14px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.2s, color 0.2s, transform 0.1s;
-    }
-
-        .context-menu button:hover {
-            background-color: #70646E;
-            color: #FFFDFB;
-            transform: scale(1.03);
-        }
-
-.context-menu {
-    position: absolute;
-    background-color: #FFFFFF;
-    border: 1px solid rgba(0,0,0,0.1);
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 8px;
-    z-index: 1000;
-}
-
-.ctx-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #F4F3F1;
-    color: #453D44;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, transform 0.1s;
-}
-
-    .ctx-btn:hover {
-        background-color: #70646E;
-        color: #FFFDFB;
-        transform: scale(1.03);
-    }
-
-.chat-system-card,
-.rate-card,
-.swap-card,
-.swap-notification {
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.ctx-btn {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 6px;
-    background-color: #F4F3F1;
-    color: #453D44;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, transform 0.1s;
-}
-
-    .ctx-btn i {
-        color: #70646E;
-        font-size: 18px;
-    }
-
-    .ctx-btn:hover {
-        background-color: #70646E;
-        color: #FFFDFB;
-    }
-
-        .ctx-btn:hover i {
-            color: #FFFDFB;
-        }
-
-.buttons-rate-container {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    justify-content: center;
-}
-
-    .buttons-rate-container button {
-        flex: 1;
-        min-width: 200px;
-        flex: none;
-    }
-
-    .buttons-rate-container .btn-danger1,
-    .buttons-rate-container .btn-secondary {
-        width: auto;
-        flex: none;
-    }
-
-.swap.card-title {
-    font-weight: 550 !important;
-}
-
-/* ======================= RESPONSIVE ======================= */
-@media (max-width: 1200px) {
-    .chat-page.with-info {
-        margin-left: 240px;
-        margin-right: 200px;
-    }
-
-    .chat-topbar {
-        left: 240px;
-    }
-
-    .chat-topbar-right.with-info {
-        right: 220px;
-    }
-
-    .input-bar.with-info {
-        right: 200px;
-    }
-}
-
-@media (max-width: 992px) {
-    .chat-page.with-info {
-        margin-left: 200px;
-        margin-right: 0;
-    }
-
-    .chat-topbar {
-        left: 200px;
-        padding: 0 16px;
-    }
-
-    .chat-topbar-right.with-info {
-        right: 16px;
-    }
-
-    .input-bar.with-info {
-        right: 16px;
-    }
-
-    .chat-info-sidebar {
-        width: 100%;
-        max-width: 300px;
-        height: 100%;
-    }
-}
-
 @media (max-width: 768px) {
+    /* ПРОМЯНА: Вместо margin: 0, оставяме място за лявата лента */
     .chat-page,
     .chat-page.no-info,
     .chat-page.with-info {
         margin: 0;
+        margin-left: 70px; /* <--- Запазва място за навигацията (нагласете пикселите според ширината на CollapsedSidebar) */
         flex-direction: column;
     }
 
+    /* Нагаждаме горната лента също да не покрива навигацията */
     .chat-topbar {
-        left: 0;
+        left: 70px; /* <--- Започва след навигацията */
         right: 0;
         height: 60px;
         padding: 0 12px;
     }
 
+    /* Допълнителни корекции за мобилни */
     .chat-topbar-left {
         gap: 8px;
     }
@@ -1034,281 +827,95 @@
         height: 40px;
     }
 
-    .chat-topbar-name {
-        font-size: 14px;
-    }
-
-    .chat-topbar-sub {
-        font-size: 12px;
-        gap: 4px;
-    }
-
-    .chat-topbar-right {
-        font-size: 12px;
-        padding: 4px 8px;
-    }
-
-    .chat-info-sidebar {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        height: 100%;
-        width: 80%;
-        max-width: 280px;
-        transition: transform 0.3s ease;
-        z-index: 105;
-    }
-
-        .chat-info-sidebar.hidden {
-            transform: translateX(100%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-    .open-sidebar-btn {
-        top: 12px;
-        right: 12px;
-    }
-
-    .input-bar {
-        left: 8px;
-        right: 8px;
-        bottom: 8px;
-        padding: 6px 8px;
-    }
-
-        .input-bar input {
-            font-size: 14px;
-        }
-
-    .my-message,
-    .other-message {
-        max-width: 80%;
-        font-size: 13px;
-    }
-
     .chat-window {
         padding: 12px 10px;
-        padding-bottom: 160px; /* место под input-bar */
-    }
-}
-
-@media (max-width: 480px) {
-    .chat-topbar-name {
-        font-size: 13px;
-    }
-
-    .chat-topbar-sub {
-        font-size: 11px;
-    }
-
-    .chat-avatar,
-    .chat-avatar-placeholder {
-        width: 28px;
-        height: 28px;
-    }
-
-    .my-message,
-    .other-message {
-        max-width: 90%;
-        font-size: 12px;
-    }
-
-    .input-bar input {
-        font-size: 13px;
-    }
-
-    .chat-info-profile-avatar {
-        width: 72px;
-        height: 72px;
-    }
-}
-
-.chat-window {
-    flex-grow: 1;
-    padding-bottom: 180px;
-}
-
-@media (max-width: 768px) {
-    .chat-window {
         padding-bottom: 160px;
     }
-}
 
-@media (max-width: 480px) {
-    .chat-window {
-        padding-bottom: 140px;
+    .chat-bottom-fixed,
+    .chat-bottom-fixed.with-info {
+        left: 70px !important; /* <--- Изместваме Input Bar-а надясно, за да не крие навигацията */
+        right: 0 !important;
+        width: auto !important; /* Автоматична ширина до края на екрана */
     }
+
+        /* Input-bar заема цялата оставаща ширина */
+        .chat-bottom-fixed .input-bar {
+            width: calc(100% - 24px);
+        }
 }
 
-.edit-preview {
+/* =========================================================
+   CHAT BOTTOM FIXED & INPUT BAR WRAPPER — FINAL GLOBAL FIX
+   ========================================================= */
+
+.chat-bottom-fixed,
+.chat-bottom-fixed.input-bar-wrapper {
     position: fixed;
-    bottom: 70px;
-    left: 16px;
-    right: 16px;
-    max-width: calc(100% - 32px);
-    background-color: #F4F3F1;
-    border-left: 4px solid #70646E;
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 13px;
-    color: #453D44;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    z-index: 110;
-}
+    bottom: 16px;
+    left: 352px; /* Започва след навигацията */
+    right: 0; /* Стига до края на екрана */
 
-.replying-indicator {
-    position: fixed;
-    bottom: 120px;
-    left: 16px;
-    right: 16px;
-    max-width: calc(100% - 32px);
-    background-color: #EDEBE9;
-    border-left: 4px solid #8B6D86;
-    padding: 8px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    color: #4A4045;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    z-index: 110;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-    .replying-indicator i {
-        color: #8B6D86;
-        font-size: 14px;
-    }
-
-.reply-inline {
-    margin-bottom: 4px;
-    padding-left: 12px;
-    border-left: 3px solid #8B6D86;
-    font-size: 13px;
-    color: #4A4045;
-    background-color: #F5F3F4;
-    border-radius: 6px;
-    padding: 4px 8px;
-    max-width: 80%;
-    word-wrap: break-word;
-}
-
-    .reply-inline small {
-        display: block;
-        margin-bottom: 2px;
-        font-style: normal;
-        color: #6C5C62;
-    }
-
-    .reply-inline .reply-to-message {
-        display: block;
-        font-weight: 500;
-        color: #3E363D;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-.input-bar {
-    position: relative;
-}
-
-.chat-container {
-    height: calc(100vh - 84px);
     display: flex;
     flex-direction: column;
-}
-
-.input-bar {
-    flex-shrink: 0;
-    margin: 12px 22px 16px 22px;
-}
-
-.input-bar {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
+    align-items: center; /* Центрира съдържанието хоризонтално */
     gap: 8px;
-    padding: 6px 12px;
-    background-color: #FFFFFF;
-    border-radius: 24px;
-    border: 1px solid rgba(0,0,0,0.1);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    z-index: 110;
+    pointer-events: none; /* Позволява кликове през празните места */
+    /* Нулираме старите ограничения */
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent;
 }
 
-
-
-
-
-.chat-bottom-fixed {
-    left: calc(16px + 0px);
-    right: calc(16px + 280px);
-    max-width: calc(100% - 16px - 280px);
-}
-
-@media (max-width: 992px) {
-    .chat-bottom-fixed {
-        left: 16px;
-        right: 16px;
-        max-width: calc(100% - 32px);
-    }
-}
-
-.reply-preview,
-.edit-preview {
-    left: calc(16px + var(--sidebar-left, 0px));
-    right: calc(16px + var(--sidebar-right, 0px));
-    max-width: calc(100% - 32px - var(--sidebar-left, 0px) - var(--sidebar-right, 0px));
-}
-
-.chat-window {
-    padding-bottom: calc(16px + 56px + 16px);
-}
-
-.replying-indicator,
-.context-menu {
-    left: calc(16px + var(--sidebar-left, 0px));
-    right: calc(16px + var(--sidebar-right, 0px));
-}
-
-.input-bar {
-    position: relative;
-}
-
-.chat-container {
-    height: calc(100vh - 84px);
-    display: flex;
-    flex-direction: column;
-}
-
-.input-bar {
-    flex-shrink: 0;
-    margin: 12px 22px 16px 22px;
-}
-
-.input-bar {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background-color: #FFFFFF;
-    border-radius: 24px;
-    border: 1px solid rgba(0,0,0,0.1);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-
-    .input-bar.with-info {
-        left: 16px;
-        right: calc(280px + 16px);
+    /* Ако използвате клас .with-info (отворен десен панел) */
+    .chat-bottom-fixed.with-info,
+    .chat-bottom-fixed.input-bar-wrapper.with-info {
+        right: 280px; /* Отмества се, за да не се закрива от десния панел */
     }
 
-.chat-bottom-fixed.with-info {
-    left: calc(352px);
-    right: 280px;
-}
+    /* Връщаме клика върху самите елементи */
+    .chat-bottom-fixed > *,
+    .chat-bottom-fixed.input-bar-wrapper > * {
+        pointer-events: auto;
+    }
 
-.input-bar.with-info {
-    right: calc(280px + 16px) !important;
+    /* СТИЛОВЕ ЗА САМИЯ INPUT BAR И КАРТИТЕ */
+    .chat-bottom-fixed .input-bar,
+    .chat-bottom-fixed .chat-system-card,
+    .chat-bottom-fixed .rate-card,
+    .chat-bottom-fixed .reply-preview,
+    .chat-bottom-fixed .replying-indicator,
+    .chat-bottom-fixed .edit-preview {
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        margin: 0 !important;
+        /* Ширина и центриране - НАСТРОЙТЕ ТУК */
+        width: calc(100% - 40px);
+        max-width: 900px;
+        flex-shrink: 0;
+    }
+
+/* =========================================================
+   RESPONSIVE (Мобилни устройства < 768px)
+   ========================================================= */
+@media (max-width: 768px) {
+    .chat-bottom-fixed,
+    .chat-bottom-fixed.input-bar-wrapper,
+    .chat-bottom-fixed.with-info {
+        left: 70px !important; /* Запазва място за тънката навигация отляво */
+        right: 0 !important;
+        width: auto !important;
+    }
+
+        .chat-bottom-fixed .input-bar,
+        .chat-bottom-fixed .chat-system-card {
+            width: calc(100% - 24px); /* По-широко на малки екрани */
+        }
 }

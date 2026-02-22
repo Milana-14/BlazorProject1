@@ -198,7 +198,7 @@ else
         }
 
 
-        <div class="chat-bottom-fixed input-bar-wrapper">
+        <div class="chat-bottom-fixed input-bar-wrapper @(isSidebarHidden ? "no-info" : "with-info")">
             @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
             {
                 <div class="chat-system-card swap-card justify-content-center">
