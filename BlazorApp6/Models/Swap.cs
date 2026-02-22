@@ -62,7 +62,7 @@
                 throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\" или \"Неоценен свап\".");
 
             Status = SwapStatus.Completed;
-            DateCompleted = DateTime.Now;
+            DateCompleted = DateTime.UtcNow;
         }
 
         public void RejectCompletion()  

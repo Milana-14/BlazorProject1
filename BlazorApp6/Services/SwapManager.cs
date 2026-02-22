@@ -59,11 +59,12 @@ namespace BlazorApp6.Services
 
             var swap = new Swap
             {
+                Id = Guid.NewGuid(),
                 Student1Id = s1.Id,
                 Student2Id = s2.Id,
                 RequesterId = requester.Id,
                 SubjectForHelp = subject,
-                DateRequested = DateTime.Now,
+                DateRequested = DateTime.UtcNow,
                 Status = SwapStatus.Pending,
                 Comment = comment
             };
@@ -311,15 +312,14 @@ namespace BlazorApp6.Services
             cmd.Parameters.Add("@Student1Id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = s.Student1Id;
             cmd.Parameters.Add("@Student2Id", NpgsqlTypes.NpgsqlDbType.Uuid).Value = s.Student2Id;
             cmd.Parameters.Add("@Status", NpgsqlTypes.NpgsqlDbType.Integer).Value = (int)s.Status;
-            cmd.Parameters.Add("@DateRequested", NpgsqlTypes.NpgsqlDbType.Timestamp).Value = s.DateRequested;
-            cmd.Parameters.Add("@DateConfirmed", NpgsqlTypes.NpgsqlDbType.Timestamp).Value = (object?)s.DateConfirmed ?? DBNull.Value;
+            cmd.Parameters.Add("@DateRequested", NpgsqlTypes.NpgsqlDbType.TimestampTz).Value = s.DateRequested;
+            cmd.Parameters.Add("@DateConfirmed", NpgsqlTypes.NpgsqlDbType.TimestampTz).Value = (object?)s.DateConfirmed ?? DBNull.Value;
             cmd.Parameters.Add("@SubjectForHelp", NpgsqlTypes.NpgsqlDbType.Integer).Value = (int)s.SubjectForHelp;
             cmd.Parameters.Add("@RequesterId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = s.RequesterId;
             cmd.Parameters.Add("@CompletionProposedByStudentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = (object?)s.CompletionProposedByStudentId ?? DBNull.Value;
-            cmd.Parameters.Add("@DateCompleted", NpgsqlTypes.NpgsqlDbType.Timestamp).Value = (object?)s.DateCompleted ?? DBNull.Value;
+            cmd.Parameters.Add("@DateCompleted", NpgsqlTypes.NpgsqlDbType.TimestampTz).Value = (object?)s.DateCompleted ?? DBNull.Value;
             cmd.Parameters.Add("@Comment", NpgsqlTypes.NpgsqlDbType.Text).Value = (object?)s.Comment ?? DBNull.Value;
 
-            cmd.Prepare();
             cmd.ExecuteNonQuery();
         }
 

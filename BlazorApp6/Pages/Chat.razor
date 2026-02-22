@@ -198,7 +198,7 @@ else
         }
 
 
-        @* <div class="chat-bottom-fixed input-bar-wrapper"> *@
+        <div class="chat-bottom-fixed input-bar-wrapper">
             @if (swap.Status == SwapStatus.PendingCompleted && swap.CompletionProposedByStudentId.HasValue)
             {
                 <div class="chat-system-card swap-card justify-content-center">
@@ -283,7 +283,7 @@ else
                     <i class="bi bi-@(IsEditing ? "check-lg" : "send")"></i>
                 </button>
             </div>
-        @* </div> *@
+        </div>
 
                 }
 

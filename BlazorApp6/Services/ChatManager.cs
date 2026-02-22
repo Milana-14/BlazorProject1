@@ -95,7 +95,7 @@ namespace BlazorApp6.Services
             cmd.Parameters.Add("@swap", NpgsqlDbType.Uuid).Value = swapId;
             cmd.Parameters.Add("@sender", NpgsqlDbType.Uuid).Value = senderId;
             cmd.Parameters.Add("@content", NpgsqlDbType.Text).Value = content;
-            cmd.Parameters.Add("@time", NpgsqlDbType.Timestamp).Value = DateTime.Now;
+            cmd.Parameters.Add("@time", NpgsqlDbType.TimestampTz).Value = DateTime.UtcNow;
             cmd.Parameters.Add("@reply", NpgsqlDbType.Uuid).Value =
                 (object?)replyToMessageId ?? DBNull.Value;
 
@@ -258,7 +258,7 @@ public class ChatMessages : Hub<IChatClient>
         await File.WriteAllBytesAsync(filePath, fileBytes);
 
         var fileUrl = $"/files/{fileName}";
-        MessageToSend message = new MessageToSend(Guid.NewGuid(), $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>", DateTime.Now, null);
+        MessageToSend message = new MessageToSend(Guid.NewGuid(), $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>", DateTime.UtcNow, null);
 
         await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.Content, DateTime.Now, message.ReplyToMessage);
 

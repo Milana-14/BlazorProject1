@@ -101,7 +101,7 @@ namespace BlazorApp6.Services
                 command.Parameters.Add("@Rating", NpgsqlTypes.NpgsqlDbType.Integer).Value = review.Rating;
                 command.Parameters.Add("@SenderStudentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = review.SenderStudentId;
                 command.Parameters.Add("@ReceiverStudentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = review.ReceiverStudentId;
-                command.Parameters.Add("@CreatedAt", NpgsqlTypes.NpgsqlDbType.Timestamp).Value = review.CreatedAt;
+                command.Parameters.Add("@CreatedAt", NpgsqlTypes.NpgsqlDbType.TimestampTz).Value = review.CreatedAt;
 
                 command.Prepare();
 

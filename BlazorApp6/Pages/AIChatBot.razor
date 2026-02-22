@@ -47,14 +47,14 @@
                 }
             }
 
-            @* <div class="chat-bottom-fixed"> *@
+            <div class="chat-bottom-fixed">
                  <div class="input-bar no-info d-flex align-items-center">
                     <InputText @bind-Value="newMessage" placeholder="Задай въпрос..." />
                     <button class="btn-send" disabled="@string.IsNullOrWhiteSpace(newMessage)"  @onclick="SendMessage">
                         <i class="bi bi-send"></i>
                     </button>
                 </div>
-            @* </div> *@
+            </div>
         </div>
     </div>
         @if (contextMenuVisible)
