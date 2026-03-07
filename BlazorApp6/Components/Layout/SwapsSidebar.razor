@@ -19,7 +19,7 @@
     @foreach (var student in OtherStudents)
     {
         Swap? swap = SwapManager.FindSwapByStudentsId(student.Id, CurrentStudentId);
-        if (swap == null) continue;)
+        if (swap == null) continue;
         var unread = ChatManager.GetUnreadCount(swap.Id, CurrentStudentId);
 
         <div class="swap-chat-item" @onclick="() => OpenChat(student)">
