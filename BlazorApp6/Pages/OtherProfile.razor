@@ -23,7 +23,7 @@
 
     else if (string.IsNullOrEmpty(errorMessage) && otherStudent != null)
     {
-        SwapModel? swap = SwapManager.FindSwapByStudentsId(otherStudent.Id, currentStudent.Id);
+        SwapModel? swap = SwapManager.FindSwapsByStudentsId(otherStudent.Id, currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).FirstOrDefault();
 
         bool isAlreadyRequested = swap?.Status == SwapStatus.Pending;
         bool isAlreadySwapped = swap?.Status == SwapStatus.Confirmed;

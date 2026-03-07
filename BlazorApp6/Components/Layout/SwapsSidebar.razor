@@ -18,24 +18,27 @@
 
     @foreach (var student in OtherStudents)
     {
-        Swap? swap = SwapManager.FindSwapByStudentsId(student.Id, CurrentStudentId);
-        if (swap == null) continue;
-        var unread = ChatManager.GetUnreadCount(swap.Id, CurrentStudentId);
+        List<Swap>? swaps = SwapManager.FindSwapsByStudentsId(student.Id, CurrentStudentId).Where(s => s.Status == SwapStatus.Confirmed).ToList();
+        @foreach (Swap swap in swaps)
+        {
+            if (swap == null) continue;
+            var unread = ChatManager.GetUnreadCount(swap.Id, CurrentStudentId);
 
-        <div class="swap-chat-item" @onclick="() => OpenChat(student)">
-            <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="sidebar-avatar" />
-            <div class="swap-chat-info">
-                <strong>@student.FirstName @((!string.IsNullOrEmpty(student.SecName)) ? student.SecName[0].ToString() : "")</strong>
+            <div class="swap-chat-item" @onclick="() => OpenChat(swap)">
+                <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="sidebar-avatar" />
+                <div class="swap-chat-info">
+                    <strong>@student.FirstName @((!string.IsNullOrEmpty(student.SecName)) ? student.SecName[0].ToString() : "")</strong>
 
-                <div class="last-message-row">
-                    <span class="last-message">@LastMessagePreview(swap.Id)</span>
-                    @if (unread > 0)
-                    {
-                        <span class="unread-count">@unread</span>
-                    }
+                    <div class="last-message-row">
+                        <span class="last-message">@LastMessagePreview(swap.Id)</span>
+                        @if (unread > 0)
+                        {
+                            <span class="unread-count">@unread</span>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     }
 </div>
 
@@ -67,9 +70,8 @@
         }
     }
 
-    private void OpenChat(Student student)
+    private void OpenChat(Swap swap)
     {
-        var swap = SwapManager.FindSwapByStudentsId(student.Id, CurrentStudentId);
         if (swap != null) NavigationManager.NavigateTo($"/chat/{swap.Id}");
     }
 

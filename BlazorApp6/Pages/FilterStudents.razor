@@ -113,7 +113,7 @@ else
         <div class="students-container">
             @foreach (var student in filteredStudentsCompatib)
             {
-                SwapModel? swap = SwapManager.FindSwapByStudentsId(student.student.Id, currentStudent.Id);
+                SwapModel? swap = SwapManager.FindSwapsByStudentsId(student.student.Id, currentStudent.Id).Where(s => s.Status == SwapStatus.Confirmed).FirstOrDefault();
 
                 bool isAlreadyRequestedByMe = swap?.Status == SwapStatus.Pending && swap.RequesterId == currentStudent.Id;
                 bool isAlreadyRequestedByOther = swap?.Status == SwapStatus.Pending && swap.RequesterId == student.student.Id;

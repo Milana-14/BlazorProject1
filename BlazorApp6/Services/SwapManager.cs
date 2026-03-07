@@ -15,7 +15,6 @@ namespace BlazorApp6.Services
         private readonly Dictionary<Guid, Swap> swapsById = new();
         private readonly Dictionary<Guid, Swap> historyById = new();
 
-        private readonly Dictionary<(Guid, Guid), Swap> swapsByPair = new();
         private readonly Dictionary<Guid, List<Swap>> swapsByStudent = new();
         private readonly Dictionary<Guid, List<Swap>> historyByStudent = new();
 
@@ -52,11 +51,6 @@ namespace BlazorApp6.Services
 
         private Swap? CreateSwapIfNotExists(Student s1, Student s2, SubjectEnum subject, Student requester, string? comment)
         {
-            var key = NormalizePair(s1.Id, s2.Id);
-
-            if (swapsByPair.ContainsKey(key))
-                return null;
-
             var swap = new Swap
             {
                 Id = Guid.NewGuid(),
@@ -128,10 +122,17 @@ namespace BlazorApp6.Services
         public List<Swap> FindSwapsByStudentId(Guid studentId)
             => swapsByStudent.TryGetValue(studentId, out var list) ? list : new List<Swap>();
 
-        public Swap? FindSwapByStudentsId(Guid s1, Guid s2)
+        public List<Swap> FindSwapsByStudentsId(Guid s1, Guid s2)
         {
-            swapsByPair.TryGetValue(NormalizePair(s1, s2), out var swap);
-            return swap;
+            var result = new List<Swap>();
+
+            foreach (var swap in swaps)
+            {
+                if (IsSamePair(swap, s1, s2))
+                    result.Add(swap);
+            }
+
+            return result;
         }
 
         public List<Swap> FindHistorySwapsByStudentId(Guid studentId)
@@ -176,8 +177,6 @@ namespace BlazorApp6.Services
             swaps.Add(s);
             swapsById[s.Id] = s;
 
-            swapsByPair[NormalizePair(s.Student1Id, s.Student2Id)] = s;
-
             AddToStudentIndex(swapsByStudent, s.Student1Id, s);
             AddToStudentIndex(swapsByStudent, s.Student2Id, s);
         }
@@ -186,7 +185,6 @@ namespace BlazorApp6.Services
         {
             swaps.Remove(s);
             swapsById.Remove(s.Id);
-            swapsByPair.Remove(NormalizePair(s.Student1Id, s.Student2Id));
 
             RemoveFromStudentIndex(swapsByStudent, s.Student1Id, s);
             RemoveFromStudentIndex(swapsByStudent, s.Student2Id, s);
