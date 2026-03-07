@@ -58,7 +58,7 @@
 
         public void CompleteSwap()
         {
-            if (Status != SwapStatus.PendingCompleted && Status != SwapStatus.CompletedNotRated)
+            if (Status != SwapStatus.CompletedNotRated)
                 throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\" или \"Неоценен свап\".");
 
             Status = SwapStatus.Completed;

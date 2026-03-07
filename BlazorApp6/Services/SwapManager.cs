@@ -115,6 +115,9 @@ namespace BlazorApp6.Services
 
         public void CompleteSwap(Swap swap)
         {
+            if (swap.Status == SwapStatus.Completed)
+                return;
+
             RemoveSwapFromCache(swap);
             swap.CompleteSwap();
             AddHistoryToCache(swap);

@@ -63,7 +63,7 @@ else
                         <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="() => ViewProfile(otherStudent)">Виж профила</span></div>
                         @if (swap.Status == SwapStatus.Confirmed)
                         {
-                            <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="ProposeCompletion">Предложи завършване</span></div>
+                            <div class="chat-info-action"><i class="bi bi-check-circle"></i><span @onclick="ProposeCompletion">Предложи завършване</span></div>
                         }
                     </div>
                     <div class="chat-info-section">
