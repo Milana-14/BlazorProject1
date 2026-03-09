@@ -265,6 +265,31 @@ ORDER BY ""Timestamp""";
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public class AiChatService // Сервиз, който управлява логиката на AI чата и съхранението на историята в паметта и взаимодействие с Azure OpenAI API
 {
     private readonly ChatClient chatClient;
