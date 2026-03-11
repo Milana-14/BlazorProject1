@@ -1,5 +1,4 @@
-﻿using Azure;
-using Azure.AI.OpenAI;
+﻿using Azure.AI.OpenAI;
 using BlazorApp6.Models;
 using BlazorApp6.Services;
 using Microsoft.AspNetCore.SignalR;
