@@ -1,7 +1,11 @@
+using Azure;
 using BlazorApp6;
 using BlazorApp6.Services;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
+using OpenAI;
+using OpenAI.Chat;
 using System.Data;
 using System.Globalization;
 
@@ -21,7 +25,15 @@ builder.Services.AddScoped<ChatManager>();
 builder.Services.AddScoped<AiChatService>();
 builder.Services.AddScoped<AiChatManager>();
 builder.Services.AddSingleton<OnlineUsersService>();
+builder.Services.AddScoped<AiModerationService>();
+builder.Services.AddScoped<AiEvaluationService>();
 
+builder.Services.AddSingleton<OpenAIClient>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var apiKey = config["EDUSWAPS_AI_TOKEN"];
+    return new OpenAIClient(new AzureKeyCredential(apiKey));
+});
 
 builder.Services.AddHttpClient("ServerAPI", client =>
 {

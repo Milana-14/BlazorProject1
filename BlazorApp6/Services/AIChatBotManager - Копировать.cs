@@ -10,11 +10,11 @@ using System.Text;
 
 namespace BlazorApp6.Services
 {
-    public class AiChatManager // Мениджър за работа с база дани за съхранение на съобщенията в AI чата
+    public class AiChatManager1 // Мениджър за работа с база дани за съхранение на съобщенията в AI чата
     {
         private readonly string connectionString;
 
-        public AiChatManager(IConfiguration config)
+        public AiChatManager1(IConfiguration config)
         {
             connectionString = config.GetConnectionString("DefaultConnection");
         }
@@ -40,27 +40,6 @@ VALUES
             cmd.Parameters.AddWithValue("@FileName", (object?)message.FileName ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@ReplyToMessageId", message.ReplyToMessageId == Guid.Empty ? Guid.Empty : message.ReplyToMessageId);
             cmd.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
-
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public async Task AddModerationMessageAsync(AiModerationMessage message)
-        {
-            using var conn = new NpgsqlConnection(connectionString);
-            await conn.OpenAsync();
-
-            var sql = @"
-                        INSERT INTO ""AiModerationMessages""
-                        (""Id"", ""ModerationMessage"", ""Toxic"", ""FactualError"", ""Suggestion"")
-                        VALUES
-                        (@Id, @ModerationMessageId, @Toxic, @FactualError, @Suggestion)";
-
-            using var cmd = new NpgsqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@Id", message.Id);
-            cmd.Parameters.AddWithValue("@ModerationMessageId", message.MessageId);
-            cmd.Parameters.AddWithValue("@Toxic", message.Toxic);
-            cmd.Parameters.AddWithValue("@FactualError", message.FactualError);
-            cmd.Parameters.AddWithValue("@Suggestion", (object?)message.Suggestion ?? DBNull.Value);
 
             await cmd.ExecuteNonQueryAsync();
         }
@@ -125,7 +104,7 @@ ORDER BY ""Timestamp""";
         }
     }
 
-    public interface IAiChatClient // Интерфейс за методите, които клиентите на SignalR ще имплементират, за да получават съобщения и статуси от AI чата
+    public interface IAiChatClient1 // Интерфейс за методите, които клиентите на SignalR ще имплементират, за да получават съобщения и статуси от AI чата
     {
         Task ReceiveMessage(Guid id, Guid senderId, string senderName, string message);
         Task DeleteMessage(Guid messageId);
@@ -135,14 +114,14 @@ ORDER BY ""Timestamp""";
         Task AiTypingFinished(Guid tempMessageId, Guid finalMessageId);
     }
 
-    public class AiChatHub : Hub<IAiChatClient> // SignalR хъб за AI чат, който управлява връзките и комуникацията между клиентите и AI
+    public class AiChatHub1 : Hub<IAiChatClient> // SignalR хъб за AI чат, който управлява връзките и комуникацията между клиентите и AI
     {
         private readonly AiChatManager db;
         private readonly AiChatService ai;
 
         private static readonly Guid AI_ID = Guid.Empty;
 
-        public AiChatHub(AiChatManager db, AiChatService ai)
+        public AiChatHub1(AiChatManager db, AiChatService ai)
         {
             this.db = db;
             this.ai = ai;
@@ -157,7 +136,8 @@ ORDER BY ""Timestamp""";
             var history = await db.GetMessagesAsync(studentId);
             foreach (var m in history)
             {
-                await Clients.Caller.ReceiveMessage(m.Id, m.SenderId, m.SenderName, m.Content);
+                await Clients.Caller.ReceiveMessage(
+                    m.Id, m.SenderId, m.SenderName, m.Content);
             }
         }
 
@@ -309,13 +289,13 @@ ORDER BY ""Timestamp""";
 
 
 
-    public class AiChatService // Сервиз, който управлява логиката на AI чата и съхранението на историята в паметта и взаимодействие с Azure OpenAI API
+    public class AiChatService1 // Сервиз, който управлява логиката на AI чата и съхранението на историята в паметта и взаимодействие с Azure OpenAI API
 {
     private readonly ChatClient chatClient;
     private readonly ConcurrentDictionary<string, List<ChatMessage>> histories = new();
     private readonly AiChatManager aiDb;
     private readonly StudentManager studentManager;
-    public AiChatService(IConfiguration config, AiChatManager aiDb, StudentManager studentManager)
+    public AiChatService1(IConfiguration config, AiChatManager aiDb, StudentManager studentManager)
     {
         var token = config["EDUSWAPS_AI_TOKEN"];
         if (string.IsNullOrWhiteSpace(token))

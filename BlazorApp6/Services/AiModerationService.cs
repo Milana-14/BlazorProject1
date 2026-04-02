@@ -9,16 +9,22 @@ namespace BlazorApp6.Services
     {
         private readonly ChatClient chatClient;
 
-        public async Task<Models.ModerationResult> CheckMessage(List<Message> previousMessages, Message message, SubjectEnum subject)
+        public AiModerationService(ChatClient chatClient)
+        {
+            this.chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        }
+
+        public async Task<Models.AiModerationMessage> CheckMessage(List<Message> previousMessages, Message message, SubjectEnum subject)
         {
             previousMessages = previousMessages.TakeLast(3).ToList();
 
             if (message.Content.Trim().Length < 6)
             {
-                return new Models.ModerationResult
+                return new Models.AiModerationMessage
                 {
+                    MessageId = Guid.Empty,
                     Toxic = 0,
-                    Error = 0,
+                    FactualError = 0,
                     Suggestion = null
                 };
             }
@@ -93,17 +99,17 @@ namespace BlazorApp6.Services
 
             try
             {
-                var moderation = JsonSerializer.Deserialize<Models.ModerationResult>(content);
+                var moderation = JsonSerializer.Deserialize<Models.AiModerationMessage>(content);
                 moderation.MessageId = message.Id;
                 return moderation;
             }
             catch (JsonException)
             {
-                return new Models.ModerationResult
+                return new Models.AiModerationMessage
                 {
                     MessageId = Guid.Empty,
                     Toxic = 0,
-                    Error = 0,
+                    FactualError = 0,
                     Suggestion = "Грешка при анализа на съобщението. Моля, опитайте отново."
                 };
             }

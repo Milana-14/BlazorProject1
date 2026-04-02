@@ -224,10 +224,15 @@ public class ChatMessages : Hub<IChatClient>
 {
     private readonly ChatManager chatManager;
     private readonly SwapManager swapManager;
-    public ChatMessages(ChatManager chatManager, SwapManager swapManager)
+    private readonly AiChatManager aiChatManager;
+    private readonly AiModerationService aiModerationService;
+
+    public ChatMessages(ChatManager chatManager, SwapManager swapManager, AiModerationService aiModerationService) // добавлен параметр
     {
         this.chatManager = chatManager;
         this.swapManager = swapManager;
+        this.aiChatManager = aiChatManager;
+        this.aiModerationService = aiModerationService;
     }
 
     public async Task JoinChat(UserConnection connection)
@@ -247,6 +252,53 @@ public class ChatMessages : Hub<IChatClient>
         this.chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.Content, message.ReplyToMessage);
 
         await Clients.OthersInGroup(connection.SwapId.ToString()).NewUnread(connection.SwapId);
+
+        var swap = swapManager.FindSwapById(connection.SwapId);
+
+        if (connection.Student.Id == swap.Student2Id)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var previous = chatManager.GetMessagesFromDb(connection.SwapId);
+
+                    var msgForCheck = new Message
+                    {
+                        Id = message.Id,
+                        SwapId = connection.SwapId,
+                        SenderId = connection.Student.Id,
+                        Content = message.Content,
+                        Timestamp = DateTime.UtcNow,
+                        ReplyToMessageId = message.ReplyToMessage
+                    };
+                    var subject = swap?.SubjectForHelp ?? SubjectEnum.NotSpecified;
+
+                    var moderationResult = await aiModerationService.CheckMessage(previous, msgForCheck, subject);
+                    if (moderationResult != null)
+                    {
+                        await aiChatManager.AddModerationMessageAsync(moderationResult);
+
+                        if (moderationResult.Toxic >= 0.6)
+                        {
+                            // изпращане на клиента като AiModerationMessage TOXIC съобщение (senderId = 00000000-0000-0000-0000-000000000001)
+                            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(moderationResult.Id, Guid.Parse("00000000-0000-0000-0000-000000000001"), 
+                                "AI Moderation", $"[AI moderation] токсичност: {moderationResult.Toxic:F2}. Про 3 нарушения свапът ще се затвори автоматично.", DateTime.UtcNow, message.Id);
+                        }
+                        else if (moderationResult.FactualError >= 0.6)
+                        {
+                            // изпращане на клиента като AiModerationMessage FACTUAL ERROR съобщение (senderId = 00000000-0000-0000-0000-000000000002)
+                            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(moderationResult.Id, Guid.Parse("00000000-0000-0000-0000-000000000002"), 
+                                "AI Moderation", moderationResult.Suggestion, DateTime.UtcNow, message.Id);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Възникна грешка при AiModerationService: {ex.Message}");
+                }
+            });
+        }
     }
 
     public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
