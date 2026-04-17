@@ -919,3 +919,29 @@
             width: calc(100% - 24px); /* По-широко на малки екрани */
         }
 }
+
+
+
+.ai-warning {
+    font-size: 12px;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+}
+
+    .ai-warning.toxic {
+        background: #f8d7da;
+        border-left-color: #dc3545;
+    }
+
+    .ai-warning.fact {
+        background: #d1ecf1;
+        border-left-color: #0dcaf0;
+    }
+
+.highlight {
+    border: 1px solid #ffc107;
+    background: rgba(255, 193, 7, 0.08);
+}

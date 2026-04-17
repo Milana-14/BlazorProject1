@@ -19,6 +19,56 @@ namespace BlazorApp6.Services
             connectionString = config.GetConnectionString("DefaultConnection");
         }
 
+        public async Task AddModerationMessageAsync(AiModerationMessage message)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+                        INSERT INTO ""AiModerationMessages""
+                        (""Id"", ""ModerationMessageId"", ""Toxic"", ""FactualError"", ""Suggestion"")
+                        VALUES
+                        (@Id, @ModerationMessageId, @Toxic, @FactualError, @Suggestion)";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", message.Id);
+            cmd.Parameters.AddWithValue("@ModerationMessageId", message.MessageId);
+            cmd.Parameters.AddWithValue("@Toxic", message.Toxic);
+            cmd.Parameters.AddWithValue("@FactualError", message.FactualError);
+            cmd.Parameters.AddWithValue("@Suggestion", (object?)message.Suggestion ?? DBNull.Value);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<List<AiModerationMessage>> GetModerationMessagesAsync()
+        {
+            var list = new List<AiModerationMessage>();
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+SELECT ""Id"", ""ModerationMessageId"", ""Toxic"", ""FactualError"", ""Suggestion""
+FROM ""AiModerationMessages""";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(new AiModerationMessage
+                {
+                    Id = reader.GetGuid(0),
+                    MessageId = reader.GetGuid(1),
+                    Toxic = reader.GetDouble(2),
+                    FactualError = reader.GetDouble(3),
+                    Suggestion = reader.IsDBNull(4) ? null : reader.GetString(4)
+                });
+            }
+
+            return list;
+        }
+
+
         public async Task AddMessageAsync(AiMessage message)
         {
             using var conn = new NpgsqlConnection(connectionString);
@@ -40,27 +90,6 @@ VALUES
             cmd.Parameters.AddWithValue("@FileName", (object?)message.FileName ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@ReplyToMessageId", message.ReplyToMessageId == Guid.Empty ? Guid.Empty : message.ReplyToMessageId);
             cmd.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
-
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public async Task AddModerationMessageAsync(AiModerationMessage message)
-        {
-            using var conn = new NpgsqlConnection(connectionString);
-            await conn.OpenAsync();
-
-            var sql = @"
-                        INSERT INTO ""AiModerationMessages""
-                        (""Id"", ""ModerationMessage"", ""Toxic"", ""FactualError"", ""Suggestion"")
-                        VALUES
-                        (@Id, @ModerationMessageId, @Toxic, @FactualError, @Suggestion)";
-
-            using var cmd = new NpgsqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@Id", message.Id);
-            cmd.Parameters.AddWithValue("@ModerationMessageId", message.MessageId);
-            cmd.Parameters.AddWithValue("@Toxic", message.Toxic);
-            cmd.Parameters.AddWithValue("@FactualError", message.FactualError);
-            cmd.Parameters.AddWithValue("@Suggestion", (object?)message.Suggestion ?? DBNull.Value);
 
             await cmd.ExecuteNonQueryAsync();
         }

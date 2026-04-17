@@ -227,7 +227,7 @@ public class ChatMessages : Hub<IChatClient>
     private readonly AiChatManager aiChatManager;
     private readonly AiModerationService aiModerationService;
 
-    public ChatMessages(ChatManager chatManager, SwapManager swapManager, AiModerationService aiModerationService) // добавлен параметр
+    public ChatMessages(ChatManager chatManager, SwapManager swapManager, AiChatManager aiChatManager, AiModerationService aiModerationService) // добавлен параметр
     {
         this.chatManager = chatManager;
         this.swapManager = swapManager;
@@ -275,18 +275,25 @@ public class ChatMessages : Hub<IChatClient>
                     var subject = swap?.SubjectForHelp ?? SubjectEnum.NotSpecified;
 
                     var moderationResult = await aiModerationService.CheckMessage(previous, msgForCheck, subject);
+
                     if (moderationResult != null)
                     {
-                        await aiChatManager.AddModerationMessageAsync(moderationResult);
-
                         if (moderationResult.Toxic >= 0.6)
                         {
+                            await aiChatManager.AddModerationMessageAsync(moderationResult);
                             // изпращане на клиента като AiModerationMessage TOXIC съобщение (senderId = 00000000-0000-0000-0000-000000000001)
-                            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(moderationResult.Id, Guid.Parse("00000000-0000-0000-0000-000000000001"), 
-                                "AI Moderation", $"[AI moderation] токсичност: {moderationResult.Toxic:F2}. Про 3 нарушения свапът ще се затвори автоматично.", DateTime.UtcNow, message.Id);
+                            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(moderationResult.Id, Guid.Parse("00000000-0000-0000-0000-000000000001"), "AI Moderation", 
+                                $"[AI moderation] токсичност: {moderationResult.Toxic * 100:F0}%. При още {3 - swap.ToxicMessagesCount} нарушения свапът ще се затвори автоматично Моля, изтрийте или редактирайте съобщението.", DateTime.UtcNow, message.Id);
+
+                            if (swap.ToxicMessagesCount == 3)
+                            {
+                                swapManager.CloseSwapForToxic(swap);
+                            }
                         }
+                        // сообщение может быть И токсичным, и содержать фактическую ошибку, поэтому не используем else if
                         else if (moderationResult.FactualError >= 0.6)
                         {
+                            await aiChatManager.AddModerationMessageAsync(moderationResult);
                             // изпращане на клиента като AiModerationMessage FACTUAL ERROR съобщение (senderId = 00000000-0000-0000-0000-000000000002)
                             await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(moderationResult.Id, Guid.Parse("00000000-0000-0000-0000-000000000002"), 
                                 "AI Moderation", moderationResult.Suggestion, DateTime.UtcNow, message.Id);

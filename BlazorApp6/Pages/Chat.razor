@@ -12,6 +12,7 @@
 @inject AvatarManager AvatarManager
 @inject SwapManager SwapManager
 @inject ChatManager ChatManager
+@inject AiChatManager aiChatManager
 @inject RateHelpManager RateHelpManager
 @inject OnlineUsersService OnlineUsers
 @inject IJSRuntime JS
@@ -95,40 +96,62 @@ else
                         lastDate = date;
                     }
 
-                    if (m.SenderName == $"{currentStudent.FirstName} {currentStudent.SecName}")
+                    if (m.SenderId == currentStudent.Id)
                     {
-                        <div class="my-message" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
-                            @if (m.ReplyToMessageId != null)
+                        <div class="message-block">
+                            @if (moderationMap.TryGetValue(m.Id, out var mod))
                             {
-                                var replied = messagesForChat.FirstOrDefault(x => x.Id == m.ReplyToMessageId);
-                                if (replied != null && replied.SenderId == currentStudent.Id)
-                                {
-                                    <div class="reply-inline">
-                                        <small>
-                                            Ти: <span class="reply-to-message">"@replied.Content"</span>
-                                        </small>
-                                    </div>
-                                }
-                                else if (replied != null && replied.SenderId != currentStudent.Id)
-                                {
-                                    <div class="reply-inline">
-                                        <small>
-                                            @otherStudent.FirstName: <span class="reply-to-message">"@replied.Content"</span>
-                                        </small>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="reply-inline deleted">
-                                        <small>Съобщението е изтрито</small>
-                                    </div>
-                                }
+                                <div class="ai-wrapper">
+                                    @if (mod.FactualError >= 0.6)
+                                    {
+                                        <div class="ai-warning fact)">
+                                            @mod.Suggestion
+                                        </div>
+                                    }
+                                    @if (mod.Toxic >= 0.6)
+                                    {
+                                        <div class="ai-warning toxic">
+                                            [AI moderation] токсичност: @(Math.Round(mod.Toxic * 100))%.
+                                            При още @(3 - swap.ToxicMessagesCount) нарушения свапът ще се затвори автоматично.
+                                            Моля, изтрийте или редактирайте съобщението.
+                                        </div>
+                                    }
+                                </div>
                             }
-                            @((MarkupString)m.Content)
-                            <sub><small><time>@(m.IsEdited ? $"редактирано {m.Timestamp:HH:mm}" : m.Timestamp.ToLocalTime().ToString("HH:mm"))</time></small></sub>
+
+                            <div class="my-message @(moderationMap.ContainsKey(m.Id) ? "highlight" : "")" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
+                                @if (m.ReplyToMessageId != null)
+                                {
+                                    var replied = messagesForChat.FirstOrDefault(x => x.Id == m.ReplyToMessageId);
+                                    if (replied != null && replied.SenderId == currentStudent.Id)
+                                    {
+                                        <div class="reply-inline">
+                                            <small>
+                                                Ти: <span class="reply-to-message">"@replied.Content"</span>
+                                            </small>
+                                        </div>
+                                    }
+                                    else if (replied != null && replied.SenderId != currentStudent.Id)
+                                    {
+                                        <div class="reply-inline">
+                                            <small>
+                                                @otherStudent.FirstName: <span class="reply-to-message">"@replied.Content"</span>
+                                            </small>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="reply-inline deleted">
+                                            <small>Съобщението е изтрито</small>
+                                        </div>
+                                    }
+                                }
+                                @((MarkupString)m.Content)
+                                <sub><small><time>@(m.IsEdited ? $"редактирано {m.Timestamp:HH:mm}" : m.Timestamp.ToLocalTime().ToString("HH:mm"))</time></small></sub>
+                            </div>
                         </div>
                     }
-                    else if (m.SenderName == $"{otherStudent.FirstName} {otherStudent.SecName}")
+                    else if (m.SenderId == otherStudent.Id)
                     {
                         <div class="other-message-sender" @oncontextmenu:preventDefault="true" @oncontextmenu="@(e => ShowContextMenu(e, m))">
                             @if (showAvatar)
@@ -323,7 +346,11 @@ else
 
     private List<Message> messages = new();
     private List<MessageForChat> messagesForChat = new();
+    private List<AiModerationMessage> aiMessages = new();
+    private List<MessageForChat> aiMessagesForChat = new();
     private string newMessage = string.Empty;
+
+    private Dictionary<Guid, AiModerationMessage> moderationMap = new();
 
     private bool contextMenuVisible = false;
     private string contextMenuXpx, contextMenuYpx;
@@ -398,6 +425,7 @@ else
         if (otherStudent == null) { errorMessage = "Другият ученик не е намерен."; return; }
 
         messages = ChatManager.GetMessagesFromDb(swapId);
+
         messagesForChat = messages.Select(m => new MessageForChat(
         m.Id,
         m.SenderId,
@@ -408,7 +436,25 @@ else
         m.Timestamp,
         m.IsRead,
         m.IsEdited, 
-        m.ReplyToMessageId)).ToList();
+        m.ReplyToMessageId))
+        .Where(m => m.SenderId != Guid.Parse("00000000-0000-0000-0000-000000000001") && m.SenderId != Guid.Parse("00000000-0000-0000-0000-000000000002")).ToList();
+
+        aiMessages = await aiChatManager.GetModerationMessagesAsync();
+
+        aiMessagesForChat = aiMessages.Select(m => new MessageForChat(
+        m.Id,
+        Guid.Parse("00000000-0000-0000-0000-000000000001"),
+        "AI Moderation",
+        m.Suggestion,
+        DateTime.UtcNow,
+        false,
+        false,
+        m.MessageId))
+        .Where(m => m.SenderId == Guid.Parse("00000000-0000-0000-0000-000000000001") || m.SenderId == Guid.Parse("00000000-0000-0000-0000-000000000002")).ToList();
+
+        moderationMap = aiMessages
+        .Where(m => m.MessageId != Guid.Empty)
+        .ToDictionary(m => m.MessageId, m => m);
 
 
         if (hubConnection != null) return;
@@ -418,15 +464,31 @@ else
             .WithAutomaticReconnect()
             .Build();
 
-        hubConnection.On<string>("UserJoined", (username) =>
+        hubConnection.On
+    <string>("UserJoined", (username) =>
         {
             InvokeAsync(StateHasChanged);
         });
 
         hubConnection.On<Guid, Guid, string, string, DateTime, Guid?>("ReceiveMessage", async (messageid, senderId, username, message, time, replyToMessageId) =>
         {
-            messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, time, senderId == currentStudent.Id, false, replyToMessageId));
-            await InvokeAsync(StateHasChanged);
+            if (senderId == Guid.Parse("00000000-0000-0000-0000-000000000001")) // AI Toxic
+            {
+                aiMessagesForChat.Add(new MessageForChat(messageid, senderId, "AI Moderation", message, time, false, false, replyToMessageId));
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            else if (senderId == Guid.Parse("00000000-0000-0000-0000-000000000002")) // AI Fact
+            {
+                aiMessagesForChat.Add(new MessageForChat(messageid, senderId, "AI Moderation", message, time, false, false, replyToMessageId));
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            else
+            {
+                messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, time, senderId == currentStudent.Id, false, replyToMessageId));
+                await InvokeAsync(StateHasChanged);
+            }
             await ScrollToBottomAsync();
         });
 

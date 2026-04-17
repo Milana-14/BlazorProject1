@@ -119,6 +119,16 @@ namespace BlazorApp6.Services
         }
 
 
+        public void CloseSwapForToxic(Swap swap)
+        {
+            if (swap.Status == SwapStatus.Completed) return;
+            RemoveSwapFromCache(swap);
+            swap.CloseForToxic();
+            AddHistoryToCache(swap);
+            UpdateSwapInDb(swap);
+        }
+
+
         public List<Swap> FindSwapsByStudentId(Guid studentId)
             => swapsByStudent.TryGetValue(studentId, out var list) ? list : new List<Swap>();
 

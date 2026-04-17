@@ -23,6 +23,7 @@
         public DateTime? DateConfirmed { get; set; }
         public DateTime? DateCompleted { get; set; }
         public string? Comment { get; set; }
+        public int ToxicMessagesCount { get; set; } = 0;
 
         public void Confirm()
         {
@@ -72,6 +73,12 @@
 
             this.CompletionProposedByStudentId = null;
             Status = SwapStatus.Confirmed;
+        }
+
+        public void CloseForToxic()
+        {
+            Status = SwapStatus.Completed;
+            DateCompleted = DateTime.UtcNow;
         }
     }
 }
