@@ -5,6 +5,7 @@ using OpenAI.Moderations;
 using System.ClientModel;
 using System.Collections.Concurrent;
 using System.Text.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BlazorApp6.Services
 {
@@ -14,8 +15,10 @@ namespace BlazorApp6.Services
         private readonly ConcurrentDictionary<string, List<ChatMessage>> histories = new();
         private readonly AiChatManager aiDb;
         private readonly StudentManager studentManager;
+        private readonly ChatManager chatManager;
+        private readonly SwapManager swapManager;
 
-        public AiModerationService(IConfiguration config, AiChatManager aiDb, StudentManager studentManager)
+        public AiModerationService(IConfiguration config, AiChatManager aiDb, StudentManager studentManager, ChatManager chatManager, SwapManager swapManager)
         {
             var token = config["EDUSWAPS_AI_TOKEN"];
             if (string.IsNullOrWhiteSpace(token))
@@ -27,13 +30,48 @@ namespace BlazorApp6.Services
             chatClient = client.GetChatClient("gpt-4o");
             this.aiDb = aiDb;
             this.studentManager = studentManager;
+            this.chatManager = chatManager;
+            this.swapManager = swapManager;
+        }
+
+        public async Task<Models.AiModerationMessage> HandleMessageChecking(Swap swap, StudentToConnect student, MessageToSend message)
+        {
+            var previous = chatManager.GetMessagesFromDb(swap.Id).TakeLast(3).ToList();
+
+            var msgForCheck = new Message
+            {
+                Id = message.Id,
+                SwapId = swap.Id,
+                SenderId = student.Id,
+                Content = message.Content,
+                Timestamp = DateTime.UtcNow,
+                ReplyToMessageId = message.ReplyToMessage
+            };
+            var subject = swap?.SubjectForHelp ?? SubjectEnum.NotSpecified;
+
+           var moderationResult = await CheckMessage(previous, msgForCheck, subject);
+
+            if (moderationResult.Toxic >= 0.5 && swap.ToxicMessagesCount <= 3)
+            {
+                swapManager.SwapToxicWarning(swap);
+                moderationResult.ToxicWarning = $"[AI moderation] токсичност: {Math.Round(moderationResult.Toxic * 100)}%. " +
+                    $"При още {3 - swap.ToxicMessagesCount} {(((3 - swap.ToxicMessagesCount) == 1)? "нарушение" : "нарушения")} свапът ще се затвори автоматично. " +
+                    $"Моля, изтрийте или редактирайте съобщението.";
+            }
+            else if (moderationResult.Toxic >= 0.5 && swap.ToxicMessagesCount >= 3)
+            {
+                swapManager.SwapToxicWarning(swap);
+                moderationResult.ToxicWarning = $"[AI moderation] токсичност: {Math.Round(moderationResult.Toxic * 100)}%. " +
+                    $"Свапът е затворен автоматично поради многократни нарушения.";
+                moderationResult.LastToxicWarning = true;
+            }
+
+            return moderationResult;
         }
 
         public async Task<Models.AiModerationMessage> CheckMessage(List<Message> previousMessages, Message message, SubjectEnum subject)
         {
-            previousMessages = previousMessages.TakeLast(3).ToList();
-
-            if (message.Content.Trim().Length < 6)
+            if (message.Content.Trim().Length < 4)
             {
                 return new Models.AiModerationMessage
                 {
@@ -135,7 +173,6 @@ namespace BlazorApp6.Services
 
 
         // Когато ученикът си редактира съобщението, пак го изпращам (но чрез друга логика) към OpenAI API-то.
-        // Ако токсичността е намаляла, то да се премахне единия waring, ако е увеличила, да се добави един warning.
         // Ако ученикът е редактирам съобщението си със грешното си твърдение, то пак ИИ-то да го провери и ако е коригирано, да се премахне корекцията от ИИ-то, ако не е корегирано, то да се запази корекцията от ИИ-то.
 
     }

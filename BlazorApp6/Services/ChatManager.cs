@@ -3,8 +3,10 @@ using BlazorApp6.Services;
 using Microsoft.AspNetCore.SignalR;
 using Npgsql;
 using NpgsqlTypes;
+using OpenAI.Moderations;
 using System.Data;
 using System.Text.RegularExpressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BlazorApp6.Services
 {
@@ -213,6 +215,7 @@ public interface IChatClient
     Task EditMessage(Guid messageId, string newContent);
     Task NewUnread(Guid swapId);
     Task SwapUpdated(Swap swap);
+    Task ReceiveAiModeration(AiModerationMessage aiModerationMessage);
 }
 public record StudentToConnect(Guid Id, string FirstName, string SecName);
 public record UserConnection(Guid SwapId, StudentToConnect Student);
@@ -255,58 +258,35 @@ public class ChatMessages : Hub<IChatClient>
 
         var swap = swapManager.FindSwapById(connection.SwapId);
 
-        if (connection.Student.Id == swap.Student2Id)
+        if (swap == null)
         {
-            _ = Task.Run(async () =>
+            swap = swapManager.FindHistorySwapById(connection.SwapId);
+        }
+
+        if (swap != null && connection.Student.Id == swap.Student2Id)
+        {
+            try
             {
-                try
-                {
-                    var previous = chatManager.GetMessagesFromDb(connection.SwapId);
+                var moderationResult = await aiModerationService.HandleMessageChecking(swap, connection.Student, message);
 
-                    var msgForCheck = new Message
-                    {
-                        Id = message.Id,
-                        SwapId = connection.SwapId,
-                        SenderId = connection.Student.Id,
-                        Content = message.Content,
-                        Timestamp = DateTime.UtcNow,
-                        ReplyToMessageId = message.ReplyToMessage
-                    };
-                    var subject = swap?.SubjectForHelp ?? SubjectEnum.NotSpecified;
-
-                    var moderationResult = await aiModerationService.CheckMessage(previous, msgForCheck, subject);
-
-                    if (moderationResult != null)
-                    {
-                        if (moderationResult.Toxic >= 0.6)
-                        {
-                            await aiChatManager.AddModerationMessageAsync(moderationResult);
-                            // изпращане на клиента като AiModerationMessage TOXIC съобщение (senderId = 00000000-0000-0000-0000-000000000001)
-                            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(moderationResult.Id, Guid.Parse("00000000-0000-0000-0000-000000000001"), "AI Moderation", 
-                                $"[AI moderation] токсичност: {moderationResult.Toxic * 100:F0}%. При още {3 - swap.ToxicMessagesCount} нарушения свапът ще се затвори автоматично Моля, изтрийте или редактирайте съобщението.", DateTime.UtcNow, message.Id);
-
-                            if (swap.ToxicMessagesCount == 3)
-                            {
-                                swapManager.CloseSwapForToxic(swap);
-                            }
-                        }
-                        // сообщение может быть И токсичным, и содержать фактическую ошибку, поэтому не используем else if
-                        else if (moderationResult.FactualError >= 0.6)
-                        {
-                            await aiChatManager.AddModerationMessageAsync(moderationResult);
-                            // изпращане на клиента като AiModerationMessage FACTUAL ERROR съобщение (senderId = 00000000-0000-0000-0000-000000000002)
-                            await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(moderationResult.Id, Guid.Parse("00000000-0000-0000-0000-000000000002"), 
-                                "AI Moderation", moderationResult.Suggestion, DateTime.UtcNow, message.Id);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Възникна грешка при AiModerationService: {ex.Message}");
-                }
-            });
+                if (moderationResult != null && (moderationResult.Toxic >= 0.5 || moderationResult.FactualError >= 0.6))
+                    await ReceiveAi(moderationResult, message, swap);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Възникна грешка при AiModerationService: {ex.Message}");
+            }
         }
     }
+
+    public async Task ReceiveAi(AiModerationMessage moderationResult, MessageToSend message, Swap swap)
+    {
+        await aiChatManager.AddModerationMessageAsync(moderationResult);
+
+        await Clients.Group(swap.Id.ToString()).ReceiveAiModeration(moderationResult);
+    }
+
+
 
     public async Task SendFile(UserConnection connection, string fileName, byte[] fileBytes)
     {
@@ -339,6 +319,12 @@ public class ChatMessages : Hub<IChatClient>
         var msg = messages.FirstOrDefault(m => m.Id == messageId);
 
         var swap = swapManager.FindSwapById(connection.SwapId);
+
+        if (swap == null)
+        {
+            swap = swapManager.FindHistorySwapById(connection.SwapId);
+        }
+
         if (swap.Student1Id != connection.Student.Id && swap.Student2Id != connection.Student.Id)
         {
             throw new HubException("Нямаш достъп до този чат.");

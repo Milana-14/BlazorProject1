@@ -26,9 +26,9 @@ namespace BlazorApp6.Services
 
             var sql = @"
                         INSERT INTO ""AiModerationMessages""
-                        (""Id"", ""ModerationMessageId"", ""Toxic"", ""FactualError"", ""Suggestion"")
+                        (""Id"", ""ModerationMessageId"", ""Toxic"", ""FactualError"", ""Suggestion"", ""ToxicWarning"", ""LastToxicWarning"")
                         VALUES
-                        (@Id, @ModerationMessageId, @Toxic, @FactualError, @Suggestion)";
+                        (@Id, @ModerationMessageId, @Toxic, @FactualError, @Suggestion, @ToxicWarning, @LastToxicWarning)";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", message.Id);
@@ -36,6 +36,8 @@ namespace BlazorApp6.Services
             cmd.Parameters.AddWithValue("@Toxic", message.Toxic);
             cmd.Parameters.AddWithValue("@FactualError", message.FactualError);
             cmd.Parameters.AddWithValue("@Suggestion", (object?)message.Suggestion ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ToxicWarning", (object?)message.ToxicWarning ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@LastToxicWarning", DBNull.Value);
 
             await cmd.ExecuteNonQueryAsync();
         }
@@ -47,7 +49,7 @@ namespace BlazorApp6.Services
             await conn.OpenAsync();
 
             var sql = @"
-SELECT ""Id"", ""ModerationMessageId"", ""Toxic"", ""FactualError"", ""Suggestion""
+SELECT ""Id"", ""ModerationMessageId"", ""Toxic"", ""FactualError"", ""Suggestion"", ""ToxicWarning"", ""LastToxicWarning""
 FROM ""AiModerationMessages""";
 
             using var cmd = new NpgsqlCommand(sql, conn);
@@ -61,7 +63,9 @@ FROM ""AiModerationMessages""";
                     MessageId = reader.GetGuid(1),
                     Toxic = reader.GetDouble(2),
                     FactualError = reader.GetDouble(3),
-                    Suggestion = reader.IsDBNull(4) ? null : reader.GetString(4)
+                    Suggestion = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    ToxicWarning = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    LastToxicWarning = reader.IsDBNull(6) ? false : reader.GetBoolean(6)
                 });
             }
 

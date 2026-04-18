@@ -102,18 +102,20 @@ else
                             @if (moderationMap.TryGetValue(m.Id, out var mod))
                             {
                                 <div class="ai-wrapper">
-                                    @if (mod.FactualError >= 0.6)
+                                    @if (mod.LastToxicWarning)
                                     {
-                                        <div class="ai-warning fact)">
+                                        StateHasChanged();
+                                    }
+                                    else if (mod.FactualError >= 0.6)
+                                    {
+                                        <div class="ai-warning fact">
                                             @mod.Suggestion
                                         </div>
                                     }
-                                    @if (mod.Toxic >= 0.6)
+                                    @if (mod.Toxic >= 0.5)
                                     {
                                         <div class="ai-warning toxic">
-                                            [AI moderation] токсичност: @(Math.Round(mod.Toxic * 100))%.
-                                            При още @(3 - swap.ToxicMessagesCount) нарушения свапът ще се затвори автоматично.
-                                            Моля, изтрийте или редактирайте съобщението.
+                                            @mod.ToxicWarning
                                         </div>
                                     }
                                 </div>
@@ -277,6 +279,13 @@ else
                     <p class="sub">@otherStudent.FirstName ще оцени помощта ти.</p>
                 </div>
             }
+            else if (swap.Status == SwapStatus.ClosedForToxic)
+            {
+                <div class="chat-system-card rate-card">
+                    <p>Свапът беше затворен поради неподходящо поведение в чата.</p>
+                    <p class="sub">Молим ви, бъдете по-мили и уважителни.</p>
+                </div>
+            }
 
             @* Редактиране *@
             @if (IsEditing)
@@ -436,25 +445,11 @@ else
         m.Timestamp,
         m.IsRead,
         m.IsEdited, 
-        m.ReplyToMessageId))
-        .Where(m => m.SenderId != Guid.Parse("00000000-0000-0000-0000-000000000001") && m.SenderId != Guid.Parse("00000000-0000-0000-0000-000000000002")).ToList();
+        m.ReplyToMessageId)).ToList();
 
         aiMessages = await aiChatManager.GetModerationMessagesAsync();
 
-        aiMessagesForChat = aiMessages.Select(m => new MessageForChat(
-        m.Id,
-        Guid.Parse("00000000-0000-0000-0000-000000000001"),
-        "AI Moderation",
-        m.Suggestion,
-        DateTime.UtcNow,
-        false,
-        false,
-        m.MessageId))
-        .Where(m => m.SenderId == Guid.Parse("00000000-0000-0000-0000-000000000001") || m.SenderId == Guid.Parse("00000000-0000-0000-0000-000000000002")).ToList();
-
-        moderationMap = aiMessages
-        .Where(m => m.MessageId != Guid.Empty)
-        .ToDictionary(m => m.MessageId, m => m);
+        moderationMap = aiMessages.Where(m => m.MessageId != Guid.Empty).ToDictionary(m => m.MessageId, m => m);
 
 
         if (hubConnection != null) return;
@@ -472,24 +467,16 @@ else
 
         hubConnection.On<Guid, Guid, string, string, DateTime, Guid?>("ReceiveMessage", async (messageid, senderId, username, message, time, replyToMessageId) =>
         {
-            if (senderId == Guid.Parse("00000000-0000-0000-0000-000000000001")) // AI Toxic
-            {
-                aiMessagesForChat.Add(new MessageForChat(messageid, senderId, "AI Moderation", message, time, false, false, replyToMessageId));
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            else if (senderId == Guid.Parse("00000000-0000-0000-0000-000000000002")) // AI Fact
-            {
-                aiMessagesForChat.Add(new MessageForChat(messageid, senderId, "AI Moderation", message, time, false, false, replyToMessageId));
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            else
-            {
-                messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, time, senderId == currentStudent.Id, false, replyToMessageId));
-                await InvokeAsync(StateHasChanged);
-            }
+            messagesForChat.Add(new MessageForChat(messageid, senderId, username, message, time, senderId == currentStudent.Id, false, replyToMessageId));
+            await InvokeAsync(StateHasChanged);
             await ScrollToBottomAsync();
+        });
+
+
+        hubConnection.On<AiModerationMessage>("ReceiveAiModeration", async (mod) =>
+        {
+            moderationMap[mod.MessageId] = mod;
+            await InvokeAsync(StateHasChanged);
         });
 
         try
@@ -567,11 +554,11 @@ else
         {
             while (true)
             {
-               if (hubConnection1.State == HubConnectionState.Connected)
-               {
-                   await hubConnection1.SendAsync("Ping");
-               }
-               await Task.Delay(TimeSpan.FromMinutes(5));
+                if (hubConnection1.State == HubConnectionState.Connected)
+                {
+                    await hubConnection1.SendAsync("Ping");
+                }
+                await Task.Delay(TimeSpan.FromMinutes(5));
             }
         });
 

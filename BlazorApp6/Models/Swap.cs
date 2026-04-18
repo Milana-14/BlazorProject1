@@ -7,7 +7,8 @@
         Rejected,
         PendingCompleted,
         CompletedNotRated,
-        Completed
+        Completed,
+        ClosedForToxic
     }
 
     public class Swap
@@ -77,7 +78,7 @@
 
         public void CloseForToxic()
         {
-            Status = SwapStatus.Completed;
+            Status = SwapStatus.ClosedForToxic;
             DateCompleted = DateTime.UtcNow;
         }
     }

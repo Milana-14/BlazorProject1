@@ -36,13 +36,13 @@ public class AccountController : Controller
             if (student == null)
             {
                 _logger.LogWarning("Login attempt for non-existent user: {Username}", username);
-                return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Невалиден юзърнейм или парола."));
+                return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Невалидно потребителско име или парола."));
             }
 
             if (!HashPasswordService.ComparePasswords(student.Password, password))
             {
                 _logger.LogWarning("Failed login attempt for user: {Username}", username);
-                return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Невалиден юзърнейм или парола."));
+                return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Невалидно потребителско име или парола."));
             }
 
             var claims = new List<Claim>

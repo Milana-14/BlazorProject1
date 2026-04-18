@@ -7,5 +7,7 @@
         public double Toxic { get; set; }
         public double FactualError { get; set; }
         public string? Suggestion { get; set; }
+        public string? ToxicWarning { get; set; }
+        public bool LastToxicWarning { get; set; } = false;
     }
 }

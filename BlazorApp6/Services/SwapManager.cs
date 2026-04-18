@@ -119,13 +119,19 @@ namespace BlazorApp6.Services
         }
 
 
-        public void CloseSwapForToxic(Swap swap)
+        public void SwapToxicWarning(Swap swap)
         {
-            if (swap.Status == SwapStatus.Completed) return;
-            RemoveSwapFromCache(swap);
-            swap.CloseForToxic();
-            AddHistoryToCache(swap);
+            swap.ToxicMessagesCount++;
             UpdateSwapInDb(swap);
+
+            if (swap.ToxicMessagesCount == 3)
+            {
+                if (swap.Status == SwapStatus.Completed || swap.Status == SwapStatus.ClosedForToxic) return;
+                RemoveSwapFromCache(swap);
+                swap.CloseForToxic();
+                AddHistoryToCache(swap);
+                UpdateSwapInDb(swap);
+            }
         }
 
 
@@ -235,7 +241,7 @@ namespace BlazorApp6.Services
             => LoadByStatuses(out result, 0, 1, 3, 4);
 
         public bool LoadHistorySwapsFromDb(out List<Swap> result)
-            => LoadByStatuses(out result, 2, 5);
+            => LoadByStatuses(out result, 2, 5, 6);
 
         private bool LoadByStatuses(out List<Swap> result, params int[] statuses)
         {
@@ -268,10 +274,10 @@ namespace BlazorApp6.Services
             const string sql = @"INSERT INTO ""Swaps""
             (""Id"",""Student1Id"",""Student2Id"",""Status"",""DateRequested"",
              ""DateConfirmed"",""SubjectForHelp"",""RequesterId"",
-             ""CompletionProposedByStudentId"",""DateCompleted"",""Comment"")
+             ""CompletionProposedByStudentId"",""DateCompleted"",""Comment"", ""ToxicMessagesCount"")
             VALUES (@Id,@Student1Id,@Student2Id,@Status,@DateRequested,
                     @DateConfirmed,@SubjectForHelp,@RequesterId,
-                    @CompletionProposedByStudentId,@DateCompleted,@Comment)";
+                    @CompletionProposedByStudentId,@DateCompleted,@Comment, @ToxicMessagesCount)";
 
             using var cmd = new NpgsqlCommand(sql, connection);
             FillParams(cmd, swap);
@@ -286,7 +292,8 @@ namespace BlazorApp6.Services
                 SET ""Status""=@Status,
                     ""DateConfirmed""=@DateConfirmed,
                     ""CompletionProposedByStudentId""=@CompletionProposedByStudentId,
-                    ""DateCompleted""=@DateCompleted
+                    ""DateCompleted""=@DateCompleted,
+                    ""ToxicMessagesCount""=@ToxicMessagesCount
                 WHERE ""Id""=@Id";
 
             using var cmd = new NpgsqlCommand(sql, connection);
@@ -314,7 +321,8 @@ namespace BlazorApp6.Services
             RequesterId = r.GetGuid(7),
             CompletionProposedByStudentId = r.IsDBNull(8) ? null : r.GetGuid(8),
             DateCompleted = r.IsDBNull(9) ? null : r.GetDateTime(9),
-            Comment = r.IsDBNull(10) ? null : r.GetString(10)
+            Comment = r.IsDBNull(10) ? null : r.GetString(10),
+            ToxicMessagesCount = r.GetInt32(11)
         };
 
         private static void FillParams(NpgsqlCommand cmd, Swap s)
@@ -330,6 +338,7 @@ namespace BlazorApp6.Services
             cmd.Parameters.Add("@CompletionProposedByStudentId", NpgsqlTypes.NpgsqlDbType.Uuid).Value = (object?)s.CompletionProposedByStudentId ?? DBNull.Value;
             cmd.Parameters.Add("@DateCompleted", NpgsqlTypes.NpgsqlDbType.TimestampTz).Value = (object?)s.DateCompleted ?? DBNull.Value;
             cmd.Parameters.Add("@Comment", NpgsqlTypes.NpgsqlDbType.Text).Value = (object?)s.Comment ?? DBNull.Value;
+            cmd.Parameters.Add("@ToxicMessagesCount", NpgsqlTypes.NpgsqlDbType.Integer).Value = s.ToxicMessagesCount;
         }
 
         private NpgsqlConnection CreateConnection()
