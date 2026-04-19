@@ -405,3 +405,18 @@ body {
 .last-message {
     max-width: 190px;
 }
+
+
+.swaps-sidebar {
+    position: fixed;
+    top: 84px;
+    left: 72px;
+    width: 260px;
+    height: calc(100vh - 84px);
+
+    background: #F4F3F1;
+    border-right: 1px solid #d6d4d2;
+    padding: 16px 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}

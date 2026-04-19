@@ -271,6 +271,9 @@ public class ChatMessages : Hub<IChatClient>
 
                 if (moderationResult != null && (moderationResult.Toxic >= 0.5 || moderationResult.FactualError >= 0.6))
                     await ReceiveAi(moderationResult, message, swap);
+
+                swap = swapManager.FindSwapById(connection.SwapId);
+                await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
             }
             catch (Exception ex)
             {
@@ -372,6 +375,9 @@ public class ChatMessages : Hub<IChatClient>
 
                 if (moderationResult != null && (moderationResult.Toxic >= 0.5 || moderationResult.FactualError >= 0.6))
                     await ReceiveAi(moderationResult, msgToSend, swap);
+
+                swap = swapManager.FindSwapById(connection.SwapId);
+                await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
             }
             catch (Exception ex)
             {

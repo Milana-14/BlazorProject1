@@ -502,5 +502,5 @@ body {
     padding-right: 6px;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* 🔥 обязательно */
+    min-height: 0;
 }

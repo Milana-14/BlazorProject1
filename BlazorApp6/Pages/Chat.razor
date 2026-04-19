@@ -67,9 +67,12 @@ else
                             <div class="chat-info-action"><i class="bi bi-check-circle"></i><span @onclick="ProposeCompletion">Предложи завършване</span></div>
                         }
                     </div>
-                    <div class="toxic-inform-count">
-                        <p>Свапът ще се затвори автоматично при още @(3 - swap.ToxicMessagesCount) @(3 - swap.ToxicMessagesCount == 1 ? "предупреждение" : "предупреждения").</p>
-                    </div>
+                    @if (swap.ToxicMessagesCount > 0)
+                    {
+                        <div class="toxic-inform-count">
+                            <p>Свапът ще се затвори автоматично при още @(3 - swap.ToxicMessagesCount) @(3 - swap.ToxicMessagesCount == 1 ? "предупреждение" : "предупреждения").</p>
+                        </div>
+                    }
                     <div class="chat-info-section">
                         @(currentStudent.Id == swap.Student2Id ? "Помагаш по" : $"{otherStudent.FirstName} ти помага по"): @swap.SubjectForHelp.GetDisplayName().ToLower()
                         <br />
