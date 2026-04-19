@@ -252,7 +252,59 @@ else
                 </div>
 
             }
-            @if (swap.Status == SwapStatus.CompletedNotRated && !isStudentToRate)
+            @if (swap.Status == SwapStatus.CompletedNotAnswered && !isStudentToRate && aiQuestions != null)
+            {
+                var q = GetCurrentQuestion();
+
+                <div class="chat-system-card rate-card">
+                    <h5>Въпрос @currentQuestionIndex от 3</h5>
+
+                    <p class="question-text">@q.Question</p>
+
+                    <div class="answers">
+                        <button class="ai-answer-btn @GetAnswerClass(1)"
+                                @onclick="() => SelectAnswer(1)">
+                            A) @q.A
+                        </button>
+
+                        <button class="ai-answer-btn @GetAnswerClass(2)"
+                                @onclick="() => SelectAnswer(2)">
+                            B) @q.B
+                        </button>
+
+                        <button class="ai-answer-btn @GetAnswerClass(3)"
+                                @onclick="() => SelectAnswer(3)">
+                            C) @q.C
+                        </button>
+                    </div>
+
+                    @if (!showResult)
+                    {
+                        <button class="btn-primary mt-2"
+                                disabled="@(selectedAnswer == null)"
+                                @onclick="ConfirmAnswer">
+                            Потвърди отговор
+                        </button>
+                    }
+                    else
+                    {
+                        @if (currentQuestionIndex < 3)
+                        {
+                            <button class="btn-primary mt-2" @onclick="NextQuestion">
+                                Следващ въпрос
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn-success mt-2"
+                                    @onclick="CompleteNotRatedSwap">
+                                Завърши
+                            </button>
+                        }
+                    }
+                </div>
+            }
+            else if (swap.Status == SwapStatus.CompletedNotRated && !isStudentToRate)
             {
                 <div class="chat-system-card rate-card">
                     <div class="rate-card-title">
@@ -362,6 +414,13 @@ else
     private string newMessage = string.Empty;
 
     private Dictionary<Guid, AiModerationMessage> moderationMap = new();
+
+    private AiQuestions aiQuestions;
+    private int currentQuestionIndex = 1;
+    private int? selectedAnswer = null;
+    private bool showResult = false;
+    private bool? isCorrect = null;
+    int correctAnswersCount = 0;
 
     private bool contextMenuVisible = false;
     private string contextMenuXpx, contextMenuYpx;
@@ -543,6 +602,12 @@ else
         {
             swap = updatedSwap;
             isStudentToRate = currentStudent.Id == swap.Student2Id;
+            InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<AiQuestions>("ReceiveQuestions", (questions) =>
+        {
+            aiQuestions = questions;
             InvokeAsync(StateHasChanged);
         });
 
@@ -791,5 +856,67 @@ else
     private void ViewProfile(Student student)
     {
         NavigationManager.NavigateTo($"/other-profile/{student.Id}");
+    }
+
+
+    private (string Question, string A, string B, string C, int Correct) GetCurrentQuestion()
+    {
+        return currentQuestionIndex switch
+        {
+            1 => (aiQuestions.Question1, aiQuestions.OptionA1, aiQuestions.OptionB1, aiQuestions.OptionC1, aiQuestions.CorrectAnswer1),
+            2 => (aiQuestions.Question2, aiQuestions.OptionA2, aiQuestions.OptionB2, aiQuestions.OptionC2, aiQuestions.CorrectAnswer2),
+            3 => (aiQuestions.Question3, aiQuestions.OptionA3, aiQuestions.OptionB3, aiQuestions.OptionC3, aiQuestions.CorrectAnswer3),
+            _ => ("", "", "", "", 0)
+        };
+    }
+
+    private void SelectAnswer(int answer)
+    {
+        if (showResult) return;
+
+        selectedAnswer = answer;
+    }
+
+    private void ConfirmAnswer()
+    {
+        if (selectedAnswer == null) return;
+
+        var q = GetCurrentQuestion();
+        isCorrect = selectedAnswer == q.Correct;
+
+        if (isCorrect == true)
+            correctAnswersCount++;
+
+        showResult = true;
+    }
+
+    private string GetAnswerClass(int option)
+    {
+        if (!showResult)
+            return selectedAnswer == option ? "selected" : "";
+
+        var q = GetCurrentQuestion();
+
+        if (option == q.Correct)
+            return "correct";
+
+        if (option == selectedAnswer)
+            return "wrong";
+
+        return "";
+    }
+
+    private void NextQuestion()
+    {
+        currentQuestionIndex++;
+        selectedAnswer = null;
+        showResult = false;
+        isCorrect = null;
+    }
+
+    private async Task CompleteNotRatedSwap()
+    {
+        SwapManager.CompleteNotRatedSwap(swap);
+        await hubConnection.SendAsync("AnswerQuestions", swap.Id, currentStudent.Id); // В сервиса трябва да продължа логиката за оценка на разбирането на учениците
     }
 }

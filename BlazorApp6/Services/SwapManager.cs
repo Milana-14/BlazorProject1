@@ -51,6 +51,11 @@ namespace BlazorApp6.Services
 
         private Swap? CreateSwapIfNotExists(Student s1, Student s2, SubjectEnum subject, Student requester, string? comment)
         {
+            var existing = FindSwapsByStudentsId(s1.Id, s2.Id).FirstOrDefault(s => s.Status != SwapStatus.Rejected);
+
+            if (existing != null)
+                return null;
+
             var swap = new Swap
             {
                 Id = Guid.NewGuid(),
@@ -103,19 +108,26 @@ namespace BlazorApp6.Services
         public void RejectCompletion(Swap swap)
         {
             swap.RejectCompletion();
-            MoveToHistory(swap);
+            UpdateSwapInDb(swap);
+        }
+
+        public void CompleteNotRatedSwap(Swap swap)
+        {
+            if (swap.Status != SwapStatus.CompletedNotAnswered)
+                throw new InvalidOperationException("Този свап не е в статус \"Завършен, но без отговори на ИИ въпроси, свап.\".");
+            swap.Status = SwapStatus.CompletedNotRated;
             UpdateSwapInDb(swap);
         }
 
         public void CompleteSwap(Swap swap)
         {
-            if (swap.Status == SwapStatus.Completed)
-                return;
+            if (swap.Status != SwapStatus.CompletedNotRated)
+                throw new InvalidOperationException("Този свап не е в статус \"Неоценен свап.\".");
 
-            RemoveSwapFromCache(swap);
             swap.CompleteSwap();
-            AddHistoryToCache(swap);
             UpdateSwapInDb(swap);
+            RemoveSwapFromCache(swap);
+            AddHistoryToCache(swap);
         }
 
 
@@ -124,7 +136,7 @@ namespace BlazorApp6.Services
             swap.ToxicMessagesCount++;
             UpdateSwapInDb(swap);
 
-            if (swap.ToxicMessagesCount == 3)
+            if (swap.ToxicMessagesCount >= 3)
             {
                 if (swap.Status == SwapStatus.Completed || swap.Status == SwapStatus.ClosedForToxic) return;
                 RemoveSwapFromCache(swap);
@@ -160,7 +172,7 @@ namespace BlazorApp6.Services
                 if (IsSamePair(swap, s1, s2))
                     return swap;
 
-            return null;
+            return null; 
         }
 
         public Swap? FindSwapById(Guid id)
@@ -238,7 +250,7 @@ namespace BlazorApp6.Services
 
 
         public bool LoadSwapsFromDb(out List<Swap> result)
-            => LoadByStatuses(out result, 0, 1, 3, 4);
+            => LoadByStatuses(out result, 0, 1, 3, 4, 7);
 
         public bool LoadHistorySwapsFromDb(out List<Swap> result)
             => LoadByStatuses(out result, 2, 5, 6);

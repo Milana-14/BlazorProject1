@@ -216,6 +216,7 @@ public interface IChatClient
     Task NewUnread(Guid swapId);
     Task SwapUpdated(Swap swap);
     Task ReceiveAiModeration(AiModerationMessage aiModerationMessage);
+    Task ReceiveQuestions(AiQuestions questions);
 }
 public record StudentToConnect(Guid Id, string FirstName, string SecName);
 public record UserConnection(Guid SwapId, StudentToConnect Student);
@@ -229,13 +230,15 @@ public class ChatMessages : Hub<IChatClient>
     private readonly SwapManager swapManager;
     private readonly AiChatManager aiChatManager;
     private readonly AiModerationService aiModerationService;
+    private readonly AiEvaluationService aiEvaluationService;
 
-    public ChatMessages(ChatManager chatManager, SwapManager swapManager, AiChatManager aiChatManager, AiModerationService aiModerationService) // добавлен параметр
+    public ChatMessages(ChatManager chatManager, SwapManager swapManager, AiChatManager aiChatManager, AiModerationService aiModerationService, AiEvaluationService aiEvaluationSrvice)
     {
         this.chatManager = chatManager;
         this.swapManager = swapManager;
         this.aiChatManager = aiChatManager;
         this.aiModerationService = aiModerationService;
+        this.aiEvaluationService = aiEvaluationSrvice;
     }
 
     public async Task JoinChat(UserConnection connection)
@@ -273,6 +276,9 @@ public class ChatMessages : Hub<IChatClient>
                     await ReceiveAi(moderationResult, message, swap);
 
                 swap = swapManager.FindSwapById(connection.SwapId);
+                if (swap == null)
+                    throw new HubException("Swap not found");
+
                 await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
             }
             catch (Exception ex)
@@ -359,6 +365,8 @@ public class ChatMessages : Hub<IChatClient>
 
 
         var swap = swapManager.FindSwapById(connection.SwapId);
+        if (swap == null)
+            throw new HubException("Swap not found");
 
         if (swap == null)
         {
@@ -377,6 +385,9 @@ public class ChatMessages : Hub<IChatClient>
                     await ReceiveAi(moderationResult, msgToSend, swap);
 
                 swap = swapManager.FindSwapById(connection.SwapId);
+                if (swap == null)
+                    throw new HubException("Swap not found");
+
                 await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
             }
             catch (Exception ex)
@@ -395,8 +406,11 @@ public class ChatMessages : Hub<IChatClient>
 
     public async Task ProposeCompletion(Guid swapId, Guid studentId)
     {
-        var swap = swapManager.FindSwapById(swapId);
-        if (swap == null) return;
+        var swap = swapManager.FindSwapById(swapId); 
+        if (swap == null)
+            throw new HubException("Swap not found");
+
+
         if (swap.Student1Id != studentId && swap.Student2Id != studentId)
             throw new HubException("Нямаш право");
 
@@ -408,19 +422,26 @@ public class ChatMessages : Hub<IChatClient>
     public async Task AcceptCompletion(Guid swapId, Guid studentId)
     {
         var swap = swapManager.FindSwapById(swapId);
-        if (swap == null) return;
+        if (swap == null)
+            throw new HubException("Swap not found");
+
         if (swap.Student1Id != studentId && swap.Student2Id != studentId)
             throw new HubException("Нямаш право");
 
         swapManager.AcceptCompletion(swap);
 
         await Clients.Group(swapId.ToString()).SwapUpdated(swap);
+
+        AiQuestions questions = await aiEvaluationService.GenerateQuestions(swap);
+        await Clients.Group(swapId.ToString()).ReceiveQuestions(questions);
     }
 
     public async Task RejectCompletion(Guid swapId, Guid studentId)
     {
         var swap = swapManager.FindSwapById(swapId);
-        if (swap == null) return;
+        if (swap == null)
+            throw new HubException("Swap not found");
+
         if (swap.Student1Id != studentId && swap.Student2Id != studentId)
             throw new HubException("Нямаш право");
 

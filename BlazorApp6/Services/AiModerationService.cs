@@ -13,12 +13,10 @@ namespace BlazorApp6.Services
     {
         private readonly ChatClient chatClient;
         private readonly ConcurrentDictionary<string, List<ChatMessage>> histories = new();
-        private readonly AiChatManager aiDb;
-        private readonly StudentManager studentManager;
         private readonly ChatManager chatManager;
         private readonly SwapManager swapManager;
 
-        public AiModerationService(IConfiguration config, AiChatManager aiDb, StudentManager studentManager, ChatManager chatManager, SwapManager swapManager)
+        public AiModerationService(IConfiguration config, ChatManager chatManager, SwapManager swapManager)
         {
             var token = config["EDUSWAPS_AI_TOKEN"];
             if (string.IsNullOrWhiteSpace(token))
@@ -28,8 +26,6 @@ namespace BlazorApp6.Services
             var client = new AzureOpenAIClient(endpoint, new ApiKeyCredential(token));
 
             chatClient = client.GetChatClient("gpt-4o");
-            this.aiDb = aiDb;
-            this.studentManager = studentManager;
             this.chatManager = chatManager;
             this.swapManager = swapManager;
         }
@@ -129,7 +125,7 @@ namespace BlazorApp6.Services
             var options = new ChatCompletionOptions
             {
                 Temperature = 0,
-                MaxOutputTokenCount = 120
+                MaxOutputTokenCount = 200
             };
 
             var response = await chatClient.CompleteChatAsync(new ChatMessage[] { ChatMessage.CreateSystemMessage(systemPrompt),

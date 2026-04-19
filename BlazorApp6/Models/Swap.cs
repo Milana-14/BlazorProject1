@@ -8,7 +8,8 @@
         PendingCompleted,
         CompletedNotRated,
         Completed,
-        ClosedForToxic
+        ClosedForToxic,
+        CompletedNotAnswered
     }
 
     public class Swap
@@ -55,13 +56,13 @@
         {
             if (Status != SwapStatus.PendingCompleted)
                 throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\".");
-            Status = SwapStatus.CompletedNotRated;
+            Status = SwapStatus.CompletedNotAnswered;
         }
 
         public void CompleteSwap()
         {
             if (Status != SwapStatus.CompletedNotRated)
-                throw new InvalidOperationException("Този свап не е в статус \"Предложено завършване\" или \"Неоценен свап\".");
+                throw new InvalidOperationException("Този свап не е в статус \"Неоценен свап\".");
 
             Status = SwapStatus.Completed;
             DateCompleted = DateTime.UtcNow;

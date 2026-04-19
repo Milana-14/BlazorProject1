@@ -37,7 +37,7 @@ namespace BlazorApp6.Services
 
             if (SaveReviewToDb(review))
             {
-                swapManager.CompleteSwap(swap);
+                swapManager.CompleteNotRatedSwap(swap);
             }
         }
 

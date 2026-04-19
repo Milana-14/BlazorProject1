@@ -1011,3 +1011,27 @@
         color: #dc3545;
         font-weight: 600;
     }
+
+
+
+
+
+
+
+.ai-answer-btn {
+    transition: 0.2s;
+}
+
+    .ai-answer-btn.selected {
+        border: 2px solid #007bff;
+    }
+
+    .ai-answer-btn.correct {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .ai-answer-btn.wrong {
+        background-color: #dc3545;
+        color: white;
+    }
