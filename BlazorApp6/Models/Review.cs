@@ -15,18 +15,20 @@ namespace BlazorApp6.Models
         public Guid ReceiverStudentId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public Guid SwapId { get; set; }
 
         public Review() 
         {
             Id = Guid.NewGuid();
         }
-        public Review(string comment, int rating, Guid senderId, Guid receiverId)
+        public Review(string comment, int rating, Guid senderId, Guid receiverId, Guid swapId)
         {
             Id = Guid.NewGuid();
             Comment = comment;
             Rating = rating;
             SenderStudentId = senderId;
             ReceiverStudentId = receiverId;
+            SwapId = swapId;
         }
     }
 }

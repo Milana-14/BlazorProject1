@@ -53,12 +53,14 @@
 
                                     bool currentHelps = swap.Student2Id == currentStudent.Id;
 
-                                    <div class="student-card2 archived">
+                                    <div class="student-card2 archived @((swap.Status == SwapStatus.ClosedForToxic) ? "toxic-closed" : "")">
 
                                         <div class="student-header">
                                             <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" class="filter-avatar" />
                                             <div class="student-info">
-                                                <h5 class="student-name">@student.FirstName @student.SecName</h5>
+                                                <h5 class="student-name">
+                                                    @student.FirstName @student.SecName
+                                                </h5>
                                                 <p class="student-grade">
                                                     Завършен на: <span style="font-weight:550">@swap.DateCompleted?.ToString("dd MMMM yyyy HH:mm")</span>
                                                 </p>
@@ -76,6 +78,12 @@
                                             </div>
 
                                             <div class="myswaps-actions">
+                                                @if (swap.Status == SwapStatus.ClosedForToxic)
+                                                {
+                                                    <div class="swap-warning-text">
+                                                        Чатът е затворен заради нарушения
+                                                    </div>
+                                                }
                                                 <button class="myswaps-btn-primary" @onclick="() => OpenArchiveChat(swap.Id)">
                                                     Преглед
                                                 </button>
@@ -116,7 +124,7 @@
 
     private void LoadArchivedSwaps()
     {
-        archivedSwaps = SwapManager.FindHistorySwapsByStudentId(currentStudent.Id).Where(s => s.Status == SwapStatus.Completed).OrderByDescending(s => s.DateCompleted).ToList();
+        archivedSwaps = SwapManager.FindHistorySwapsByStudentId(currentStudent.Id).Where(s => (s.Status == SwapStatus.Completed || s.Status == SwapStatus.ClosedForToxic)).OrderByDescending(s => s.DateCompleted).ToList();
     }
 
     private void OpenArchiveChat(Guid swapId)

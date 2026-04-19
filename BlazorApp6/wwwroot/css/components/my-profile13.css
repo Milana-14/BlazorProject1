@@ -738,3 +738,24 @@
         width: 100%;
     }
 }
+
+
+
+
+
+.profile-reviews-container {
+    max-height: 70vh; /* или фикс: 600px */
+    overflow-y: auto;
+    padding-right: 8px;
+    min-height: 0;
+}
+
+
+.profile-reviews-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profile-reviews-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 6px;
+}

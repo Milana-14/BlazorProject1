@@ -601,3 +601,38 @@ hr {
         font-size: 13px;
     }
 }
+
+
+.student-card1 {
+    height: 320px;
+    overflow: hidden;
+}
+
+.student-subjects {
+    flex: 1;
+    overflow: hidden;
+    max-height: 140px;
+}
+
+.subjects-and-label-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.student-card1 {
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+}
+
+.student-subjects {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 140px;
+}
+
+.subjects-only-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}

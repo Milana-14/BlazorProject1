@@ -103,6 +103,13 @@
     <div class="chat-completed-banner">
         Този чат е вече завършен.
     </div>
+    @if (swap.Status == SwapStatus.ClosedForToxic)
+    {
+        <div class="chat-system-card" style="max-width: 420px">
+        <p>Свапът беше затворен поради неподходящо поведение в чата.</p>
+        <p class="sub">Молим ви, бъдете по-мили и уважителни.</p>
+    </div>
+    }
 </div>
 
 @if (isSidebarHidden)
@@ -116,7 +123,7 @@
     [Parameter] public Guid SwapId { get; set; }
 
     private SwapModel swap;
-    private Review review => RateHelpManager.LoadReviewsForStudentFromDb(swap.Student2Id).Where(s => s.SenderStudentId == swap.Student1Id).FirstOrDefault();
+    private Review review => RateHelpManager.LoadReviewForSwapFromDb(swap.Id);
     private Student currentStudent;
     private Student otherStudent;
     private List<MessageForChat> messagesForChat = new();

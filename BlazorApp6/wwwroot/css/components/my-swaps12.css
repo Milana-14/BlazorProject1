@@ -455,3 +455,52 @@ body {
     color: #453D44;
     margin-top: 6px;
 }
+
+
+
+
+
+
+
+.toxic-closed {
+    border-left: 4px solid rgba(220, 53, 69, 0.65);
+    background: rgba(200, 45, 60, 0.04);
+}
+
+.swap-warning-text {
+    font-size: 12px;
+    color: rgba(220, 53, 69, 0.8);
+    margin-top: 6px;
+}
+
+
+
+.swaps-sidebar {
+    height: calc(100vh - 84px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+    .swaps-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .swaps-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,0.2);
+        border-radius: 6px;
+    }
+
+.swaps-sidebar {
+    min-height: 0;
+}
+
+.swaps-sidebar {
+    height: calc(100vh - 84px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* 🔥 обязательно */
+}

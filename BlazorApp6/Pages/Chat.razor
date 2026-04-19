@@ -67,6 +67,9 @@ else
                             <div class="chat-info-action"><i class="bi bi-check-circle"></i><span @onclick="ProposeCompletion">Предложи завършване</span></div>
                         }
                     </div>
+                    <div class="toxic-inform-count">
+                        <p>Свапът ще се затвори автоматично при още @(3 - swap.ToxicMessagesCount) @(3 - swap.ToxicMessagesCount == 1 ? "предупреждение" : "предупреждения").</p>
+                    </div>
                     <div class="chat-info-section">
                         @(currentStudent.Id == swap.Student2Id ? "Помагаш по" : $"{otherStudent.FirstName} ти помага по"): @swap.SubjectForHelp.GetDisplayName().ToLower()
                         <br />
@@ -102,11 +105,7 @@ else
                             @if (moderationMap.TryGetValue(m.Id, out var mod))
                             {
                                 <div class="ai-wrapper">
-                                    @if (mod.LastToxicWarning)
-                                    {
-                                        StateHasChanged();
-                                    }
-                                    else if (mod.FactualError >= 0.6)
+                                    @if (mod.FactualError >= 0.6)
                                     {
                                         <div class="ai-warning fact">
                                             @mod.Suggestion
@@ -637,15 +636,27 @@ else
 
     private async Task SaveEditedMessage()
     {
-        if (editingMessage == null || hubConnection == null || string.IsNullOrWhiteSpace(editingText)) return;
+        if (editingMessage == null || hubConnection == null || string.IsNullOrWhiteSpace(editingText))
+            return;
 
-        await hubConnection.SendAsync("EditMessage",
-            new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)),
-            editingMessage.Id,
-            editingText);
+        var messageId = editingMessage.Id;
+        moderationMap.Remove(messageId);
 
+        var newContent = editingText;
         editingMessage = null;
         editingText = string.Empty;
+
+        await InvokeAsync(StateHasChanged);
+
+        await hubConnection.SendAsync(
+            "EditMessage",
+            new UserConnection(
+                swapId,
+                new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)
+            ),
+            messageId,
+            newContent
+        );
     }
 
     private void CancelEdit()

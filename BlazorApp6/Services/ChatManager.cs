@@ -263,7 +263,7 @@ public class ChatMessages : Hub<IChatClient>
             swap = swapManager.FindHistorySwapById(connection.SwapId);
         }
 
-        if (swap != null && connection.Student.Id == swap.Student2Id)
+        if (swap != null)
         {
             try
             {
@@ -353,6 +353,31 @@ public class ChatMessages : Hub<IChatClient>
 
         chatManager.UpdateMessageContent(messageId, newContent);
         await Clients.Group(connection.SwapId.ToString()).EditMessage(messageId, newContent);
+
+
+        var swap = swapManager.FindSwapById(connection.SwapId);
+
+        if (swap == null)
+        {
+            swap = swapManager.FindHistorySwapById(connection.SwapId);
+        }
+
+        if (swap != null)
+        {
+            try
+            {
+                MessageToSend msgToSend = new MessageToSend(msg.Id, newContent, msg.Timestamp, msg.ReplyToMessageId);
+
+                var moderationResult = await aiModerationService.HandleMessageChecking(swap, connection.Student, msgToSend);
+
+                if (moderationResult != null && (moderationResult.Toxic >= 0.5 || moderationResult.FactualError >= 0.6))
+                    await ReceiveAi(moderationResult, msgToSend, swap);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Възникна грешка при AiModerationService: {ex.Message}");
+            }
+        }
     }
 
 
