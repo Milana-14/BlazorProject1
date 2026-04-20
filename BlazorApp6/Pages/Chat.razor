@@ -340,6 +340,62 @@ else
                     <p class="sub">Молим ви, бъдете по-мили и уважителни.</p>
                 </div>
             }
+            else if (swap.Status == SwapStatus.Completed)
+            {
+                <div class="chat-system-card rate-card">
+                    <h5>Свапът по @(swap.SubjectForHelp.GetDisplayName()) е успешно завършен!</h5>
+
+                    @if (isStudentToRate)
+                    {
+                        <div class="summary">
+
+                            @if (studentReview != null)
+                                {
+                                <p><strong>@otherStudent.FirstName</strong> оцени твоята помощ:</p>
+
+                                <div class="review-stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <span class="@(i <= studentReview.Rating ? "filled" : "empty")">&#9733;</span>
+                                    }
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(studentReview?.Comment))
+                                {
+                                    <p class="review-comment">
+                                        "@studentReview?.Comment"
+                                    </p>
+                                }
+                            }
+                        </div>
+
+                        if (aiEvaluation != null)
+                        {
+                            <div class="summary">
+                                <p><strong>ИИ анализ:</strong></p>
+                                <p>Яснота на обяснението ти: <strong>@aiEvaluation.ExplanationClarity / 10</strong></p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>Благодарим ти че оцени помощта на <strong>@otherStudent.FirstName</strong>.</p>
+
+                        if (aiEvaluation != null)
+                        {
+                            <div class="summary">
+                                <p><strong>Резултат от обучението:</strong></p>
+                                <p>Правилни отговори: @correctAnswersCount / 3</p>
+                                <p>Оценка на разбирането ти: <strong>@aiEvaluation.UnderstandingLevel / 10</strong></p>
+                            </div>
+                        }
+                    }
+
+                    <button class="btn-secondary" @onclick="CloseSwapAndNavigate">
+                        Към моите свапове
+                    </button>
+                </div>
+            }
 
             @* Редактиране *@
             @if (IsEditing)
@@ -420,7 +476,9 @@ else
     private int? selectedAnswer = null;
     private bool showResult = false;
     private bool? isCorrect = null;
-    int correctAnswersCount = 0;
+    private int correctAnswersCount = 0;
+
+    private AiEvaluation aiEvaluation;
 
     private bool contextMenuVisible = false;
     private string contextMenuXpx, contextMenuYpx;
@@ -452,6 +510,7 @@ else
     private bool isStudentToRate;
     private int? selectedRating { get; set; }
     private string ratingComment = "";
+    private Review? studentReview = null;
 
     private string? errorMessage;
 
@@ -536,7 +595,10 @@ else
 
         hubConnection.On<AiModerationMessage>("ReceiveAiModeration", async (mod) =>
         {
-            moderationMap[mod.MessageId] = mod;
+            if (messagesForChat.Any(m => m.Id == mod.MessageId))
+            {
+                moderationMap[mod.MessageId] = mod;
+            }
             await InvokeAsync(StateHasChanged);
         });
 
@@ -605,11 +667,25 @@ else
             InvokeAsync(StateHasChanged);
         });
 
-        hubConnection.On<AiQuestions>("ReceiveQuestions", (questions) =>
+        hubConnection.On<SwapModel, Review>("SwapLastUpdated", (updatedSwap, studentFinalReview) =>
+        {
+            swap = updatedSwap;
+            studentReview = studentFinalReview;
+            isStudentToRate = currentStudent.Id == swap.Student2Id;
+            InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<AiQuestions>("ReceiveQuestions", questions =>
         {
             aiQuestions = questions;
             InvokeAsync(StateHasChanged);
         });
+
+        hubConnection.On<AiEvaluation>("ReceiveAiEvaluation", evaluation =>
+       {
+           aiEvaluation = evaluation;
+           InvokeAsync(StateHasChanged);
+       }); 
 
         hubConnection1 = new HubConnectionBuilder()
     .WithUrl(NavigationManager.ToAbsoluteUri("/onlinehub"))
@@ -832,9 +908,11 @@ else
             StudentManager.UpdateStudent(currentStudent);
         }
 
-        SwapManager.CompleteSwap(swap);
-        await hubConnection.SendAsync("AcceptCompletion", swap, currentStudent.Id);
+        await hubConnection.SendAsync("CompleteSwap", swap, currentStudent.Id);
+    }
 
+    public void CloseSwapAndNavigate()
+    {
         NavigationManager.NavigateTo("/my-swaps");
     }
 
@@ -845,6 +923,10 @@ else
             await hubConnection.SendAsync("LeaveChat",
                 new UserConnection(swapId, new StudentToConnect(currentStudent.Id, currentStudent.FirstName, currentStudent.SecName)));
             await hubConnection.DisposeAsync();
+        }
+        if (hubConnection1 != null)
+        {
+            await hubConnection1.DisposeAsync();
         }
     }
 
@@ -916,6 +998,6 @@ else
 
     private async Task CompleteNotRatedSwap()
     {
-        await hubConnection.SendAsync("EvaluateSwap", swap, correctAnswersCount); // В сервиса трябва да продължа логиката за оценка на разбирането на учениците
+        await hubConnection.SendAsync("EvaluateSwap", swap, correctAnswersCount);
     }
 }

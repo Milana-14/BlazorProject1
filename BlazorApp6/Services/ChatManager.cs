@@ -218,6 +218,7 @@ public interface IChatClient
     Task ReceiveAiModeration(AiModerationMessage aiModerationMessage);
     Task ReceiveQuestions(AiQuestions questions);
     Task ReceiveAiEvaluation(AiEvaluation evaluation);
+    Task SwapLastUpdated(Swap swap, Review review);
 }
 public record StudentToConnect(Guid Id, string FirstName, string SecName);
 public record UserConnection(Guid SwapId, StudentToConnect Student);
@@ -232,23 +233,29 @@ public class ChatMessages : Hub<IChatClient>
     private readonly AiChatManager aiChatManager;
     private readonly AiModerationService aiModerationService;
     private readonly AiEvaluationService aiEvaluationService;
+    private readonly RateHelpManager rateHelpManager;
 
-    public ChatMessages(ChatManager chatManager, SwapManager swapManager, AiChatManager aiChatManager, AiModerationService aiModerationService, AiEvaluationService aiEvaluationSrvice)
+    public ChatMessages(ChatManager chatManager, SwapManager swapManager, AiChatManager aiChatManager, AiModerationService aiModerationService, AiEvaluationService aiEvaluationSrvice, RateHelpManager rateHelpManager)
     {
         this.chatManager = chatManager;
         this.swapManager = swapManager;
         this.aiChatManager = aiChatManager;
         this.aiModerationService = aiModerationService;
         this.aiEvaluationService = aiEvaluationSrvice;
+        this.rateHelpManager = rateHelpManager;
     }
 
     public async Task JoinChat(UserConnection connection)
     {
         var swap = swapManager.FindSwapById(connection.SwapId);
+        if (swap == null)
+            throw new HubException("Свапът не е намерен.");
+
         if (swap.Student1Id != connection.Student.Id && swap.Student2Id != connection.Student.Id)
         {
             throw new HubException("Нямаш достъп до този чат. Наявно ти не състоиш в дадения свап.");
         }
+
         await Groups.AddToGroupAsync(Context.ConnectionId, connection.SwapId.ToString());
         await Clients.Group(connection.SwapId.ToString()).UserJoined($"{connection.Student.FirstName} {connection.Student.SecName}");
     }
@@ -278,7 +285,7 @@ public class ChatMessages : Hub<IChatClient>
 
                 swap = swapManager.FindSwapById(connection.SwapId);
                 if (swap == null)
-                    throw new HubException("Swap not found");
+                    throw new HubException("Свапът не е намерен.");
 
                 await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
             }
@@ -309,7 +316,7 @@ public class ChatMessages : Hub<IChatClient>
         var fileUrl = $"/files/{fileName}";
         MessageToSend message = new MessageToSend(Guid.NewGuid(), $"[Файл] <a href='{fileUrl}' target='_blank'>{fileName}</a>", DateTime.UtcNow, null);
 
-        await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.Content, DateTime.Now, message.ReplyToMessage);
+        await Clients.Group(connection.SwapId.ToString()).ReceiveMessage(message.Id, connection.Student.Id, $"{connection.Student.FirstName} {connection.Student.SecName}", message.Content, DateTime.UtcNow, message.ReplyToMessage);
 
         chatManager.AddMessageToDb(message.Id, connection.SwapId, connection.Student.Id, message.Content, message.ReplyToMessage);
     }
@@ -408,7 +415,7 @@ public class ChatMessages : Hub<IChatClient>
     public async Task ProposeCompletion(Swap swap, Guid studentId)
     {
         if (swap == null)
-            throw new HubException("Swap not found");
+            throw new HubException("Свапът не е намерен");
 
 
         if (swap.Student1Id != studentId && swap.Student2Id != studentId)
@@ -422,7 +429,7 @@ public class ChatMessages : Hub<IChatClient>
     public async Task AcceptCompletion(Swap swap, Guid studentId)
     {
         if (swap == null)
-            throw new HubException("Swap not found");
+            throw new HubException("Свапът не е намерен.");
 
         if (swap.Student1Id != studentId && swap.Student2Id != studentId)
             throw new HubException("Нямаш право");
@@ -437,13 +444,12 @@ public class ChatMessages : Hub<IChatClient>
     public async Task RejectCompletion(Swap swap, Guid studentId)
     {
         if (swap == null)
-            throw new HubException("Swap not found");
+            throw new HubException("Свапът не е намерен.");
 
         if (swap.Student1Id != studentId && swap.Student2Id != studentId)
             throw new HubException("Нямаш право");
 
         swapManager.RejectCompletion(swap);
-
         await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
     }
 
@@ -455,6 +461,19 @@ public class ChatMessages : Hub<IChatClient>
         AiEvaluation evaluation = await aiEvaluationService.EvaluateQuality(swap, correctAnswersCount);
 
         await Clients.Group(swap.Id.ToString()).ReceiveAiEvaluation(evaluation);
-        // трябвв да се абонирам н атова събитие и тн
+    }
+
+    public async Task CompleteSwap(Swap swap, Guid studentId)
+    {
+        if (swap == null)
+            throw new HubException("Свапът не е намерен.");
+
+        if (swap.Student1Id != studentId && swap.Student2Id != studentId)
+            throw new HubException("Нямаш право");
+
+        Review studentReview = rateHelpManager.LoadReviewForSwapFromDb(swap.Id);
+
+        swapManager.CompleteSwap(swap);
+        await Clients.Group(swap.Id.ToString()).SwapLastUpdated(swap, studentReview);
     }
 }

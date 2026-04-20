@@ -114,9 +114,9 @@
                                     </div>
 
                                     <div class="review-stars">
-                                        @for (int i = 0; i < r.Rating; i++)
+                                        @for (int i = 1; i <= 5; i++)
                                         {
-                                            <span>&#9733;</span>
+                                            <span class="@(i <= r?.Rating ? "filled" : "empty")">&#9733;</span>
                                         }
                                     </div>
 
