@@ -785,22 +785,22 @@ else
 
     private async Task ProposeCompletion()
     {
-        await hubConnection.SendAsync("ProposeCompletion", swap.Id, currentStudent.Id);
+        await hubConnection.SendAsync("ProposeCompletion", swap, currentStudent.Id);
     }
 
     private async Task CancelProposeCompletion()
     {
-        await hubConnection.SendAsync("RejectCompletion", swap.Id, currentStudent.Id);
+        await hubConnection.SendAsync("RejectCompletion", swap, currentStudent.Id);
     }
 
     private async Task AcceptCompletion()
     {
-        await hubConnection.SendAsync("AcceptCompletion", swap.Id, currentStudent.Id);
+        await hubConnection.SendAsync("AcceptCompletion", swap, currentStudent.Id);
     }
 
     private async Task RejectCompletion()
     {
-        await hubConnection.SendAsync("RejectCompletion", swap.Id, currentStudent.Id);
+        await hubConnection.SendAsync("RejectCompletion", swap, currentStudent.Id);
     }
 
 
@@ -833,7 +833,7 @@ else
         }
 
         SwapManager.CompleteSwap(swap);
-        await hubConnection.SendAsync("AcceptCompletion", swap.Id, currentStudent.Id);
+        await hubConnection.SendAsync("AcceptCompletion", swap, currentStudent.Id);
 
         NavigationManager.NavigateTo("/my-swaps");
     }
@@ -916,7 +916,6 @@ else
 
     private async Task CompleteNotRatedSwap()
     {
-        SwapManager.CompleteNotRatedSwap(swap);
-        await hubConnection.SendAsync("AnswerQuestions", swap.Id, currentStudent.Id); // В сервиса трябва да продължа логиката за оценка на разбирането на учениците
+        await hubConnection.SendAsync("EvaluateSwap", swap, correctAnswersCount); // В сервиса трябва да продължа логиката за оценка на разбирането на учениците
     }
 }

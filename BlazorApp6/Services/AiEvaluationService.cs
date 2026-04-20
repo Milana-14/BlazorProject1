@@ -155,9 +155,81 @@ namespace BlazorApp6.Services
             }
         }
 
-        public async Task<AiEvaluation> EvaluateUnderstandingLevel(AiEvaluation evaluation)
+        public async Task<AiEvaluation> EvaluateQuality(Swap swap, int correctAnswersCount)
         {
+            List<Message> messages = chatManager.GetMessagesFromDb(swap.Id).OrderBy(m => m.Timestamp).ToList();
 
+            string wholeChat = string.Empty;
+
+            foreach (var msg in messages)
+            {
+                if (swap.Student1Id == msg.SenderId)
+                {
+                    wholeChat += $"Получаващ помощ: {msg.Content}\n";
+                }
+                else if (swap.Student2Id == msg.SenderId)
+                {
+                    wholeChat += $"Обясняващ: {msg.Content}\n";
+                }
+            }
+            // трябва да довърша промпта
+            var systemPrompt = $"""Анализирай целия чат между двама ученици в рамките на една учебна сесия по предмет {swap.SubjectForHelp.GetDisplayName().ToLower()}.\n""" +
+            "В чата има два типа участници:" +
+            "- \"Обясняващ\" – ученикът, който помага и обяснява материала" +
+            "- \"Получаващ помощ\" – ученикът, който задава въпроси и учи" +
+            "Твоята задача е да оцениш нивото на обяснение и разбиране в този чат, като вземеш предвид и броя правилни отговори на въпросите, които си генерирал." +
+
+            "ВАЖНО:" +
+            "- Оцени \"ОбяснениеКларити\" (ExplanationClarity) – колко ясно и добре обяснява \"Обясняващ\". Стойността трябва да е между 0 и 1, като 1 е перфектно ясно обяснение." +
+            "- Оцени \"Разбиране\" (UnderstandingLevel) – колко добре е разбрал \"Получаващ помощ\". Стойността трябва да е между 0 и 1, като 1 означава пълно разбиране." +
+
+            "- Вземи предвид броя правилни отговори (correctAnswersCount) като силен индикатор за нивото на разбиране." +
+            "- Вземи предвид токсичните съобщения, ако има такива, като фактор, който може да понижи оценките.";
+
+            var studentsWholeChatPrompt = $"\nТова е целият чат между двамата ученици:\n[whole_chat_to_analyze]{wholeChat}[/whole_chat_to_analyze]" +
+                $"\nБрой правилни отговори на въпросите: {correctAnswersCount}";
+
+            var options = new ChatCompletionOptions
+            {
+                Temperature = 0,
+                MaxOutputTokenCount = 200
+            };
+
+            var response = await chatClient.CompleteChatAsync(new ChatMessage[] { ChatMessage.CreateSystemMessage(systemPrompt),
+                                                              ChatMessage.CreateUserMessage(studentsWholeChatPrompt) }, options);
+
+            var preContent = response.Value.Content.FirstOrDefault()?.Text ?? "";
+            string content;
+
+            Console.WriteLine(preContent); ///////////////////////////////////
+
+            var start = preContent.IndexOf('{');
+            var end = preContent.LastIndexOf('}');
+
+            if (start >= 0 && end > start)
+            {
+                content = preContent.Substring(start, end - start + 1);
+            }
+            else
+            {
+                throw new Exception("Invalid AI response");
+            }
+
+            try
+            {
+                var evaluation = JsonSerializer.Deserialize<Models.AiEvaluation>(content);
+                evaluation.SwapId = swap.Id;
+                return evaluation;
+            }
+            catch (JsonException)
+            {
+                return new AiEvaluation
+                {
+                    SwapId = swap.Id,
+                    ExplanationClarity = 0,
+                    UnderstandingLevel = 0
+                };
+            }
         }
     }
 }

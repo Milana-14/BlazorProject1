@@ -217,6 +217,7 @@ public interface IChatClient
     Task SwapUpdated(Swap swap);
     Task ReceiveAiModeration(AiModerationMessage aiModerationMessage);
     Task ReceiveQuestions(AiQuestions questions);
+    Task ReceiveAiEvaluation(AiEvaluation evaluation);
 }
 public record StudentToConnect(Guid Id, string FirstName, string SecName);
 public record UserConnection(Guid SwapId, StudentToConnect Student);
@@ -404,9 +405,8 @@ public class ChatMessages : Hub<IChatClient>
     }
 
 
-    public async Task ProposeCompletion(Guid swapId, Guid studentId)
+    public async Task ProposeCompletion(Swap swap, Guid studentId)
     {
-        var swap = swapManager.FindSwapById(swapId); 
         if (swap == null)
             throw new HubException("Swap not found");
 
@@ -416,12 +416,11 @@ public class ChatMessages : Hub<IChatClient>
 
         swapManager.ProposeCompletingSwap(swap, studentId);
 
-        await Clients.Group(swapId.ToString()).SwapUpdated(swap);
+        await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
     }
 
-    public async Task AcceptCompletion(Guid swapId, Guid studentId)
+    public async Task AcceptCompletion(Swap swap, Guid studentId)
     {
-        var swap = swapManager.FindSwapById(swapId);
         if (swap == null)
             throw new HubException("Swap not found");
 
@@ -429,16 +428,14 @@ public class ChatMessages : Hub<IChatClient>
             throw new HubException("Нямаш право");
 
         swapManager.AcceptCompletion(swap);
-
-        await Clients.Group(swapId.ToString()).SwapUpdated(swap);
+        await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
 
         AiQuestions questions = await aiEvaluationService.GenerateQuestions(swap);
-        await Clients.Group(swapId.ToString()).ReceiveQuestions(questions);
+        await Clients.Group(swap.Id.ToString()).ReceiveQuestions(questions);
     }
 
-    public async Task RejectCompletion(Guid swapId, Guid studentId)
+    public async Task RejectCompletion(Swap swap, Guid studentId)
     {
-        var swap = swapManager.FindSwapById(swapId);
         if (swap == null)
             throw new HubException("Swap not found");
 
@@ -447,6 +444,17 @@ public class ChatMessages : Hub<IChatClient>
 
         swapManager.RejectCompletion(swap);
 
-        await Clients.Group(swapId.ToString()).SwapUpdated(swap);
+        await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
+    }
+
+    public async Task EvaluateSwap(Swap swap, int correctAnswersCount)
+    {
+        swapManager.CompleteNotRatedSwap(swap);
+        await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
+
+        AiEvaluation evaluation = await aiEvaluationService.EvaluateQuality(swap, correctAnswersCount);
+
+        await Clients.Group(swap.Id.ToString()).ReceiveAiEvaluation(evaluation);
+        // трябвв да се абонирам н атова събитие и тн
     }
 }
