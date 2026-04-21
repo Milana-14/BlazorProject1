@@ -1035,3 +1035,61 @@
         background-color: #dc3545;
         color: white;
     }
+
+
+
+
+
+
+
+/* =========================================================
+   SIDEBAR – ОЦЕНКИ И AI
+   ========================================================= */
+
+.chat-info-evaluation {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.info-block {
+    background: #F4F3F1;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.info-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #453D44;
+    margin-bottom: 6px;
+}
+
+.review-stars {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+    .review-stars span {
+        font-size: 16px;
+        color: #ccc;
+    }
+
+        .review-stars span.filled {
+            color: #f5b301;
+        }
+
+.review-comment {
+    font-size: 13px;
+    color: #555;
+    font-style: italic;
+}
+
+.ai-metric {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #453D44;
+    padding: 2px 0;
+}

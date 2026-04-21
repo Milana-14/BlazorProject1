@@ -73,6 +73,59 @@ FROM ""AiModerationMessages""";
         }
 
 
+
+        public async Task AddAiEvaluationToDb(AiEvaluation evaluation)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+        INSERT INTO ""AiEvaluations""
+        (""Id"", ""SwapId"", ""ExplanationClarity"", ""UnderstandingLevel"")
+        VALUES
+        (@Id, @SwapId, @ExplanationClarity, @UnderstandingLevel)";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", evaluation.Id);
+            cmd.Parameters.AddWithValue("@SwapId", evaluation.SwapId);
+            cmd.Parameters.AddWithValue("@ExplanationClarity", evaluation.ExplanationClarity);
+            cmd.Parameters.AddWithValue("@UnderstandingLevel", evaluation.UnderstandingLevel);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<AiEvaluation?> LoadAiEvaluationForSwapFromDb(Guid swapId)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+        SELECT ""Id"", ""SwapId"", ""ExplanationClarity"", ""UnderstandingLevel""
+        FROM ""AiEvaluations""
+        WHERE ""SwapId"" = @SwapId
+        LIMIT 1";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@SwapId", swapId);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new AiEvaluation
+                {
+                    Id = reader.GetGuid(0),
+                    SwapId = reader.GetGuid(1),
+                    ExplanationClarity = reader.GetInt32(2),
+                    UnderstandingLevel = reader.GetInt32(3)
+                };
+            }
+
+            return null;
+        }
+
+
+
         public async Task AddMessageAsync(AiMessage message)
         {
             using var conn = new NpgsqlConnection(connectionString);
