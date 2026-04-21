@@ -1,6 +1,6 @@
 ﻿@page "/chat-history/{SwapId:guid}"   // страница за преглед на архивиран чат
 @using SwapModel = BlazorApp6.Models.Swap
-@inject NavigationManager navigationManager
+@inject NavigationManager NavigationManager
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider authStateProvider
 @inject StudentManager studentManager
 @inject AvatarManager avatarManager
@@ -38,6 +38,10 @@
                 <img src="@avatarManager.GetAvatarUrl(otherStudent.AvatarName)" class="chat-info-profile-avatar" />
                 <h4>@otherStudent.FirstName @otherStudent.SecName</h4>
             </div>
+
+                <div class="chat-info-actions">
+                    <div class="chat-info-action"><i class="bi bi-person"></i><span @onclick="() => ViewProfile(otherStudent)">Виж профила</span></div>
+                </div>
 
             <div class="chat-info-section">
                 @(currentStudent.Id == swap.Student2Id ? "Помагал си по" : "Получил си помощ по"):
@@ -205,6 +209,11 @@
 
         review = rateHelpManager.LoadReviewForSwapFromDb(swap.Id);
         aiEvaluation = await aiChatManager.LoadAiEvaluationForSwapFromDb(swap.Id);
+    }
+
+    private void ViewProfile(Student student)
+    {
+        NavigationManager.NavigateTo($"/other-profile/{student.Id}");
     }
 
     private void ToggleSidebar()
