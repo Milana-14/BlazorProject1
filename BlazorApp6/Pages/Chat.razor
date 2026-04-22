@@ -252,8 +252,9 @@ else
                 </div>
 
             }
-            @if (swap.Status == SwapStatus.CompletedNotAnswered && !isStudentToRate && aiQuestions != null)
+            @if (swap.Status == SwapStatus.CompletedNotAnswered && !isStudentToRate)
             {
+                GetAiQuestions();
                 var q = GetCurrentQuestion();
 
                 <div class="chat-system-card rate-card">
@@ -572,6 +573,10 @@ else
 
         moderationMap = aiMessages.Where(m => m.MessageId != Guid.Empty).ToDictionary(m => m.MessageId, m => m);
 
+        if (swap.Status == SwapStatus.CompletedNotAnswered && !isStudentToRate)
+        {
+            aiQuestions = await aiChatManager.GetAiQuestionsForSwapFromDb(swap.Id);
+        }
 
         if (hubConnection != null) return;
 
@@ -665,6 +670,7 @@ else
         {
             swap = updatedSwap;
             isStudentToRate = currentStudent.Id == swap.Student2Id;
+            if (swap.Status == SwapStatus.CompletedNotAnswered && !isStudentToRate)
             InvokeAsync(StateHasChanged);
         });
 
@@ -941,6 +947,11 @@ else
         NavigationManager.NavigateTo($"/other-profile/{student.Id}");
     }
 
+
+    private async Task GetAiQuestions()
+    {
+        aiQuestions = await aiChatManager.GetAiQuestionsForSwapFromDb(swap.Id);
+    }
 
     private (string Question, string A, string B, string C, int Correct) GetCurrentQuestion()
     {

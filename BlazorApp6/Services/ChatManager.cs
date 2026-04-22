@@ -438,6 +438,8 @@ public class ChatMessages : Hub<IChatClient>
         await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
 
         AiQuestions questions = await aiEvaluationService.GenerateQuestions(swap);
+        aiChatManager.AddAiQuestionsToDb(questions);
+
         await Clients.Group(swap.Id.ToString()).ReceiveQuestions(questions);
     }
 
@@ -459,6 +461,7 @@ public class ChatMessages : Hub<IChatClient>
         await Clients.Group(swap.Id.ToString()).SwapUpdated(swap);
 
         AiEvaluation evaluation = await aiEvaluationService.EvaluateQuality(swap, correctAnswersCount);
+        aiChatManager.AddAiEvaluationToDb(evaluation);
 
         await Clients.Group(swap.Id.ToString()).ReceiveAiEvaluation(evaluation);
     }

@@ -208,7 +208,7 @@
         messagesForChat = messages.Select(m => new MessageForChat(m.Id, m.SenderId, "", m.Content, m.Timestamp, true, m.IsEdited, null)).ToList();
 
         review = rateHelpManager.LoadReviewForSwapFromDb(swap.Id);
-        aiEvaluation = await aiChatManager.LoadAiEvaluationForSwapFromDb(swap.Id);
+        aiEvaluation = await aiChatManager.GetAiEvaluationForSwapFromDb(swap.Id);
     }
 
     private void ViewProfile(Student student)

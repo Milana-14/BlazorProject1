@@ -94,7 +94,7 @@ FROM ""AiModerationMessages""";
             await cmd.ExecuteNonQueryAsync();
         }
 
-        public async Task<AiEvaluation?> LoadAiEvaluationForSwapFromDb(Guid swapId)
+        public async Task<AiEvaluation?> GetAiEvaluationForSwapFromDb(Guid swapId)
         {
             using var conn = new NpgsqlConnection(connectionString);
             await conn.OpenAsync();
@@ -118,6 +118,103 @@ FROM ""AiModerationMessages""";
                     SwapId = reader.GetGuid(1),
                     ExplanationClarity = reader.GetInt32(2),
                     UnderstandingLevel = reader.GetInt32(3)
+                };
+            }
+
+            return null;
+        }
+
+        public async Task AddAiQuestionsToDb(AiQuestions q)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+    INSERT INTO ""AiQuestions""
+    (
+        ""Id"", ""SwapId"",
+        ""Question1"", ""OptionA1"", ""OptionB1"", ""OptionC1"", ""CorrectAnswer1"",
+        ""Question2"", ""OptionA2"", ""OptionB2"", ""OptionC2"", ""CorrectAnswer2"",
+        ""Question3"", ""OptionA3"", ""OptionB3"", ""OptionC3"", ""CorrectAnswer3""
+    )
+    VALUES
+    (
+        @Id, @SwapId,
+        @Question1, @OptionA1, @OptionB1, @OptionC1, @CorrectAnswer1,
+        @Question2, @OptionA2, @OptionB2, @OptionC2, @CorrectAnswer2,
+        @Question3, @OptionA3, @OptionB3, @OptionC3, @CorrectAnswer3
+    )";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+
+            cmd.Parameters.AddWithValue("@Id", q.Id);
+            cmd.Parameters.AddWithValue("@SwapId", q.SwapId);
+
+            cmd.Parameters.AddWithValue("@Question1", q.Question1);
+            cmd.Parameters.AddWithValue("@OptionA1", q.OptionA1);
+            cmd.Parameters.AddWithValue("@OptionB1", q.OptionB1);
+            cmd.Parameters.AddWithValue("@OptionC1", q.OptionC1);
+            cmd.Parameters.AddWithValue("@CorrectAnswer1", q.CorrectAnswer1);
+
+            cmd.Parameters.AddWithValue("@Question2", q.Question2);
+            cmd.Parameters.AddWithValue("@OptionA2", q.OptionA2);
+            cmd.Parameters.AddWithValue("@OptionB2", q.OptionB2);
+            cmd.Parameters.AddWithValue("@OptionC2", q.OptionC2);
+            cmd.Parameters.AddWithValue("@CorrectAnswer2", q.CorrectAnswer2);
+
+            cmd.Parameters.AddWithValue("@Question3", q.Question3);
+            cmd.Parameters.AddWithValue("@OptionA3", q.OptionA3);
+            cmd.Parameters.AddWithValue("@OptionB3", q.OptionB3);
+            cmd.Parameters.AddWithValue("@OptionC3", q.OptionC3);
+            cmd.Parameters.AddWithValue("@CorrectAnswer3", q.CorrectAnswer3);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<AiQuestions?> GetAiQuestionsForSwapFromDb(Guid swapId)
+        {
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+    SELECT
+        ""Id"", ""SwapId"",
+        ""Question1"", ""OptionA1"", ""OptionB1"", ""OptionC1"", ""CorrectAnswer1"",
+        ""Question2"", ""OptionA2"", ""OptionB2"", ""OptionC2"", ""CorrectAnswer2"",
+        ""Question3"", ""OptionA3"", ""OptionB3"", ""OptionC3"", ""CorrectAnswer3""
+    FROM ""AiQuestions""
+    WHERE ""SwapId"" = @SwapId
+    LIMIT 1";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@SwapId", swapId);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new AiQuestions
+                {
+                    Id = reader.GetGuid(0),
+                    SwapId = reader.GetGuid(1),
+
+                    Question1 = reader.GetString(2),
+                    OptionA1 = reader.GetString(3),
+                    OptionB1 = reader.GetString(4),
+                    OptionC1 = reader.GetString(5),
+                    CorrectAnswer1 = reader.GetInt32(6),
+
+                    Question2 = reader.GetString(7),
+                    OptionA2 = reader.GetString(8),
+                    OptionB2 = reader.GetString(9),
+                    OptionC2 = reader.GetString(10),
+                    CorrectAnswer2 = reader.GetInt32(11),
+
+                    Question3 = reader.GetString(12),
+                    OptionA3 = reader.GetString(13),
+                    OptionB3 = reader.GetString(14),
+                    OptionC3 = reader.GetString(15),
+                    CorrectAnswer3 = reader.GetInt32(16)
                 };
             }
 
