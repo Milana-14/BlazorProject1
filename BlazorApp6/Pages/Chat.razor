@@ -82,7 +82,7 @@ else
                     </div>
                 </div>
 
-                @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted || swap.Status == SwapStatus.CompletedNotRated)
+                @if (swap.Status == SwapStatus.Confirmed || swap.Status == SwapStatus.PendingCompleted || swap.Status == SwapStatus.CompletedNotRated || swap.Status == SwapStatus.CompletedNotAnswered)
                 {
         <div class="chat-container d-flex flex-column flex-grow-1">
             <div class="chat-window flex-grow-1 overflow-auto" @ref="chatWindowRef">
@@ -573,10 +573,10 @@ else
 
         moderationMap = aiMessages.Where(m => m.MessageId != Guid.Empty).ToDictionary(m => m.MessageId, m => m);
 
-        if (swap.Status == SwapStatus.CompletedNotAnswered && !isStudentToRate)
-        {
-            aiQuestions = await aiChatManager.GetAiQuestionsForSwapFromDb(swap.Id);
-        }
+        // if (swap.Status == SwapStatus.CompletedNotAnswered && !isStudentToRate)
+        // {
+        //     aiQuestions = await aiChatManager.GetAiQuestionsForSwapFromDb(swap.Id);
+        // }
 
         if (hubConnection != null) return;
 
@@ -671,7 +671,7 @@ else
             swap = updatedSwap;
             isStudentToRate = currentStudent.Id == swap.Student2Id;
             if (swap.Status == SwapStatus.CompletedNotAnswered && !isStudentToRate)
-            InvokeAsync(StateHasChanged);
+                InvokeAsync(StateHasChanged);
         });
 
         hubConnection.On<SwapModel, Review>("SwapLastUpdated", (updatedSwap, studentFinalReview) =>
@@ -948,9 +948,9 @@ else
     }
 
 
-    private async Task GetAiQuestions()
+    private void GetAiQuestions()
     {
-        aiQuestions = await aiChatManager.GetAiQuestionsForSwapFromDb(swap.Id);
+        aiQuestions = aiChatManager.GetAiQuestionsForSwapFromDb(swap.Id);
     }
 
     private (string Question, string A, string B, string C, int Correct) GetCurrentQuestion()

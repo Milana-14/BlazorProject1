@@ -171,10 +171,10 @@ FROM ""AiModerationMessages""";
             await cmd.ExecuteNonQueryAsync();
         }
 
-        public async Task<AiQuestions?> GetAiQuestionsForSwapFromDb(Guid swapId)
+        public AiQuestions GetAiQuestionsForSwapFromDb(Guid swapId)
         {
             using var conn = new NpgsqlConnection(connectionString);
-            await conn.OpenAsync();
+            conn.OpenAsync();
 
             var sql = @"
     SELECT
@@ -189,9 +189,9 @@ FROM ""AiModerationMessages""";
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@SwapId", swapId);
 
-            using var reader = await cmd.ExecuteReaderAsync();
+            using var reader = cmd.ExecuteReader();
 
-            if (await reader.ReadAsync())
+            if (reader.Read())
             {
                 return new AiQuestions
                 {
