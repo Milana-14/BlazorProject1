@@ -35,10 +35,7 @@ namespace BlazorApp6.Services
                 SwapId = swap.Id
             };
 
-            if (SaveReviewToDb(review))
-            {
-                swapManager.CompleteNotRatedSwap(swap);
-            }
+            SaveReviewToDb(review);
         }
 
         public List<Review> LoadReviewsForStudentFromDb(Guid receiverStudentId)

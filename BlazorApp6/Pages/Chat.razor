@@ -339,10 +339,15 @@ else
                 <div class="chat-system-card rate-card">
                     <p>Свапът беше затворен поради неподходящо поведение в чата.</p>
                     <p class="sub">Молим ви, бъдете по-мили и уважителни.</p>
+
+                    <button class="btn-secondary" @onclick="CloseSwapAndNavigate">
+                        Към моите свапове
+                    </button>
                 </div>
             }
             else if (swap.Status == SwapStatus.Completed)
             {
+                GetAiEvaluation();
                 <div class="chat-system-card rate-card">
                     <h5>Свапът по @(swap.SubjectForHelp.GetDisplayName()) е успешно завършен!</h5>
 
@@ -951,6 +956,11 @@ else
     private void GetAiQuestions()
     {
         aiQuestions = aiChatManager.GetAiQuestionsForSwapFromDb(swap.Id);
+    }
+
+    private void GetAiEvaluation()
+    {
+        aiEvaluation = aiChatManager.GetAiEvaluationForSwapFromDb(swap.Id).Result;
     }
 
     private (string Question, string A, string B, string C, int Correct) GetCurrentQuestion()

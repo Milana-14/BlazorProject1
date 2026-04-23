@@ -130,13 +130,13 @@
                     {
                         <div style="display: flex; gap: 10px;">
                             <button class="btn-profile-secondary"
-                                    disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 5 || otherSwapRequestCount > 10 || otherSwapActiveCount > 5 || currentStudent.Coins < -2 || otherStudent.Coins < -2)"
+                                    disabled="@(!canRequestHelp || swapRequestCount > 10 || swapActiveCount > 5 || otherSwapRequestCount > 10 || otherSwapActiveCount > 5 || currentStudent.Coins < -2)"
                                     @onclick="() => OpenModal(otherStudent, true)">
                                 Помоли за помощ
                             </button>
 
                             <button class="btn-profile-secondary"
-                                    disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 5 || otherSwapRequestCount > 10 || otherSwapActiveCount > 5 || currentStudent.Coins < -2 || otherStudent.Coins < -2)"
+                                    disabled="@(!canOfferHelp || swapRequestCount > 10 || swapActiveCount > 5 || otherSwapRequestCount > 10 || otherSwapActiveCount > 5 || otherStudent.Coins < -2)"
                                     @onclick="() => OpenModal(otherStudent, false)">
                                 Предложи помощ
                             </button>

@@ -113,8 +113,8 @@ namespace BlazorApp6.Services
 
         public void CompleteNotRatedSwap(Swap swap)
         {
-            if (swap.Status != SwapStatus.CompletedNotRated)
-                throw new InvalidOperationException("Този свап не е в статус \"Неоценен свап.\".");
+            if (swap.Status != SwapStatus.CompletedNotAnswered)
+                throw new InvalidOperationException("Този свап не е в статус \"Завършен, но без отговори на въпроси, свап.\".");
             swap.Status = SwapStatus.CompletedNotRated;
             UpdateSwapInDb(swap);
         }
