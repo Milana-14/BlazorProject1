@@ -7,6 +7,7 @@
 @inject SubjectsManager SubjectsManager
 @inject SwapManager SwapManager
 @inject RateHelpManager RateHelpManager
+@inject AiChatManager AiChatManager
 @rendermode InteractiveServer
 
 <div class="main-page">
@@ -19,7 +20,6 @@
     {
         @if (!isEditing)
         {
-            allSwaps = SwapManager.FindSwapsByStudentId(student.Id);
             averageRating = (student.HelpGivenCount == 0) ? 0 : starRatings.Sum() / student.HelpGivenCount;
             <div class="profile-all-containers">
                 <div class="profile-main-info-container">
@@ -33,11 +33,11 @@
                 <div class="profile-sections">
                     <div class="profile-container-stats">
                         <div class="stat-all">
-                            <p class="stat-value">@allSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
+                            <p class="stat-value">@activeSwaps.Where(s => s.Status == SwapStatus.Confirmed || s.Status == SwapStatus.PendingCompleted || s.Status == SwapStatus.CompletedNotRated).Count()</p>
                             <p class="stat-label">Активни свапове</p>
                         </div>
                         <div class="stat-all">
-                            <p class="stat-value">@allSwaps.Count()</p>
+                            <p class="stat-value">@(activeSwaps.Count() + historySwaps.Count())</p>
                             <p class="stat-label">Общо свапове</p>
                         </div>
                         <div class="stat-all">
@@ -49,6 +49,37 @@
                             <p class="stat-label">Монети</p>
                         </div>
                     </div>
+
+
+
+                    <div class="profile-container-chart">
+                        <p class="profile-maintext">Активност по месеци</p>
+                        <div class="chart-wrapper">
+                            <div class="chart-y-axis">
+                                @for (int i = 10; i >= 0; i--)
+                                {
+                                    <div class="y-label">@i</div>
+                                }
+                            </div>
+
+                            <div class="chart-container">
+                                @foreach (var m in monthlyStats)
+                                {
+                                    var height = m.Count * 6;
+                                    var opacity = m.AvgRating / 10.0;
+
+                                    <div class="chart-bar-wrapper">
+                                        <div class="chart-bar"
+                                             style="height:@($"{height}px"); opacity:@opacity;">
+                                        </div>
+                                        <span class="chart-label">@m.Month</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+
 
                     <div class="profile-container-persinfo">
                         <div>
@@ -244,7 +275,8 @@
     private Student? student;
     private Student? studentBackup;
     private List<SubjectEnum> allSubjects = new();
-    private List<Swap> allSwaps = new();
+    private List<Swap> activeSwaps = new();
+    private List<Swap> historySwaps = new();
     private List<int> starRatings = new();
     private double averageRating = 0.0;
 
@@ -252,6 +284,15 @@
 
     private string errorMessage = string.Empty;
     private bool isEditing = false;
+
+    private class MonthlyStat
+    {
+        public string Month { get; set; }
+        public int Count { get; set; }
+        public double AvgRating { get; set; }
+    }
+
+    private List<MonthlyStat> monthlyStats = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -276,11 +317,16 @@
 
         isEditing = false;
 
+        activeSwaps = SwapManager.FindSwapsByStudentId(student.Id);
+        historySwaps = SwapManager.FindHistorySwapsByStudentId(student.Id);
+
         allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
 
         starRatings = RateHelpManager.LoadReviewsForStudentFromDb(student.Id).Select(r => r.Rating).ToList();
 
         reviews = RateHelpManager.LoadReviewsForStudentFromDb(student.Id);
+
+        await GenerateMonthlyActivity();
     }
 
     private async Task SelectFile(IBrowserFile file)
@@ -368,5 +414,50 @@
         }
 
         isEditing = false;
+    }
+
+    private async Task GenerateMonthlyActivity()
+    {
+        var months = new[]
+        {
+            "Яну","Фев","Мар","Апр","Май","Юни","Юли","Авг","Сеп","Окт","Ное","Дек"
+        };
+
+        monthlyStats = months.Select(m => new MonthlyStat { Month = m, Count = 0, AvgRating = 0 }).ToList();
+
+        List<Guid> swapIds = historySwaps.Select(s => s.Id).ToList();
+
+        List<AiEvaluation> evaluations = await AiChatManager.GetAiEvaluationsForSwapsFromDb(swapIds);
+
+        Dictionary<Guid, AiEvaluation> evalDict = evaluations.ToDictionary(e => e.SwapId);
+
+        foreach (var swap in historySwaps)
+        {
+            if (swap.DateCompleted == null)
+                continue;
+
+            if (!evalDict.TryGetValue(swap.Id, out var evaluation))
+                continue;
+
+            int index = swap.DateCompleted.Value.Month - 1;
+            var stat = monthlyStats[index];
+
+            stat.Count++;
+
+            if (swap.Student1Id == student.Id)
+            {
+                stat.AvgRating += evaluation.UnderstandingLevel;
+            }
+            else
+            {
+                stat.AvgRating += evaluation.ExplanationClarity;
+            }
+        }
+
+        foreach (var stat in monthlyStats)
+        {
+            if (stat.Count > 0)
+                stat.AvgRating /= stat.Count;
+        }
     }
 }

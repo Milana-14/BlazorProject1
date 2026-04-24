@@ -94,6 +94,41 @@ FROM ""AiModerationMessages""";
             await cmd.ExecuteNonQueryAsync();
         }
 
+        public async Task<List<AiEvaluation>> GetAiEvaluationsForSwapsFromDb(List<Guid> swaps)
+        {
+            var result = new List<AiEvaluation>();
+
+            if (swaps == null || swaps.Count == 0)
+                return result;
+
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+        SELECT ""Id"", ""SwapId"", ""ExplanationClarity"", ""UnderstandingLevel""
+        FROM ""AiEvaluations""
+        WHERE ""SwapId"" = ANY(@SwapIds)";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+
+            cmd.Parameters.AddWithValue("@SwapIds", swaps);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new AiEvaluation
+                {
+                    Id = reader.GetGuid(0),
+                    SwapId = reader.GetGuid(1),
+                    ExplanationClarity = reader.GetInt32(2),
+                    UnderstandingLevel = reader.GetInt32(3)
+                });
+            }
+
+            return result;
+        }
+
         public async Task<AiEvaluation?> GetAiEvaluationForSwapFromDb(Guid swapId)
         {
             using var conn = new NpgsqlConnection(connectionString);

@@ -740,9 +740,6 @@
 }
 
 
-
-
-
 .profile-reviews-container {
     max-height: 70vh; /* или фикс: 600px */
     overflow-y: auto;
@@ -758,4 +755,108 @@
 .profile-reviews-container::-webkit-scrollbar-thumb {
     background-color: rgba(0,0,0,0.2);
     border-radius: 6px;
+}
+
+
+
+
+
+.profile-activity-chart {
+    background-color: #F9F7F6;
+    border-radius: 16px;
+    padding: 24px 32px;
+    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+/* контейнер графика */
+.chart-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 180px;
+    margin-top: 12px;
+    gap: 6px;
+}
+
+/* каждая колонка */
+.chart-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+/* сама колонка */
+.chart-bar {
+    width: 100%;
+    max-width: 18px;
+    background: linear-gradient(180deg, #70646E, #B8AEB6);
+    border-radius: 6px 6px 4px 4px;
+    transition: all 0.3s ease;
+}
+
+    /* hover эффект */
+    .chart-bar:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(180deg, #5c525a, #a79aa3);
+    }
+
+/* подписи месяцев */
+.chart-label {
+    font-size: 11px;
+    margin-top: 6px;
+    color: rgba(69, 61, 68, 0.7);
+}
+
+.chart-bar {
+    width: 100%;
+    max-width: 18px;
+    background: #70646E;
+    border-radius: 6px 6px 4px 4px;
+    transition: all 0.3s ease;
+}
+
+
+
+.chart-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+/* Лява Y ос */
+.chart-y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 180px;
+    padding-right: 8px;
+    font-size: 12px;
+    color: rgba(69, 61, 68, 0.6);
+}
+
+/* числата на оста */
+.y-label {
+    height: 18px;
+    display: flex;
+    align-items: center;
+}
+
+/* твоя график остава същия */
+.chart-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 180px;
+    gap: 6px;
+    flex: 1;
+}
+
+.profile-container-chart {
+    background-color: #F9F7F6;
+    border-radius: 16px;
+    padding: 32px;
+    box-sizing: border-box;
+    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.035), inset 0 2px 5px rgba(0, 0, 0, 0.035);
+    margin-top: 0;
 }
