@@ -9,20 +9,17 @@ namespace BlazorApp6.Controllers;
 [Route("account")]
 public class AccountController : Controller
 {
-    private readonly StudentManager _studentManager;
-    private readonly ILogger<AccountController> _logger;
+    private readonly StudentManager studentManager;
+    private readonly ILogger<AccountController> logger;
 
     public AccountController(StudentManager studentManager, ILogger<AccountController> logger)
     {
-        _studentManager = studentManager;
-        _logger = logger;
+        this.studentManager = studentManager;
+        this.logger = logger;
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(
-        [FromForm] string username,
-        [FromForm] string password,
-        [FromForm] string? returnUrl = null)
+    public async Task<IActionResult> Login([FromForm] string username, [FromForm] string password, [FromForm] string? returnUrl = null)
     {
         try
         {
@@ -31,17 +28,17 @@ public class AccountController : Controller
                 return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Моля, попълнете всички полета."));
             }
 
-            var student = _studentManager.FindStudent(s => s.Username == username);
+            var student = studentManager.FindStudent(s => s.Username == username);
 
             if (student == null)
             {
-                _logger.LogWarning("Login attempt for non-existent user: {Username}", username);
+                logger.LogWarning("Login attempt for non-existent user: {Username}", username);
                 return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Невалидно потребителско име или парола."));
             }
 
             if (!HashPasswordService.ComparePasswords(student.Password, password))
             {
-                _logger.LogWarning("Failed login attempt for user: {Username}", username);
+                logger.LogWarning("Failed login attempt for user: {Username}", username);
                 return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Невалидно потребителско име или парола."));
             }
 
@@ -67,13 +64,13 @@ public class AccountController : Controller
                 principal,
                 authProperties);
 
-            _logger.LogInformation("User {Username} logged in successfully", student.Username);
+            logger.LogInformation("User {Username} logged in successfully", student.Username);
 
             return Redirect(returnUrl ?? "/my-profile");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during login for user: {Username}", username);
+            logger.LogError(ex, "Error during login for user: {Username}", username);
             return Redirect("/login?errorMessage=" + Uri.EscapeDataString("Възникна грешка. Моля, опитайте отново."));
         }
     }
@@ -82,7 +79,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout(string? returnUrl = null)
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        _logger.LogInformation("User logged out");
+        logger.LogInformation("User logged out");
         return Redirect(returnUrl ?? "/");
     }
 }
