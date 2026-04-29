@@ -318,7 +318,7 @@
         isEditing = false;
 
         activeSwaps = SwapManager.FindSwapsByStudentId(student.Id);
-        historySwaps = SwapManager.FindHistorySwapsByStudentId(student.Id);
+        historySwaps = SwapManager.FindHistorySwapsByStudentId(student.Id).Where(s => s.Status != SwapStatus.ClosedForToxic).ToList();
 
         allSubjects = Enum.GetValues(typeof(SubjectEnum)).Cast<SubjectEnum>().Where(s => s != SubjectEnum.NotSpecified).ToList();
 
