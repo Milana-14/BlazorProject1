@@ -60,7 +60,7 @@
                     @if (review != null)
                     {
                         <div class="info-block">
-                            <div class="info-title">Оценка от ученика</div>
+                            <div class="info-title">Оценка от @((swap.Student1Id == currentStudent.Id) ? "теб" : "ученика")</div>
 
                             <div class="review-stars">
                                 @for (int i = 1; i <= 5; i++)

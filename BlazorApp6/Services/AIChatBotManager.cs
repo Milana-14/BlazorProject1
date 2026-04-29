@@ -209,7 +209,7 @@ FROM ""AiModerationMessages""";
         public AiQuestions GetAiQuestionsForSwapFromDb(Guid swapId)
         {
             using var conn = new NpgsqlConnection(connectionString);
-            conn.OpenAsync();
+            conn.Open();
 
             var sql = @"
     SELECT

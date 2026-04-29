@@ -256,56 +256,58 @@ else
             {
                 if (swap.Student1Id == currentStudent.Id)
                 {
-                    GetAiQuestions();
-                    var q = GetCurrentQuestion();
+                    if (GetAiQuestions())
+                    {
+                        var q = GetCurrentQuestion();
 
-                    <div class="chat-system-card rate-card">
-                        <h5>Въпрос @currentQuestionIndex от 3</h5>
+                        <div class="chat-system-card rate-card">
+                            <h5>Въпрос @currentQuestionIndex от 3</h5>
 
-                        <p class="question-text">@q.Question</p>
+                            <p class="question-text">@q.Question</p>
 
-                        <div class="answers">
-                            <button class="ai-answer-btn @GetAnswerClass(1)"
-                                    @onclick="() => SelectAnswer(1)">
-                                A) @q.A
-                            </button>
+                            <div class="answers">
+                                <button class="ai-answer-btn @GetAnswerClass(1)"
+                                        @onclick="() => SelectAnswer(1)">
+                                    A) @q.A
+                                </button>
 
-                            <button class="ai-answer-btn @GetAnswerClass(2)"
-                                    @onclick="() => SelectAnswer(2)">
-                                B) @q.B
-                            </button>
+                                <button class="ai-answer-btn @GetAnswerClass(2)"
+                                        @onclick="() => SelectAnswer(2)">
+                                    B) @q.B
+                                </button>
 
-                            <button class="ai-answer-btn @GetAnswerClass(3)"
-                                    @onclick="() => SelectAnswer(3)">
-                                C) @q.C
-                            </button>
-                        </div>
+                                <button class="ai-answer-btn @GetAnswerClass(3)"
+                                        @onclick="() => SelectAnswer(3)">
+                                    C) @q.C
+                                </button>
+                            </div>
 
-                        @if (!showResult)
-                        {
-                            <button class="btn-primary mt-2"
-                                    disabled="@(selectedAnswer == null)"
-                                    @onclick="ConfirmAnswer">
-                                Потвърди отговор
-                            </button>
-                        }
-                        else
-                        {
-                            @if (currentQuestionIndex < 3)
+                            @if (!showResult)
                             {
-                                <button class="btn-primary mt-2" @onclick="NextQuestion">
-                                    Следващ въпрос
+                                <button class="btn-primary mt-2"
+                                        disabled="@(selectedAnswer == null)"
+                                        @onclick="ConfirmAnswer">
+                                    Потвърди отговор
                                 </button>
                             }
                             else
                             {
-                                <button class="btn-success mt-2"
-                                        @onclick="CompleteNotRatedSwap">
-                                    Завърши
-                                </button>
+                                @if (currentQuestionIndex < 3)
+                                {
+                                    <button class="btn-primary mt-2" @onclick="NextQuestion">
+                                        Следващ въпрос
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn-success mt-2"
+                                            @onclick="CompleteNotRatedSwap">
+                                        Завърши
+                                    </button>
+                                }
                             }
-                        }
-                    </div>
+                        </div>
+                    }
                 }
                 else if (swap.Student2Id == currentStudent.Id)
                 {
@@ -693,7 +695,7 @@ else
             swap = updatedSwap;
             studentReview = studentFinalReview;
             isStudentToRate = currentStudent.Id == swap.Student2Id;
-            InvokeAsync(StateHasChanged);
+            InvokeAsync(StateHasChanged); 
         });
 
         hubConnection.On<AiQuestions>("ReceiveQuestions", questions =>
@@ -962,9 +964,10 @@ else
     }
 
 
-    private void GetAiQuestions()
+    private bool GetAiQuestions()
     {
         aiQuestions = aiChatManager.GetAiQuestionsForSwapFromDb(swap.Id);
+        return aiQuestions != null;
     }
 
     private void GetAiEvaluation()
