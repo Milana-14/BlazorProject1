@@ -20,7 +20,7 @@
     {
         @if (!isEditing)
         {
-            averageRating = (student.HelpGivenCount == 0) ? 0 : starRatings.Sum() / student.HelpGivenCount;
+            averageRating = (student.HelpGivenCount == 0) ? 0 : (double)starRatings.Sum() / (double)student.HelpGivenCount;
             <div class="profile-all-containers">
                 <div class="profile-main-info-container">
                     <img src="@AvatarManager.GetAvatarUrl(student.AvatarName)" alt="Avatar" class="my-profile-avatar" />
